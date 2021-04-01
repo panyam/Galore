@@ -1,0 +1,23 @@
+{
+  "name": "ltb",
+  "version": "0.0.1",
+  "description": "A toolbox for languages analyzers and parser generators.",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/panyam/ltb.git"
+  },
+  "keywords": [
+    "languages",
+    "parsing"
+  ],
+  "author": "Sriram Panyam",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/panyam/ltb/issues"
+  },
+  "homepage": "https://github.com/panyam/ltb#readme"
+}

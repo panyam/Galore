@@ -1,6 +1,6 @@
 {
   "name": "ltb",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Sriram Panyam",
   "description": "A toolbox for languages analyzers and parser generators.",
   "homepage": "https://github.com/panyam/ltb#readme",

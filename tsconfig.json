@@ -1,7 +1,7 @@
 {
   "exclude": [
     "node_modules",
-    "dist",
+    "lib",
     "./src/**/*.spec.ts"
   ],
   "compilerOptions": {

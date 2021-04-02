@@ -5,11 +5,10 @@
   "description": "A toolbox for languages analyzers and parser generators.",
   "homepage": "https://github.com/panyam/ltb#readme",
   "license": "ISC",
+  "types": "lib/cjs/index.d.ts",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
-  "files": [
-    "lib/"
-  ],
+  "files": [ "lib/" ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/panyam/ltb.git"
@@ -29,7 +28,7 @@
   ],
   "scripts": {
     "clean": "rm -Rf dist && jest --clearCache && rm -rf static/dist",
-    "build": "tsc",
+    "build": "npm run  clean && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
     "test": "jest --coverage --runInBand",
     "start": "webpack-dev-server --mode=development",
     "lint": "eslint './src' --quiet --ext .ts --resolve-plugins-relative-to .",

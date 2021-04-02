@@ -458,3 +458,168 @@ export class Parser extends ParserBase {
     return actions[0];
   }
 }
+
+export class LR0Item implements LRItem {
+  id = 0;
+  readonly rule: Rule;
+  readonly position: number;
+  constructor(rule: Rule, position = 0) {
+    this.rule = rule;
+    this.position = position;
+  }
+
+  advance(): LRItem {
+    TSU.assert(this.position < this.rule.rhs.length);
+    return new LR0Item(this.rule, this.position + 1);
+  }
+
+  copy(): LRItem {
+    return new LR0Item(this.rule, this.position);
+  }
+
+  /**
+   * TODO - Instead of using strings as keys, can we use a unique ID?
+   * If we assume a max limit on number of non terminals in our grammar
+   * and a max limit on the number of rules per non terminal and a
+   * max limit on the size of each rule then we can uniquely identify
+   * a rule and position for a non-terminal by a single (64 bit) number
+   *
+   * We can use the following bitpacking to nominate this:
+   *
+   * <padding 16 bits><nt id 16 bits><ruleIndex 16 bits><position 16 bits>
+   */
+  get key(): string {
+    TSU.assert(!isNaN(this.rule.id), "Rule's ID is not yet set.");
+    return this.rule.id + ":" + this.position;
+  }
+
+  compareTo(another: this): number {
+    let diff = this.rule.id - another.rule.id;
+    if (diff == 0) diff = this.position - another.position;
+    return diff;
+  }
+
+  equals(another: this): boolean {
+    return this.compareTo(another) == 0;
+  }
+
+  get debugString(): string {
+    const rule = this.rule;
+    const pos = this.position;
+    const pre = rule.rhs.syms.slice(0, pos).join(" ");
+    const post = rule.rhs.syms.slice(pos).join(" ");
+    return `${rule.nt} -> ${pre} . ${post}`;
+  }
+}
+
+export class LR0ItemGraph extends LRItemGraph {
+  protected startItem(): LRItem {
+    return this.items.ensure(new LR0Item(this.grammar.augStartRule));
+  }
+
+  /**
+   * Computes the closure of a given item set and returns a new
+   * item set.
+   */
+  closure(itemSet: LRItemSet): LRItemSet {
+    const out = new LRItemSet(this, ...itemSet.values);
+    for (let i = 0; i < out.values.length; i++) {
+      const itemId = out.values[i];
+      const item = this.items.get(itemId)!;
+      const rule = item.rule;
+      // Evaluate the closure
+      // Cannot do anything past the end
+      if (item.position < rule.rhs.length) {
+        const sym = rule.rhs.syms[item.position];
+        if (!sym.isTerminal) {
+          for (const rule of this.grammar.rulesForNT(sym)) {
+            const newItem = this.items.ensure(new LR0Item(rule, 0));
+            out.add(newItem.id);
+          }
+        }
+      }
+    }
+    return out.size == 0 ? out : this.itemSets.ensure(out);
+  }
+}
+
+export class LR1Item extends LR0Item {
+  readonly lookahead: Sym;
+  constructor(lookahead: Sym, rule: Rule, position = 0) {
+    super(rule, position);
+    this.lookahead = lookahead;
+  }
+
+  copy(): LR1Item {
+    return new LR1Item(this.lookahead, this.rule, this.position);
+  }
+
+  advance(): LRItem {
+    TSU.assert(this.position < this.rule.rhs.length);
+    return new LR1Item(this.lookahead, this.rule, this.position + 1);
+  }
+
+  get key(): string {
+    return this.rule.id + ":" + this.position + ":" + this.lookahead.id;
+  }
+
+  compareTo(another: this): number {
+    let diff = super.compareTo(another);
+    if (diff == 0) diff = this.lookahead.id - another.lookahead.id;
+    return diff;
+  }
+
+  equals(another: this): boolean {
+    return this.compareTo(another) == 0;
+  }
+
+  get debugString(): string {
+    const pos = this.position;
+    const pre = this.rule.rhs.syms.slice(0, pos).join(" ");
+    const post = this.rule.rhs.syms.slice(pos).join(" ");
+    return `${this.rule.nt.label} -> ${pre} . ${post}` + "   /   " + this.lookahead.label;
+  }
+}
+
+export class LR1ItemGraph extends LRItemGraph {
+  /**
+   * Overridden to create LR1ItemSet objects with the start state
+   * also including the EOF marker as the lookahead.
+   *
+   * StartSet = closure({S' -> . S, $})
+   */
+  startItem(): LRItem {
+    return this.items.ensure(new LR1Item(this.grammar.Eof, this.grammar.augStartRule, 0));
+  }
+
+  /**
+   * Computes the closure of this item set and returns a new
+   * item set.
+   */
+  closure(itemSet: LRItemSet): LRItemSet {
+    const out = new LRItemSet(this, ...itemSet.values);
+    for (let i = 0; i < out.values.length; i++) {
+      const itemId = out.values[i];
+      const item = this.items.get(itemId) as LR1Item;
+      // Evaluate the closure
+      // Cannot do anything past the end
+      if (item.position >= item.rule.rhs.length) continue;
+      const B = item.rule.rhs.syms[item.position];
+      if (B.isTerminal) continue;
+
+      const suffix = item.rule.rhs.copy().append(item.lookahead);
+      this.grammar.firstSets.forEachTermIn(suffix, item.position + 1, (term) => {
+        if (term != null) {
+          // For each rule [ B -> beta, term ] add it to
+          // our list of items if it doesnt already exist
+          const bRules = this.grammar.rulesForNT(B);
+          for (const br of bRules) {
+            const newItem = this.items.ensure(new LR1Item(term, br, 0));
+            out.add(newItem.id);
+          }
+        }
+      });
+    }
+    return out.size == 0 ? out : this.itemSets.ensure(out);
+  }
+}

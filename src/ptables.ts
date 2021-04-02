@@ -1,8 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Grammar } from "./grammar";
-import { LRAction, ParseTable } from "./lrbase";
-import { LR0Item, LR0ItemGraph } from "./lr0";
-import { LR1Item, LR1ItemGraph } from "./lr1";
+import { LRAction, ParseTable, LR0Item, LR0ItemGraph, LR1Item, LR1ItemGraph } from "./lr";
 
 export function makeSLRParseTable(grammar: Grammar): [ParseTable, LR0ItemGraph] {
   const ig = new LR0ItemGraph(grammar).refresh();

@@ -1,5 +1,5 @@
 import { EBNFParser } from "../ebnf";
-import { LR1ItemGraph } from "../lr1";
+import { LR1ItemGraph } from "../lr";
 
 /*
 function From(ig: LR1ItemGraph, ...entries: [string, string, number, number][]): LRItemSet {

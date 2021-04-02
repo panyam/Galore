@@ -2,7 +2,7 @@ import * as TSU from "@panyam/tsutils";
 import { Str, Grammar, Rule } from "../grammar";
 import { FirstSets, NullableSet, FollowSets } from "../sets";
 import { ParseTable as LLParseTable } from "../ll";
-import { LRAction, ParseTable, LRItemGraph } from "../lrbase";
+import { LRAction, ParseTable, LRItemGraph } from "../lr";
 import { makeSLRParseTable, makeLRParseTable } from "../ptables";
 
 type StringMap<T> = TSU.StringMap<T>;

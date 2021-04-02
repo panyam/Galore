@@ -1,4 +1,4 @@
-import { CharTape, Tokenizer } from "../tokenizer";
+import { CharTape, SimpleTokenizer } from "../tokenizer";
 
 describe("Tape Tests", () => {
   test("Basic", () => {
@@ -38,7 +38,7 @@ describe("Tape Tests", () => {
 
 describe("Tokenizer Tests", () => {
   test("Basic", () => {
-    const t = new Tokenizer("Hello World");
+    const t = new SimpleTokenizer("Hello World");
     t.addLiteral("Hello", 55);
     const tok = t.next();
     expect(tok?.isOneOf(55)).toBe(true);

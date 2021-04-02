@@ -155,9 +155,9 @@ export class Token {
 export type TokenMatcher = (_: CharTape, pos: number) => TSU.Nullable<Token>;
 
 /**
- * Tokenize our string into multiple Tokens.
+ * A simple tokenize that matches the input to a set of matchers one by one.
  */
-export class Tokenizer {
+export class SimpleTokenizer {
   private peekedToken: TSU.Nullable<Token> = null;
   tape: CharTape;
   // TODO  - convert literals into a trie

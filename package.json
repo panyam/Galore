@@ -42,8 +42,10 @@
     "version": "npm run lintfix && git add -A src",
     "postversion": "git push && git push --tags"
   },
+  "dependencies": {
+    "@panyam/tsutils": "^0.0.13"
+  },
   "devDependencies": {
-    "@panyam/tsutils": "^0.0.13",
     "@types/jest": "^26.0.20",
     "@types/js-yaml": "^4.0.0",
     "@typescript-eslint/eslint-plugin": "^4.20.0",

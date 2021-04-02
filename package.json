@@ -1,6 +1,6 @@
 {
   "name": "ltb",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": "Sriram Panyam",
   "description": "A toolbox for languages analyzers and parser generators.",
   "homepage": "https://github.com/panyam/ltb#readme",
@@ -8,7 +8,9 @@
   "types": "lib/cjs/index.d.ts",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
-  "files": [ "lib/" ],
+  "files": [
+    "lib/"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/panyam/ltb.git"

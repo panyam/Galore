@@ -9,13 +9,13 @@ coverage
 node_modules
 npm-debug.log
 dist
+lib
 package-lock.json
 gen
 *.swp
 *.swo
 *.pyc
 .project
-
 .settings
 tsdocs
 .classpath

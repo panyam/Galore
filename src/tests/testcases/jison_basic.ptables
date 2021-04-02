@@ -1,0 +1,18 @@
+{
+  "lr1": {
+      "0": { E: ["1"], T: ["2"], ZERO: ["S3"] },
+      "1": { PLUS: ["S4"], "<EOF>": ["Acc"] },
+      "2": { PLUS: ["R <E -> T>"], "<EOF>": ["R <E -> T>"] },
+      "3": { PLUS: ["R <T -> ZERO>"], "<EOF>": ["R <T -> ZERO>"] },
+      "4": { T: ["5"], ZERO: ["S3"] },
+      "5": { PLUS: ["R <E -> E PLUS T>"], "<EOF>": ["R <E -> E PLUS T>"] },
+  },
+  "slr": {
+      "0": { E: ["1"], T: ["2"], ZERO: ["S3"] },
+      "1": { PLUS: ["S4"], "<EOF>": ["Acc"] },
+      "2": { PLUS: ["R <E -> T>"], "<EOF>": ["R <E -> T>"] },
+      "3": { PLUS: ["R <T -> ZERO>"], "<EOF>": ["R <T -> ZERO>"] },
+      "4": { T: ["5"], ZERO: ["S3"] },
+      "5": { PLUS: ["R <E -> E PLUS T>"], "<EOF>": ["R <E -> E PLUS T>"] },
+  }
+}

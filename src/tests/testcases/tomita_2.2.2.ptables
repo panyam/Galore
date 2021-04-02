@@ -1,0 +1,71 @@
+{
+  "lr1": {
+      "0": { S: ["1"], NP: ["2"], n: ["S3"], det: ["S4"] },
+      "1": { PP: ["5"], prep: ["S6"], "<EOF>": ["Acc"] },
+      "2": { VP: ["7"], PP: ["8"], prep: ["S9"], v: ["S10"] },
+      "3": { prep: ["R <NP -> n>"], v: ["R <NP -> n>"] },
+      "4": { n: ["S11"] },
+      "5": { prep: ["R <S -> S PP>"], "<EOF>": ["R <S -> S PP>"] },
+      "6": { NP: ["12"], n: ["S13"], det: ["S14"] },
+      "7": { prep: ["R <S -> NP VP>"], "<EOF>": ["R <S -> NP VP>"] },
+      "8": { prep: ["R <NP -> NP PP>"], v: ["R <NP -> NP PP>"] },
+      "9": { NP: ["15"], n: ["S3"], det: ["S4"] },
+      "10": { NP: ["16"], n: ["S13"], det: ["S14"] },
+      "11": { prep: ["R <NP -> det n>"], v: ["R <NP -> det n>"] },
+      "12": {
+        PP: ["17"],
+        prep: ["S6", "R <PP -> prep NP>"],
+        "<EOF>": ["R <PP -> prep NP>"],
+      },
+      "13": { prep: ["R <NP -> n>"], "<EOF>": ["R <NP -> n>"] },
+      "14": { n: ["S18"] },
+      "15": {
+        PP: ["8"],
+        prep: ["S9", "R <PP -> prep NP>"],
+        v: ["R <PP -> prep NP>"],
+      },
+      "16": {
+        PP: ["17"],
+        prep: ["S6", "R <VP -> v NP>"],
+        "<EOF>": ["R <VP -> v NP>"],
+      },
+      "17": { prep: ["R <NP -> NP PP>"], "<EOF>": ["R <NP -> NP PP>"] },
+      "18": { prep: ["R <NP -> det n>"], "<EOF>": ["R <NP -> det n>"] },
+  },
+  slr: {
+    '0': { S: [ '1' ], NP: [ '2' ], n: [ 'S3' ], det: [ 'S4' ] },
+    '1': { PP: [ '5' ], prep: [ 'S6' ], '<EOF>': [ 'Acc' ] },
+    '2': { VP: [ '7' ], PP: [ '8' ], prep: [ 'S6' ], v: [ 'S9' ] },
+    '3': {
+      prep: [ 'R <NP -> n>' ],
+      v: [ 'R <NP -> n>' ],
+      '<EOF>': [ 'R <NP -> n>' ]
+    },
+    '4': { n: [ 'S10' ] },
+    '5': { prep: [ 'R <S -> S PP>' ], '<EOF>': [ 'R <S -> S PP>' ] },
+    '6': { NP: [ '11' ], n: [ 'S3' ], det: [ 'S4' ] },
+    '7': { prep: [ 'R <S -> NP VP>' ], '<EOF>': [ 'R <S -> NP VP>' ] },
+    '8': {
+      prep: [ 'R <NP -> NP PP>' ],
+      v: [ 'R <NP -> NP PP>' ],
+      '<EOF>': [ 'R <NP -> NP PP>' ]
+    },
+    '9': { NP: [ '12' ], n: [ 'S3' ], det: [ 'S4' ] },
+    '10': {
+      prep: [ 'R <NP -> det n>' ],
+      v: [ 'R <NP -> det n>' ],
+      '<EOF>': [ 'R <NP -> det n>' ]
+    },
+    '11': {
+      PP: [ '8' ],
+      prep: [ 'R <PP -> prep NP>', 'S6' ],
+      v: [ 'R <PP -> prep NP>' ],
+      '<EOF>': [ 'R <PP -> prep NP>' ]
+    },
+    '12': {
+      PP: [ '8' ],
+      prep: [ 'R <VP -> v NP>', 'S6' ],
+      '<EOF>': [ 'R <VP -> v NP>' ]
+    }
+  }
+}

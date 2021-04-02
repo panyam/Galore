@@ -1,6 +1,6 @@
 {
   "name": "ltb",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "author": "Sriram Panyam",
   "description": "A toolbox for languages analyzers and parser generators.",
   "homepage": "https://github.com/panyam/ltb#readme",
@@ -39,7 +39,7 @@
     "precommit-msg": "echo 'Pre-commit checks...' && exit 0",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
-    "preversion": "npm run lint",
+    "preversion": "npm run build && npm run lint",
     "version": "npm run lintfix && git add -A src",
     "postversion": "git push && git push --tags"
   },

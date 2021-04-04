@@ -66,7 +66,7 @@ export abstract class Parser {
   getSym(token: Token): Sym {
     const out = this.grammar.getSym(token.tag as string);
     if (out == null) {
-      throw new Error("Invalid token: " + token.value);
+      throw new Error("Invalid token tag: " + token.tag + ", Value: " + token.value);
     }
     return out;
   }

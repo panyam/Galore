@@ -32,7 +32,6 @@ describe("LRParsing Tests", () => {
       F -> open E close | id ;
       `,
       "slr",
-      true,
     );
 
     const tokenizer = new MockTokenizer(tok("id", "A"));
@@ -40,15 +39,7 @@ describe("LRParsing Tests", () => {
     // new MockTokenizer(tok("id", "A"), tok("PLUS", "+"), tok("id", "B"), tok("STAR", "*"), tok("id", "C")),
 
     const result = parser.parse();
-    expect(result?.debugValue).toEqual({
-      sym: "E",
-      children: [
-        {
-          sym: "T",
-          children: [{ sym: "F", children: [{ sym: "id", value: "A" }] }],
-        },
-      ],
-    });
+    expect(result?.debugValue).toEqual(["E", [["T", [["F", [["id", "A"]]]]]]]);
     // console.log(util.inspect(result?.debugValue || null, { showHidden: false, depth: null }));
   });
   test("Test 1", () => {
@@ -63,6 +54,7 @@ describe("LRParsing Tests", () => {
         num -> DIGIT | num DIGIT ;
       `,
       "slr",
+      true,
     );
   });
 });

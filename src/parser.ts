@@ -41,12 +41,12 @@ export class PTNode {
 
   get debugValue(): any {
     const value = this.value;
-    const out = { sym: this.sym.label } as any;
-    if (this.children.length > 0) {
-      out.children = this.children.map((node) => node.debugValue);
-    }
+    const out = [this.sym.label] as any[];
     if (value != null) {
-      out.value = value.debugValue || value.debugString || value;
+      out.push(value.debugValue || value.debugString || value);
+    }
+    if (this.children.length > 0) {
+      out.push(this.children.map((node) => node.debugValue));
     }
     return out;
   }

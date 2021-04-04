@@ -60,11 +60,6 @@ describe("Parser Tests", () => {
   test("Tests 1", () => {
     const g = new EBNFParser(Samples.expr2).grammar;
 
-    const ns = g.nullables;
-    const fs = g.firstSets;
-    const fls = g.followSets;
-    const ptab = new ParseTable(g);
-
     const tokenizer = new MockTokenizer(
       tok("id", "A"),
       tok("PLUS", "+"),
@@ -74,36 +69,26 @@ describe("Parser Tests", () => {
     );
     const parser = new Parser(g).setTokenizer(tokenizer);
     const result = parser.parse();
-    // console.log(util.inspect(result?.debugValue || null, { showHidden: false, depth: null }));
-    expect(result?.debugValue).toEqual({
-      sym: "E",
-      children: [
-        {
-          sym: "T",
-          children: [{ sym: "F", children: [{ sym: "id", value: "A" }] }, { sym: "T1" }],
-        },
-        {
-          sym: "E1",
-          children: [
-            { sym: "PLUS", value: "+" },
-            {
-              sym: "T",
-              children: [
-                { sym: "F", children: [{ sym: "id", value: "B" }] },
-                {
-                  sym: "T1",
-                  children: [
-                    { sym: "STAR", value: "*" },
-                    { sym: "F", children: [{ sym: "id", value: "C" }] },
-                    { sym: "T1" },
-                  ],
-                },
+    console.log(util.inspect(result?.debugValue || null, { showHidden: false, depth: null }));
+    expect(result?.debugValue).toEqual([
+      "E",
+      [
+        ["T", [["F", [["id", "A"]]], ["T1"]]],
+        [
+          "E1",
+          [
+            ["PLUS", "+"],
+            [
+              "T",
+              [
+                ["F", [["id", "B"]]],
+                ["T1", [["STAR", "*"], ["F", [["id", "C"]]], ["T1"]]],
               ],
-            },
-            { sym: "E1" },
+            ],
+            ["E1"],
           ],
-        },
+        ],
       ],
-    });
+    ]);
   });
 });

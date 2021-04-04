@@ -38,6 +38,18 @@ export class PTNode {
     }
     return this;
   }
+
+  get debugValue(): any {
+    const value = this.value;
+    const out = { sym: this.sym.label } as any;
+    if (this.children.length > 0) {
+      out.children = this.children.map((node) => node.debugValue);
+    }
+    if (value != null) {
+      out.value = value.debugValue || value.debugString || value;
+    }
+    return out;
+  }
 }
 
 export abstract class Parser {

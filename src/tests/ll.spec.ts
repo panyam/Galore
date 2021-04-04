@@ -1,3 +1,4 @@
+const util = require("util");
 import { EBNFParser } from "../ebnf";
 import { ParseTable, Parser } from "../ll";
 import { PTNode } from "../parser";
@@ -72,17 +73,37 @@ describe("Parser Tests", () => {
       tok("id", "C"),
     );
     const parser = new Parser(g).setTokenizer(tokenizer);
-    const root = parser.parse();
-    console.log("Tree: \n", printTree(root!));
-    expect(root?.sym.label).toBe("E");
+    const result = parser.parse();
+    // console.log(util.inspect(result?.debugValue || null, { showHidden: false, depth: null }));
+    expect(result?.debugValue).toEqual({
+      sym: "E",
+      children: [
+        {
+          sym: "T",
+          children: [{ sym: "F", children: [{ sym: "id", value: "A" }] }, { sym: "T1" }],
+        },
+        {
+          sym: "E1",
+          children: [
+            { sym: "PLUS", value: "+" },
+            {
+              sym: "T",
+              children: [
+                { sym: "F", children: [{ sym: "id", value: "B" }] },
+                {
+                  sym: "T1",
+                  children: [
+                    { sym: "STAR", value: "*" },
+                    { sym: "F", children: [{ sym: "id", value: "C" }] },
+                    { sym: "T1" },
+                  ],
+                },
+              ],
+            },
+            { sym: "E1" },
+          ],
+        },
+      ],
+    });
   });
 });
-
-function printTree(node: PTNode, level = 0): string {
-  let out = "";
-  let indentStr = "";
-  for (let i = 0; i < level; i++) indentStr += "  ";
-  out += indentStr + node.sym.label + " - " + node.value;
-  for (const child of node.children) out += "\n" + printTree(child, level + 1);
-  return out;
-}

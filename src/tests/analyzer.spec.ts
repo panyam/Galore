@@ -13,7 +13,7 @@ describe("Analyzer Tests", () => {
     expect(g.reachableSymbols().labels()).toEqual(["S", "A", "B"]);
     expect(g.terminalDerivingSymbols.labels()).toEqual(["a", "b", "c", "d", "A", "C", "S"]);
     removeUselessSymbols(g);
-    expect(g.debugValue()).toEqual(["S -> a b S", "S -> a b A", "A -> c d"]);
+    expect(g.debugValue).toEqual(["S -> a b S", "S -> a b A", "A -> c d"]);
   });
 
   test("Expand Null Production", () => {
@@ -38,7 +38,7 @@ describe("Analyzer Tests", () => {
     // console.log("Reachables: ", g.reachableSymbols().labels());
     removeUselessSymbols(g);
     removeNullProductions(g);
-    expect(g.debugValue()).toEqual([
+    expect(g.debugValue).toEqual([
       "S -> A B A C",
       "S -> B A C",
       "S -> A C",
@@ -59,7 +59,7 @@ describe("Analyzer Tests", () => {
       E -> E MINUS T | E STAR T | E PLUS T | T1 t | T2 a | T3 c ;
     `).grammar;
     removeDirectLeftRecursion(g);
-    expect(g.debugValue()).toEqual([
+    expect(g.debugValue).toEqual([
       "E -> T1 t $0",
       "E -> T2 a $0",
       "E -> T3 c $0",
@@ -79,8 +79,8 @@ describe("Analyzer Tests", () => {
       E -> A B X4 ;
     `).grammar;
     leftFactor(g, g.getSym("E"));
-    console.log("NewG: ", g.debugValue());
-    expect(g.debugValue()).toEqual([
+    console.log("NewG: ", g.debugValue);
+    expect(g.debugValue).toEqual([
       "E -> E $0",
       "$0 -> A T",
       "$0 -> B T",

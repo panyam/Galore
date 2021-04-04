@@ -81,7 +81,7 @@ describe("Auxilliary Rules", () => {
     g.add(C, g.atleast0(new Str(A, B), false));
 
     // expect(B.rules[0].equals(g.opt("A"))).toBe(true);
-    console.log("printed: ", printGrammar(g, false));
+    // console.log("printed: ", printGrammar(g, false));
   });
 
   test("Atleast1 Rules", () => {
@@ -93,7 +93,7 @@ describe("Auxilliary Rules", () => {
     g.add(C, g.atleast1(new Str(A, B), false));
 
     // expect(B.rules[0].equals(g.opt("A"))).toBe(true);
-    console.log("printed: ", printGrammar(g, false));
+    // console.log("printed: ", printGrammar(g, false));
   });
 
   test("Removing Symbols", () => {
@@ -105,6 +105,6 @@ describe("Auxilliary Rules", () => {
       D -> b ;
     `).grammar;
     g.removeSymbols((s) => s.label == "A");
-    expect(g.debugValue()).toEqual(["B -> a b c", "C -> d e f", "D -> f D", "D -> b"]);
+    expect(g.debugValue).toEqual(["B -> a b c", "C -> d e f", "D -> f D", "D -> b"]);
   });
 });

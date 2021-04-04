@@ -234,8 +234,6 @@ export abstract class LRItemGraph {
    * StartSet = closure({S' -> . S})
    */
   startSet(): LRItemSet {
-    const startSymbol = this.grammar.startSymbol;
-    TSU.assert(startSymbol != null, "Start symbol must be set");
     const startItem = this.startItem();
     const newset = this.newItemSet(startItem);
     return this.closure(newset);
@@ -291,6 +289,8 @@ export abstract class LRItemGraph {
  */
 export class ParseTable {
   readonly grammar: Grammar;
+  // Records which actions have conflicts
+  conflictActions: NumMap<NumMap<boolean>> = {};
 
   /**
    * Maps symbol (by id) to the action;
@@ -327,6 +327,10 @@ export class ParseTable {
     if (actions.findIndex((ac) => ac.equals(action)) < 0) {
       actions.push(action);
     }
+    if (actions.length > 1) {
+      this.conflictActions[state.id] = this.conflictActions[state.id] || {};
+      this.conflictActions[state.id][next.id] = true;
+    }
   }
 
   get debugValue(): any {
@@ -352,7 +356,7 @@ export class ParseStack {
   // true => isStateId
   // false => isSymbolId
   readonly stateStack: LRItemSet[] = [];
-  readonly nodeStack: PTNode[] = []; // TBD
+  readonly nodeStack: PTNode[] = [];
   constructor(g: Grammar, parseTable: ParseTable) {
     this.grammar = g;
     this.parseTable = parseTable;
@@ -364,17 +368,20 @@ export class ParseStack {
     this.nodeStack.push(node);
   }
 
-  top(): [LRItemSet, PTNode] {
-    return [this.stateStack[this.stateStack.length - 1], this.nodeStack[this.nodeStack.length - 1]];
-  }
-
-  pop(): [LRItemSet, PTNode] {
+  top(pop = false): [LRItemSet, PTNode] {
     if (this.isEmpty) {
       TSU.assert(false, "Stack is empty.");
     }
-    const state = this.stateStack.pop() as LRItemSet;
-    const node = this.nodeStack.pop() as PTNode;
+    const [state, node] = [this.stateStack[this.stateStack.length - 1], this.nodeStack[this.nodeStack.length - 1]];
+    if (pop) {
+      this.stateStack.pop();
+      this.nodeStack.pop();
+    }
     return [state, node];
+  }
+
+  pop(): [LRItemSet, PTNode] {
+    return this.top(true);
   }
 
   get isEmpty(): boolean {
@@ -385,10 +392,14 @@ export class ParseStack {
 export class Parser extends ParserBase {
   parseTable: ParseTable;
   stack: ParseStack;
-  constructor(grammar: Grammar, parseTable: ParseTable) {
+  readonly itemGraph: LRItemGraph;
+  constructor(grammar: Grammar, parseTable: ParseTable, itemGraph: LRItemGraph) {
     super(grammar);
+    TSU.assert((grammar.augStartRule || null) != null, "Grammar's start symbol has not been augmented");
     this.parseTable = parseTable;
+    this.itemGraph = itemGraph;
     this.stack = new ParseStack(this.grammar, this.parseTable);
+    this.stack.push(itemGraph.startSet(), new PTNode(grammar.augStartRule.nt));
   }
 
   /**
@@ -398,6 +409,7 @@ export class Parser extends ParserBase {
     const tokenizer = this.tokenizer;
     const stack = this.stack;
     const g = this.grammar;
+    let output: Nullable<PTNode> = null;
     while (tokenizer.peek() != null || !stack.isEmpty) {
       const token = tokenizer.peek();
       const nextSym = token == null ? g.Eof : this.getSym(token);
@@ -412,6 +424,7 @@ export class Parser extends ParserBase {
       if (action.tag == LRActionType.ACCEPT) {
         break;
       } else if (action.tag == LRActionType.SHIFT) {
+        tokenizer.next();
         const newNode = new PTNode(nextSym, nextValue);
         stack.push(action.nextState!, newNode);
       } else {
@@ -430,10 +443,11 @@ export class Parser extends ParserBase {
         TSU.assert(newAction != null, "Top item does not have an action.");
         stack.push(newAction.nextState!, newNode);
         this.notifyReduction(newNode, action.rule);
+        output = newNode;
       }
     }
-    while (true); // !stack.isEmpty);
-    return null;
+    // It is possible that here no reductions have been done!
+    return output;
   }
 
   /**
@@ -514,6 +528,9 @@ export class LR0Item implements LRItem {
 
 export class LR0ItemGraph extends LRItemGraph {
   protected startItem(): LRItem {
+    const startSymbol = this.grammar.startSymbol;
+    TSU.assert(startSymbol != null, "Start symbol must be set");
+    TSU.assert((this.grammar.augStartRule || null) != null, "Grammar is not augmented");
     return this.items.ensure(new LR0Item(this.grammar.augStartRule));
   }
 
@@ -589,6 +606,9 @@ export class LR1ItemGraph extends LRItemGraph {
    * StartSet = closure({S' -> . S, $})
    */
   startItem(): LRItem {
+    const startSymbol = this.grammar.startSymbol;
+    TSU.assert(startSymbol != null, "Start symbol must be set");
+    TSU.assert((this.grammar.augStartRule || null) != null, "Grammar is not augmented");
     return this.items.ensure(new LR1Item(this.grammar.Eof, this.grammar.augStartRule, 0));
   }
 

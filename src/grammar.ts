@@ -624,7 +624,7 @@ export class Grammar {
   /**
    * Returns a flat list of all productions in a single list.
    */
-  debugValue(hideAux = false): string[] {
+  get debugValue(): string[] {
     const out: string[] = [];
     this.forEachRule(null, (rule: Rule, index: number) => {
       out.push(`${rule.nt.label} -> ${rule.rhs.debugString}`);

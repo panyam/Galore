@@ -1,0 +1,737 @@
+Grammar:  [
+  '$0 -> Command',
+  '$0 -> RoleSelector',
+  '$0 -> Atoms',
+  '$0 -> COMMENT',
+  '$1 -> ',
+  '$1 -> $0 $1',
+  'Snippet -> $1',
+  '$2 -> CommandParams',
+  '$2 -> ',
+  'Command -> BSLASH_IDENT $2',
+  '$3 -> ParamList',
+  '$3 -> ',
+  'CommandParams -> OPEN_PAREN $3 CLOSE_PAREN',
+  'ParamList -> Param',
+  'ParamList -> Param COMMA ParamList',
+  '$4 -> EQUALS ParamValue',
+  '$4 -> ',
+  'Param -> ParamKey $4',
+  'ParamKey -> STRING',
+  'ParamKey -> Fraction',
+  'ParamKey -> IDENT',
+  'ParamValue -> STRING',
+  'ParamValue -> Fraction',
+  'ParamValue -> IDENT',
+  '$5 -> "/" NUMBER',
+  '$5 -> ',
+  'Fraction -> NUMBER $5',
+  'RoleSelector -> IDENT_COLON',
+  '$6 -> Atom',
+  '$6 -> Atom $6',
+  'Atoms -> $6',
+  '$7 -> Duration',
+  '$7 -> ',
+  '$8 -> SpaceAtom',
+  '$8 -> Literal',
+  '$8 -> Group',
+  'Atom -> $7 $8',
+  'Duration -> Fraction',
+  'SpaceAtom -> COMMA',
+  'SpaceAtom -> SEMI_COLON',
+  'SpaceAtom -> UNDER_SCORE',
+  '$9 -> ',
+  '$9 -> Atom $9',
+  'Group -> OPEN_SQ $9 CLOSE_SQ',
+  'Literal -> DOTS_IDENT',
+  'Literal -> IDENT',
+  'Literal -> IDENT_DOTS',
+  'Literal -> STRING',
+  '$ -> Snippet'
+]
+ItemGraph:  {
+  '0': {
+    items: [
+      '$ ->  . Snippet',
+      'Snippet ->  . $1',
+      'Atoms ->  . $6',
+      '$6 ->  . Atom',
+      '$6 ->  . Atom $6',
+      'Atom ->  . $7 $8',
+      '$7 ->  . Duration',
+      '$7 ->  . ',
+      'Duration ->  . Fraction',
+      'Fraction ->  . NUMBER $5',
+      '$1 ->  . ',
+      '$1 ->  . $0 $1',
+      '$0 ->  . Command',
+      '$0 ->  . RoleSelector',
+      '$0 ->  . Atoms',
+      '$0 ->  . COMMENT',
+      'Command ->  . BSLASH_IDENT $2',
+      'RoleSelector ->  . IDENT_COLON'
+    ],
+    next: {
+      Snippet: 1,
+      Command: 2,
+      RoleSelector: 3,
+      Atoms: 4,
+      COMMENT: 5,
+      '$0': 6,
+      '$1': 7,
+      BSLASH_IDENT: 8,
+      Fraction: 9,
+      NUMBER: 10,
+      IDENT_COLON: 11,
+      Atom: 12,
+      '$6': 13,
+      Duration: 14,
+      '$7': 15
+    }
+  },
+  '1': { items: [ '$ -> Snippet . ' ], next: {} },
+  '2': { items: [ '$0 -> Command . ' ], next: {} },
+  '3': { items: [ '$0 -> RoleSelector . ' ], next: {} },
+  '4': { items: [ '$0 -> Atoms . ' ], next: {} },
+  '5': { items: [ '$0 -> COMMENT . ' ], next: {} },
+  '6': {
+    items: [
+      'Atoms ->  . $6',
+      '$6 ->  . Atom',
+      '$6 ->  . Atom $6',
+      'Atom ->  . $7 $8',
+      '$7 ->  . Duration',
+      '$7 ->  . ',
+      'Duration ->  . Fraction',
+      'Fraction ->  . NUMBER $5',
+      '$1 ->  . ',
+      '$1 -> $0 . $1',
+      '$1 ->  . $0 $1',
+      '$0 ->  . Command',
+      '$0 ->  . RoleSelector',
+      '$0 ->  . Atoms',
+      '$0 ->  . COMMENT',
+      'Command ->  . BSLASH_IDENT $2',
+      'RoleSelector ->  . IDENT_COLON'
+    ],
+    next: {
+      Command: 2,
+      RoleSelector: 3,
+      Atoms: 4,
+      COMMENT: 5,
+      '$0': 6,
+      '$1': 16,
+      BSLASH_IDENT: 8,
+      Fraction: 9,
+      NUMBER: 10,
+      IDENT_COLON: 11,
+      Atom: 12,
+      '$6': 13,
+      Duration: 14,
+      '$7': 15
+    }
+  },
+  '7': { items: [ 'Snippet -> $1 . ' ], next: {} },
+  '8': {
+    items: [
+      'Command -> BSLASH_IDENT . $2',
+      '$2 ->  . CommandParams',
+      '$2 ->  . ',
+      'CommandParams ->  . OPEN_PAREN $3 CLOSE_PAREN'
+    ],
+    next: { CommandParams: 17, '$2': 18, OPEN_PAREN: 19 }
+  },
+  '9': { items: [ 'Duration -> Fraction . ' ], next: {} },
+  '10': {
+    items: [ 'Fraction -> NUMBER . $5', '$5 ->  . "/" NUMBER', '$5 ->  . ' ],
+    next: { '"/"': 20, '$5': 21 }
+  },
+  '11': { items: [ 'RoleSelector -> IDENT_COLON . ' ], next: {} },
+  '12': {
+    items: [
+      '$6 ->  . Atom',
+      '$6 ->  . Atom $6',
+      'Atom ->  . $7 $8',
+      '$7 ->  . Duration',
+      '$7 ->  . ',
+      'Duration ->  . Fraction',
+      'Fraction ->  . NUMBER $5',
+      '$6 -> Atom . ',
+      '$6 -> Atom . $6'
+    ],
+    next: {
+      Fraction: 9,
+      NUMBER: 10,
+      Atom: 12,
+      '$6': 22,
+      Duration: 14,
+      '$7': 15
+    }
+  },
+  '13': { items: [ 'Atoms -> $6 . ' ], next: {} },
+  '14': { items: [ '$7 -> Duration . ' ], next: {} },
+  '15': {
+    items: [
+      'Atom -> $7 . $8',
+      '$8 ->  . SpaceAtom',
+      '$8 ->  . Literal',
+      '$8 ->  . Group',
+      'SpaceAtom ->  . COMMA',
+      'SpaceAtom ->  . SEMI_COLON',
+      'SpaceAtom ->  . UNDER_SCORE',
+      'Literal ->  . DOTS_IDENT',
+      'Literal ->  . IDENT',
+      'Literal ->  . IDENT_DOTS',
+      'Literal ->  . STRING',
+      'Group ->  . OPEN_SQ $9 CLOSE_SQ'
+    ],
+    next: {
+      COMMA: 23,
+      STRING: 24,
+      IDENT: 25,
+      SpaceAtom: 26,
+      Literal: 27,
+      Group: 28,
+      '$8': 29,
+      SEMI_COLON: 30,
+      UNDER_SCORE: 31,
+      OPEN_SQ: 32,
+      DOTS_IDENT: 33,
+      IDENT_DOTS: 34
+    }
+  },
+  '16': { items: [ '$1 -> $0 $1 . ' ], next: {} },
+  '17': { items: [ '$2 -> CommandParams . ' ], next: {} },
+  '18': { items: [ 'Command -> BSLASH_IDENT $2 . ' ], next: {} },
+  '19': {
+    items: [
+      'Fraction ->  . NUMBER $5',
+      'CommandParams -> OPEN_PAREN . $3 CLOSE_PAREN',
+      '$3 ->  . ParamList',
+      '$3 ->  . ',
+      'ParamList ->  . Param',
+      'ParamList ->  . Param COMMA ParamList',
+      'Param ->  . ParamKey $4',
+      'ParamKey ->  . STRING',
+      'ParamKey ->  . Fraction',
+      'ParamKey ->  . IDENT'
+    ],
+    next: {
+      ParamList: 35,
+      '$3': 36,
+      Param: 37,
+      ParamKey: 38,
+      STRING: 39,
+      Fraction: 40,
+      IDENT: 41,
+      NUMBER: 10
+    }
+  },
+  '20': { items: [ '$5 -> "/" . NUMBER' ], next: { NUMBER: 42 } },
+  '21': { items: [ 'Fraction -> NUMBER $5 . ' ], next: {} },
+  '22': { items: [ '$6 -> Atom $6 . ' ], next: {} },
+  '23': { items: [ 'SpaceAtom -> COMMA . ' ], next: {} },
+  '24': { items: [ 'Literal -> STRING . ' ], next: {} },
+  '25': { items: [ 'Literal -> IDENT . ' ], next: {} },
+  '26': { items: [ '$8 -> SpaceAtom . ' ], next: {} },
+  '27': { items: [ '$8 -> Literal . ' ], next: {} },
+  '28': { items: [ '$8 -> Group . ' ], next: {} },
+  '29': { items: [ 'Atom -> $7 $8 . ' ], next: {} },
+  '30': { items: [ 'SpaceAtom -> SEMI_COLON . ' ], next: {} },
+  '31': { items: [ 'SpaceAtom -> UNDER_SCORE . ' ], next: {} },
+  '32': {
+    items: [
+      'Atom ->  . $7 $8',
+      '$7 ->  . Duration',
+      '$7 ->  . ',
+      'Duration ->  . Fraction',
+      'Fraction ->  . NUMBER $5',
+      'Group -> OPEN_SQ . $9 CLOSE_SQ',
+      '$9 ->  . ',
+      '$9 ->  . Atom $9'
+    ],
+    next: {
+      Fraction: 9,
+      NUMBER: 10,
+      Atom: 43,
+      Duration: 14,
+      '$7': 15,
+      '$9': 44
+    }
+  },
+  '33': { items: [ 'Literal -> DOTS_IDENT . ' ], next: {} },
+  '34': { items: [ 'Literal -> IDENT_DOTS . ' ], next: {} },
+  '35': { items: [ '$3 -> ParamList . ' ], next: {} },
+  '36': {
+    items: [ 'CommandParams -> OPEN_PAREN $3 . CLOSE_PAREN' ],
+    next: { CLOSE_PAREN: 45 }
+  },
+  '37': {
+    items: [ 'ParamList -> Param . ', 'ParamList -> Param . COMMA ParamList' ],
+    next: { COMMA: 46 }
+  },
+  '38': {
+    items: [
+      'Param -> ParamKey . $4',
+      '$4 ->  . EQUALS ParamValue',
+      '$4 ->  . '
+    ],
+    next: { EQUALS: 47, '$4': 48 }
+  },
+  '39': { items: [ 'ParamKey -> STRING . ' ], next: {} },
+  '40': { items: [ 'ParamKey -> Fraction . ' ], next: {} },
+  '41': { items: [ 'ParamKey -> IDENT . ' ], next: {} },
+  '42': { items: [ '$5 -> "/" NUMBER . ' ], next: {} },
+  '43': {
+    items: [
+      'Atom ->  . $7 $8',
+      '$7 ->  . Duration',
+      '$7 ->  . ',
+      'Duration ->  . Fraction',
+      'Fraction ->  . NUMBER $5',
+      '$9 ->  . ',
+      '$9 ->  . Atom $9',
+      '$9 -> Atom . $9'
+    ],
+    next: {
+      Fraction: 9,
+      NUMBER: 10,
+      Atom: 43,
+      Duration: 14,
+      '$7': 15,
+      '$9': 49
+    }
+  },
+  '44': {
+    items: [ 'Group -> OPEN_SQ $9 . CLOSE_SQ' ],
+    next: { CLOSE_SQ: 50 }
+  },
+  '45': {
+    items: [ 'CommandParams -> OPEN_PAREN $3 CLOSE_PAREN . ' ],
+    next: {}
+  },
+  '46': {
+    items: [
+      'Fraction ->  . NUMBER $5',
+      'ParamList ->  . Param',
+      'ParamList ->  . Param COMMA ParamList',
+      'Param ->  . ParamKey $4',
+      'ParamKey ->  . STRING',
+      'ParamKey ->  . Fraction',
+      'ParamKey ->  . IDENT',
+      'ParamList -> Param COMMA . ParamList'
+    ],
+    next: {
+      ParamList: 51,
+      Param: 37,
+      ParamKey: 38,
+      STRING: 39,
+      Fraction: 40,
+      IDENT: 41,
+      NUMBER: 10
+    }
+  },
+  '47': {
+    items: [
+      'Fraction ->  . NUMBER $5',
+      '$4 -> EQUALS . ParamValue',
+      'ParamValue ->  . STRING',
+      'ParamValue ->  . Fraction',
+      'ParamValue ->  . IDENT'
+    ],
+    next: { ParamValue: 52, STRING: 53, Fraction: 54, IDENT: 55, NUMBER: 10 }
+  },
+  '48': { items: [ 'Param -> ParamKey $4 . ' ], next: {} },
+  '49': { items: [ '$9 -> Atom $9 . ' ], next: {} },
+  '50': { items: [ 'Group -> OPEN_SQ $9 CLOSE_SQ . ' ], next: {} },
+  '51': { items: [ 'ParamList -> Param COMMA ParamList . ' ], next: {} },
+  '52': { items: [ '$4 -> EQUALS ParamValue . ' ], next: {} },
+  '53': { items: [ 'ParamValue -> STRING . ' ], next: {} },
+  '54': { items: [ 'ParamValue -> Fraction . ' ], next: {} },
+  '55': { items: [ 'ParamValue -> IDENT . ' ], next: {} }
+}
+Ptables:  {
+  '0': {
+    Snippet: [ '1' ],
+    Command: [ '2' ],
+    RoleSelector: [ '3' ],
+    Atoms: [ '4' ],
+    COMMENT: [ 'S5' ],
+    '$0': [ '6' ],
+    '$1': [ '7' ],
+    BSLASH_IDENT: [ 'S8' ],
+    COMMA: [ 'R <$7 -> >' ],
+    STRING: [ 'R <$7 -> >' ],
+    Fraction: [ '9' ],
+    IDENT: [ 'R <$7 -> >' ],
+    NUMBER: [ 'S10' ],
+    IDENT_COLON: [ 'S11' ],
+    Atom: [ '12' ],
+    '$6': [ '13' ],
+    Duration: [ '14' ],
+    '$7': [ '15' ],
+    SEMI_COLON: [ 'R <$7 -> >' ],
+    UNDER_SCORE: [ 'R <$7 -> >' ],
+    OPEN_SQ: [ 'R <$7 -> >' ],
+    DOTS_IDENT: [ 'R <$7 -> >' ],
+    IDENT_DOTS: [ 'R <$7 -> >' ],
+    '<EOF>': [ 'R <$1 -> >' ]
+  },
+  '1': { '<EOF>': [ 'Acc' ] },
+  '2': {
+    COMMENT: [ 'R <$0 -> Command>' ],
+    BSLASH_IDENT: [ 'R <$0 -> Command>' ],
+    NUMBER: [ 'R <$0 -> Command>' ],
+    IDENT_COLON: [ 'R <$0 -> Command>' ]
+  },
+  '3': {
+    COMMENT: [ 'R <$0 -> RoleSelector>' ],
+    BSLASH_IDENT: [ 'R <$0 -> RoleSelector>' ],
+    NUMBER: [ 'R <$0 -> RoleSelector>' ],
+    IDENT_COLON: [ 'R <$0 -> RoleSelector>' ]
+  },
+  '4': {
+    COMMENT: [ 'R <$0 -> Atoms>' ],
+    BSLASH_IDENT: [ 'R <$0 -> Atoms>' ],
+    NUMBER: [ 'R <$0 -> Atoms>' ],
+    IDENT_COLON: [ 'R <$0 -> Atoms>' ]
+  },
+  '5': {
+    COMMENT: [ 'R <$0 -> COMMENT>' ],
+    BSLASH_IDENT: [ 'R <$0 -> COMMENT>' ],
+    NUMBER: [ 'R <$0 -> COMMENT>' ],
+    IDENT_COLON: [ 'R <$0 -> COMMENT>' ]
+  },
+  '6': {
+    Command: [ '2' ],
+    RoleSelector: [ '3' ],
+    Atoms: [ '4' ],
+    COMMENT: [ 'S5' ],
+    '$0': [ '6' ],
+    '$1': [ '16' ],
+    BSLASH_IDENT: [ 'S8' ],
+    COMMA: [ 'R <$7 -> >' ],
+    STRING: [ 'R <$7 -> >' ],
+    Fraction: [ '9' ],
+    IDENT: [ 'R <$7 -> >' ],
+    NUMBER: [ 'S10' ],
+    IDENT_COLON: [ 'S11' ],
+    Atom: [ '12' ],
+    '$6': [ '13' ],
+    Duration: [ '14' ],
+    '$7': [ '15' ],
+    SEMI_COLON: [ 'R <$7 -> >' ],
+    UNDER_SCORE: [ 'R <$7 -> >' ],
+    OPEN_SQ: [ 'R <$7 -> >' ],
+    DOTS_IDENT: [ 'R <$7 -> >' ],
+    IDENT_DOTS: [ 'R <$7 -> >' ],
+    '<EOF>': [ 'R <$1 -> >' ]
+  },
+  '7': { '<EOF>': [ 'R <Snippet -> $1>' ] },
+  '8': {
+    COMMENT: [ 'R <$2 -> >' ],
+    BSLASH_IDENT: [ 'R <$2 -> >' ],
+    CommandParams: [ '17' ],
+    '$2': [ '18' ],
+    OPEN_PAREN: [ 'S19' ],
+    NUMBER: [ 'R <$2 -> >' ],
+    IDENT_COLON: [ 'R <$2 -> >' ]
+  },
+  '9': {
+    COMMA: [ 'R <Duration -> Fraction>' ],
+    STRING: [ 'R <Duration -> Fraction>' ],
+    IDENT: [ 'R <Duration -> Fraction>' ],
+    SEMI_COLON: [ 'R <Duration -> Fraction>' ],
+    UNDER_SCORE: [ 'R <Duration -> Fraction>' ],
+    OPEN_SQ: [ 'R <Duration -> Fraction>' ],
+    DOTS_IDENT: [ 'R <Duration -> Fraction>' ],
+    IDENT_DOTS: [ 'R <Duration -> Fraction>' ]
+  },
+  '10': {
+    CLOSE_PAREN: [ 'R <$5 -> >' ],
+    COMMA: [ 'R <$5 -> >' ],
+    EQUALS: [ 'R <$5 -> >' ],
+    STRING: [ 'R <$5 -> >' ],
+    IDENT: [ 'R <$5 -> >' ],
+    '"/"': [ 'S20' ],
+    '$5': [ '21' ],
+    SEMI_COLON: [ 'R <$5 -> >' ],
+    UNDER_SCORE: [ 'R <$5 -> >' ],
+    OPEN_SQ: [ 'R <$5 -> >' ],
+    DOTS_IDENT: [ 'R <$5 -> >' ],
+    IDENT_DOTS: [ 'R <$5 -> >' ]
+  },
+  '11': {
+    COMMENT: [ 'R <RoleSelector -> IDENT_COLON>' ],
+    BSLASH_IDENT: [ 'R <RoleSelector -> IDENT_COLON>' ],
+    NUMBER: [ 'R <RoleSelector -> IDENT_COLON>' ],
+    IDENT_COLON: [ 'R <RoleSelector -> IDENT_COLON>' ]
+  },
+  '12': {
+    COMMENT: [ 'R <$6 -> Atom>' ],
+    BSLASH_IDENT: [ 'R <$6 -> Atom>' ],
+    COMMA: [ 'R <$7 -> >' ],
+    STRING: [ 'R <$7 -> >' ],
+    Fraction: [ '9' ],
+    IDENT: [ 'R <$7 -> >' ],
+    NUMBER: [ 'S10', 'R <$6 -> Atom>' ],
+    IDENT_COLON: [ 'R <$6 -> Atom>' ],
+    Atom: [ '12' ],
+    '$6': [ '22' ],
+    Duration: [ '14' ],
+    '$7': [ '15' ],
+    SEMI_COLON: [ 'R <$7 -> >' ],
+    UNDER_SCORE: [ 'R <$7 -> >' ],
+    OPEN_SQ: [ 'R <$7 -> >' ],
+    DOTS_IDENT: [ 'R <$7 -> >' ],
+    IDENT_DOTS: [ 'R <$7 -> >' ]
+  },
+  '13': {
+    COMMENT: [ 'R <Atoms -> $6>' ],
+    BSLASH_IDENT: [ 'R <Atoms -> $6>' ],
+    NUMBER: [ 'R <Atoms -> $6>' ],
+    IDENT_COLON: [ 'R <Atoms -> $6>' ]
+  },
+  '14': {
+    COMMA: [ 'R <$7 -> Duration>' ],
+    STRING: [ 'R <$7 -> Duration>' ],
+    IDENT: [ 'R <$7 -> Duration>' ],
+    SEMI_COLON: [ 'R <$7 -> Duration>' ],
+    UNDER_SCORE: [ 'R <$7 -> Duration>' ],
+    OPEN_SQ: [ 'R <$7 -> Duration>' ],
+    DOTS_IDENT: [ 'R <$7 -> Duration>' ],
+    IDENT_DOTS: [ 'R <$7 -> Duration>' ]
+  },
+  '15': {
+    COMMA: [ 'S23' ],
+    STRING: [ 'S24' ],
+    IDENT: [ 'S25' ],
+    SpaceAtom: [ '26' ],
+    Literal: [ '27' ],
+    Group: [ '28' ],
+    '$8': [ '29' ],
+    SEMI_COLON: [ 'S30' ],
+    UNDER_SCORE: [ 'S31' ],
+    OPEN_SQ: [ 'S32' ],
+    DOTS_IDENT: [ 'S33' ],
+    IDENT_DOTS: [ 'S34' ]
+  },
+  '16': { '<EOF>': [ 'R <$1 -> $0 $1>' ] },
+  '17': {
+    COMMENT: [ 'R <$2 -> CommandParams>' ],
+    BSLASH_IDENT: [ 'R <$2 -> CommandParams>' ],
+    NUMBER: [ 'R <$2 -> CommandParams>' ],
+    IDENT_COLON: [ 'R <$2 -> CommandParams>' ]
+  },
+  '18': {
+    COMMENT: [ 'R <Command -> BSLASH_IDENT $2>' ],
+    BSLASH_IDENT: [ 'R <Command -> BSLASH_IDENT $2>' ],
+    NUMBER: [ 'R <Command -> BSLASH_IDENT $2>' ],
+    IDENT_COLON: [ 'R <Command -> BSLASH_IDENT $2>' ]
+  },
+  '19': {
+    ParamList: [ '35' ],
+    '$3': [ '36' ],
+    CLOSE_PAREN: [ 'R <$3 -> >' ],
+    Param: [ '37' ],
+    ParamKey: [ '38' ],
+    STRING: [ 'S39' ],
+    Fraction: [ '40' ],
+    IDENT: [ 'S41' ],
+    NUMBER: [ 'S10' ]
+  },
+  '20': { NUMBER: [ 'S42' ] },
+  '21': {
+    CLOSE_PAREN: [ 'R <Fraction -> NUMBER $5>' ],
+    COMMA: [ 'R <Fraction -> NUMBER $5>' ],
+    EQUALS: [ 'R <Fraction -> NUMBER $5>' ],
+    STRING: [ 'R <Fraction -> NUMBER $5>' ],
+    IDENT: [ 'R <Fraction -> NUMBER $5>' ],
+    SEMI_COLON: [ 'R <Fraction -> NUMBER $5>' ],
+    UNDER_SCORE: [ 'R <Fraction -> NUMBER $5>' ],
+    OPEN_SQ: [ 'R <Fraction -> NUMBER $5>' ],
+    DOTS_IDENT: [ 'R <Fraction -> NUMBER $5>' ],
+    IDENT_DOTS: [ 'R <Fraction -> NUMBER $5>' ]
+  },
+  '22': {
+    COMMENT: [ 'R <$6 -> Atom $6>' ],
+    BSLASH_IDENT: [ 'R <$6 -> Atom $6>' ],
+    NUMBER: [ 'R <$6 -> Atom $6>' ],
+    IDENT_COLON: [ 'R <$6 -> Atom $6>' ]
+  },
+  '23': {
+    COMMENT: [ 'R <SpaceAtom -> COMMA>' ],
+    BSLASH_IDENT: [ 'R <SpaceAtom -> COMMA>' ],
+    NUMBER: [ 'R <SpaceAtom -> COMMA>' ],
+    IDENT_COLON: [ 'R <SpaceAtom -> COMMA>' ]
+  },
+  '24': {
+    COMMENT: [ 'R <Literal -> STRING>' ],
+    BSLASH_IDENT: [ 'R <Literal -> STRING>' ],
+    NUMBER: [ 'R <Literal -> STRING>' ],
+    IDENT_COLON: [ 'R <Literal -> STRING>' ]
+  },
+  '25': {
+    COMMENT: [ 'R <Literal -> IDENT>' ],
+    BSLASH_IDENT: [ 'R <Literal -> IDENT>' ],
+    NUMBER: [ 'R <Literal -> IDENT>' ],
+    IDENT_COLON: [ 'R <Literal -> IDENT>' ]
+  },
+  '26': {
+    COMMENT: [ 'R <$8 -> SpaceAtom>' ],
+    BSLASH_IDENT: [ 'R <$8 -> SpaceAtom>' ],
+    NUMBER: [ 'R <$8 -> SpaceAtom>' ],
+    IDENT_COLON: [ 'R <$8 -> SpaceAtom>' ]
+  },
+  '27': {
+    COMMENT: [ 'R <$8 -> Literal>' ],
+    BSLASH_IDENT: [ 'R <$8 -> Literal>' ],
+    NUMBER: [ 'R <$8 -> Literal>' ],
+    IDENT_COLON: [ 'R <$8 -> Literal>' ]
+  },
+  '28': {
+    COMMENT: [ 'R <$8 -> Group>' ],
+    BSLASH_IDENT: [ 'R <$8 -> Group>' ],
+    NUMBER: [ 'R <$8 -> Group>' ],
+    IDENT_COLON: [ 'R <$8 -> Group>' ]
+  },
+  '29': {
+    COMMENT: [ 'R <Atom -> $7 $8>' ],
+    BSLASH_IDENT: [ 'R <Atom -> $7 $8>' ],
+    NUMBER: [ 'R <Atom -> $7 $8>' ],
+    IDENT_COLON: [ 'R <Atom -> $7 $8>' ]
+  },
+  '30': {
+    COMMENT: [ 'R <SpaceAtom -> SEMI_COLON>' ],
+    BSLASH_IDENT: [ 'R <SpaceAtom -> SEMI_COLON>' ],
+    NUMBER: [ 'R <SpaceAtom -> SEMI_COLON>' ],
+    IDENT_COLON: [ 'R <SpaceAtom -> SEMI_COLON>' ]
+  },
+  '31': {
+    COMMENT: [ 'R <SpaceAtom -> UNDER_SCORE>' ],
+    BSLASH_IDENT: [ 'R <SpaceAtom -> UNDER_SCORE>' ],
+    NUMBER: [ 'R <SpaceAtom -> UNDER_SCORE>' ],
+    IDENT_COLON: [ 'R <SpaceAtom -> UNDER_SCORE>' ]
+  },
+  '32': {
+    COMMA: [ 'R <$7 -> >' ],
+    STRING: [ 'R <$7 -> >' ],
+    Fraction: [ '9' ],
+    IDENT: [ 'R <$7 -> >' ],
+    NUMBER: [ 'S10' ],
+    Atom: [ '43' ],
+    Duration: [ '14' ],
+    '$7': [ '15' ],
+    SEMI_COLON: [ 'R <$7 -> >' ],
+    UNDER_SCORE: [ 'R <$7 -> >' ],
+    OPEN_SQ: [ 'R <$7 -> >' ],
+    '$9': [ '44' ],
+    CLOSE_SQ: [ 'R <$9 -> >' ],
+    DOTS_IDENT: [ 'R <$7 -> >' ],
+    IDENT_DOTS: [ 'R <$7 -> >' ]
+  },
+  '33': {
+    COMMENT: [ 'R <Literal -> DOTS_IDENT>' ],
+    BSLASH_IDENT: [ 'R <Literal -> DOTS_IDENT>' ],
+    NUMBER: [ 'R <Literal -> DOTS_IDENT>' ],
+    IDENT_COLON: [ 'R <Literal -> DOTS_IDENT>' ]
+  },
+  '34': {
+    COMMENT: [ 'R <Literal -> IDENT_DOTS>' ],
+    BSLASH_IDENT: [ 'R <Literal -> IDENT_DOTS>' ],
+    NUMBER: [ 'R <Literal -> IDENT_DOTS>' ],
+    IDENT_COLON: [ 'R <Literal -> IDENT_DOTS>' ]
+  },
+  '35': { CLOSE_PAREN: [ 'R <$3 -> ParamList>' ] },
+  '36': { CLOSE_PAREN: [ 'S45' ] },
+  '37': { CLOSE_PAREN: [ 'R <ParamList -> Param>' ], COMMA: [ 'S46' ] },
+  '38': {
+    CLOSE_PAREN: [ 'R <$4 -> >' ],
+    COMMA: [ 'R <$4 -> >' ],
+    EQUALS: [ 'S47' ],
+    '$4': [ '48' ]
+  },
+  '39': { EQUALS: [ 'R <ParamKey -> STRING>' ] },
+  '40': { EQUALS: [ 'R <ParamKey -> Fraction>' ] },
+  '41': { EQUALS: [ 'R <ParamKey -> IDENT>' ] },
+  '42': {
+    CLOSE_PAREN: [ 'R <$5 -> "/" NUMBER>' ],
+    COMMA: [ 'R <$5 -> "/" NUMBER>' ],
+    EQUALS: [ 'R <$5 -> "/" NUMBER>' ],
+    STRING: [ 'R <$5 -> "/" NUMBER>' ],
+    IDENT: [ 'R <$5 -> "/" NUMBER>' ],
+    SEMI_COLON: [ 'R <$5 -> "/" NUMBER>' ],
+    UNDER_SCORE: [ 'R <$5 -> "/" NUMBER>' ],
+    OPEN_SQ: [ 'R <$5 -> "/" NUMBER>' ],
+    DOTS_IDENT: [ 'R <$5 -> "/" NUMBER>' ],
+    IDENT_DOTS: [ 'R <$5 -> "/" NUMBER>' ]
+  },
+  '43': {
+    COMMA: [ 'R <$7 -> >' ],
+    STRING: [ 'R <$7 -> >' ],
+    Fraction: [ '9' ],
+    IDENT: [ 'R <$7 -> >' ],
+    NUMBER: [ 'S10' ],
+    Atom: [ '43' ],
+    Duration: [ '14' ],
+    '$7': [ '15' ],
+    SEMI_COLON: [ 'R <$7 -> >' ],
+    UNDER_SCORE: [ 'R <$7 -> >' ],
+    OPEN_SQ: [ 'R <$7 -> >' ],
+    '$9': [ '49' ],
+    CLOSE_SQ: [ 'R <$9 -> >' ],
+    DOTS_IDENT: [ 'R <$7 -> >' ],
+    IDENT_DOTS: [ 'R <$7 -> >' ]
+  },
+  '44': { CLOSE_SQ: [ 'S50' ] },
+  '45': {
+    COMMENT: [ 'R <CommandParams -> OPEN_PAREN $3 CLOSE_PAREN>' ],
+    BSLASH_IDENT: [ 'R <CommandParams -> OPEN_PAREN $3 CLOSE_PAREN>' ],
+    NUMBER: [ 'R <CommandParams -> OPEN_PAREN $3 CLOSE_PAREN>' ],
+    IDENT_COLON: [ 'R <CommandParams -> OPEN_PAREN $3 CLOSE_PAREN>' ]
+  },
+  '46': {
+    ParamList: [ '51' ],
+    Param: [ '37' ],
+    ParamKey: [ '38' ],
+    STRING: [ 'S39' ],
+    Fraction: [ '40' ],
+    IDENT: [ 'S41' ],
+    NUMBER: [ 'S10' ]
+  },
+  '47': {
+    ParamValue: [ '52' ],
+    STRING: [ 'S53' ],
+    Fraction: [ '54' ],
+    IDENT: [ 'S55' ],
+    NUMBER: [ 'S10' ]
+  },
+  '48': {
+    CLOSE_PAREN: [ 'R <Param -> ParamKey $4>' ],
+    COMMA: [ 'R <Param -> ParamKey $4>' ]
+  },
+  '49': { CLOSE_SQ: [ 'R <$9 -> Atom $9>' ] },
+  '50': {
+    COMMENT: [ 'R <Group -> OPEN_SQ $9 CLOSE_SQ>' ],
+    BSLASH_IDENT: [ 'R <Group -> OPEN_SQ $9 CLOSE_SQ>' ],
+    NUMBER: [ 'R <Group -> OPEN_SQ $9 CLOSE_SQ>' ],
+    IDENT_COLON: [ 'R <Group -> OPEN_SQ $9 CLOSE_SQ>' ]
+  },
+  '51': { CLOSE_PAREN: [ 'R <ParamList -> Param COMMA ParamList>' ] },
+  '52': {
+    CLOSE_PAREN: [ 'R <$4 -> EQUALS ParamValue>' ],
+    COMMA: [ 'R <$4 -> EQUALS ParamValue>' ]
+  },
+  '53': {
+    CLOSE_PAREN: [ 'R <ParamValue -> STRING>' ],
+    COMMA: [ 'R <ParamValue -> STRING>' ]
+  },
+  '54': {
+    CLOSE_PAREN: [ 'R <ParamValue -> Fraction>' ],
+    COMMA: [ 'R <ParamValue -> Fraction>' ]
+  },
+  '55': {
+    CLOSE_PAREN: [ 'R <ParamValue -> IDENT>' ],
+    COMMA: [ 'R <ParamValue -> IDENT>' ]
+  }
+}

@@ -1,5 +1,5 @@
 const util = require("util");
-import { Grammar } from "../grammar";
+import * as TSU from "@panyam/tsutils";
 import { EBNFParser } from "../ebnf";
 import { PTNode } from "../parser";
 import { Token } from "../tokenizer";
@@ -23,25 +23,136 @@ function newParser(input: string, ptabType = "slr", debug = false): Parser {
   return new Parser(g, ptable, ig);
 }
 
+function testParsing(ptabType: string, grammar: string, tokens: Token[], debug = false): TSU.Nullable<PTNode> {
+  const parser = newParser(grammar, ptabType, debug);
+  parser.setTokenizer(new MockTokenizer(...tokens));
+  const result = parser.parse();
+  if (debug) {
+    console.log(util.inspect(result?.debugValue || null, { showHidden: false, depth: null }));
+  }
+  return result;
+}
+
 describe("LRParsing Tests", () => {
-  test("Test SLR Grammar", () => {
-    const parser = newParser(
+  test("Test Single ID", () => {
+    const result = testParsing(
+      "slr",
       `
       E -> E plus T | T ;
       T -> T star F | F ;
       F -> open E close | id ;
       `,
-      "slr",
+      [tok("id", "A")],
     );
-
-    const tokenizer = new MockTokenizer(tok("id", "A"));
-    parser.setTokenizer(tokenizer);
-    // new MockTokenizer(tok("id", "A"), tok("PLUS", "+"), tok("id", "B"), tok("STAR", "*"), tok("id", "C")),
-
-    const result = parser.parse();
     expect(result?.debugValue).toEqual(["E", [["T", [["F", [["id", "A"]]]]]]]);
-    // console.log(util.inspect(result?.debugValue || null, { showHidden: false, depth: null }));
   });
+
+  test("Test A + B * C", () => {
+    const result = testParsing(
+      "slr",
+      `
+      E -> E plus T | T ;
+      T -> T star F | F ;
+      F -> open E close | id ;
+      `,
+      [tok("id", "A"), tok("plus", "+"), tok("id", "B"), tok("star", "*"), tok("id", "C")],
+    );
+    expect(result?.debugValue).toEqual([
+      "E",
+      [
+        ["E", [["T", [["F", [["id", "A"]]]]]]],
+        ["plus", "+"],
+        [
+          "T",
+          [
+            ["T", [["F", [["id", "B"]]]]],
+            ["star", "*"],
+            ["F", [["id", "C"]]],
+          ],
+        ],
+      ],
+    ]);
+  });
+
+  test("Test A + B * C + (x * y + z)", () => {
+    const result = testParsing(
+      "slr",
+      `
+      E -> E plus T | T ;
+      T -> T star F | F ;
+      F -> open E close | id ;
+      `,
+      [
+        tok("id", "A"),
+        tok("plus", "+"),
+        tok("id", "B"),
+        tok("star", "*"),
+        tok("id", "C"),
+        tok("plus", "+"),
+        tok("open", "("),
+        tok("id", "x"),
+        tok("star", "*"),
+        tok("id", "y"),
+        tok("plus", "+"),
+        tok("id", "z"),
+        tok("close", ")"),
+      ],
+    );
+    expect(result?.debugValue).toEqual([
+      "E",
+      [
+        [
+          "E",
+          [
+            ["E", [["T", [["F", [["id", "A"]]]]]]],
+            ["plus", "+"],
+            [
+              "T",
+              [
+                ["T", [["F", [["id", "B"]]]]],
+                ["star", "*"],
+                ["F", [["id", "C"]]],
+              ],
+            ],
+          ],
+        ],
+        ["plus", "+"],
+        [
+          "T",
+          [
+            [
+              "F",
+              [
+                ["open", "("],
+                [
+                  "E",
+                  [
+                    [
+                      "E",
+                      [
+                        [
+                          "T",
+                          [
+                            ["T", [["F", [["id", "x"]]]]],
+                            ["star", "*"],
+                            ["F", [["id", "y"]]],
+                          ],
+                        ],
+                      ],
+                    ],
+                    ["plus", "+"],
+                    ["T", [["F", [["id", "z"]]]]],
+                  ],
+                ],
+                ["close", ")"],
+              ],
+            ],
+          ],
+        ],
+      ],
+    ]);
+  });
+
   test("Test 1", () => {
     const parser = newParser(
       `
@@ -54,7 +165,6 @@ describe("LRParsing Tests", () => {
         num -> DIGIT | num DIGIT ;
       `,
       "slr",
-      true,
     );
   });
 });

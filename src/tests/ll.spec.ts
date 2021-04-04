@@ -69,7 +69,7 @@ describe("Parser Tests", () => {
     );
     const parser = new Parser(g).setTokenizer(tokenizer);
     const result = parser.parse();
-    console.log(util.inspect(result?.debugValue || null, { showHidden: false, depth: null }));
+    // console.log(util.inspect(result?.debugValue || null, { showHidden: false, depth: null }));
     expect(result?.debugValue).toEqual([
       "E",
       [

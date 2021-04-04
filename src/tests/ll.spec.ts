@@ -69,26 +69,23 @@ describe("Parser Tests", () => {
     );
     const parser = new Parser(g).setTokenizer(tokenizer);
     const result = parser.parse();
-    // console.log(util.inspect(result?.debugValue || null, { showHidden: false, depth: null }));
     expect(result?.debugValue).toEqual([
-      "E",
-      [
-        ["T", [["F", [["id", "A"]]], ["T1"]]],
-        [
-          "E1",
-          [
-            ["PLUS", "+"],
-            [
-              "T",
-              [
-                ["F", [["id", "B"]]],
-                ["T1", [["STAR", "*"], ["F", [["id", "C"]]], ["T1"]]],
-              ],
-            ],
-            ["E1"],
-          ],
-        ],
-      ],
+      "E - null",
+      "  T - null",
+      "    F - null",
+      "      id - A",
+      "    T1 - null",
+      "  E1 - null",
+      "    PLUS - +",
+      "    T - null",
+      "      F - null",
+      "        id - B",
+      "      T1 - null",
+      "        STAR - *",
+      "        F - null",
+      "          id - C",
+      "        T1 - null",
+      "    E1 - null",
     ]);
   });
 });

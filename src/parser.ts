@@ -39,15 +39,11 @@ export class PTNode {
     return this;
   }
 
-  get debugValue(): any {
+  get debugValue(): string[] {
     const value = this.value;
-    const out = [this.sym.label] as any[];
-    if (value != null) {
-      out.push(value.debugValue || value.debugString || value);
-    }
-    if (this.children.length > 0) {
-      out.push(this.children.map((node) => node.debugValue));
-    }
+    const out: string[] = [];
+    out.push(this.sym.label + " - " + this.value);
+    this.children.forEach((node) => node.debugValue.forEach((l) => out.push("  " + l)));
     return out;
   }
 }

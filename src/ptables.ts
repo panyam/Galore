@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Grammar } from "./grammar";
-import { LRAction, ParseTable, LR0Item, LR0ItemGraph, LR1Item, LR1ItemGraph } from "./lr";
+import { handleNullTermals, LRAction, ParseTable, LR0Item, LR0ItemGraph, LR1Item, LR1ItemGraph } from "./lr";
 
 export function makeSLRParseTable(grammar: Grammar): [ParseTable, LR0ItemGraph] {
   const ig = new LR0ItemGraph(grammar).refresh();
@@ -19,6 +19,9 @@ export function makeSLRParseTable(grammar: Grammar): [ParseTable, LR0ItemGraph] 
             parseTable.addAction(itemSet, sym, LRAction.Shift(nextSet));
           }
         }
+      } else if (handleNullTermals && rule.rhs.length == 0) {
+        // empty production so this derivation only can apply
+        parseTable.addAction(itemSet, grammar.Null, LRAction.Reduce(rule));
       } else {
         // if sym is in follows(nt) then add the rule
         // Reduce nt -> rule for all sym in follows(nt)

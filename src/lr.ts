@@ -4,8 +4,10 @@ import { Tokenizer, PTNode, Parser as ParserBase } from "./parser";
 import { UnexpectedTokenError } from "./errors";
 import { IDSet } from "./sets";
 
+export const handleNullTermals = false;
 type Nullable<T> = TSU.Nullable<T>;
 type NumMap<T> = TSU.NumMap<T>;
+type StringMap<T> = TSU.StringMap<T>;
 
 export enum LRActionType {
   ACCEPT,
@@ -188,10 +190,23 @@ export abstract class LRItemGraph {
     const out = this.itemSets;
     for (let i = 0; i < out.size; i++) {
       const currSet = out.get(i);
+      // This will also include the null symbol since Grammar
+      // adds Null and Eof symbols automatically
       for (const sym of this.grammar.allSymbols) {
-        const gotoSet = this.goto(currSet, sym);
-        if (gotoSet.size > 0) {
-          this.setGoto(currSet, sym, gotoSet);
+        if (sym != this.grammar.Null) {
+          const gotoSet = this.goto(currSet, sym);
+          if (gotoSet.size > 0) {
+            this.setGoto(currSet, sym, gotoSet);
+          }
+        }
+      }
+
+      if (handleNullTermals) {
+        // Do null now
+        const gotoSet = this.goto(currSet, this.grammar.Null);
+        if (gotoSet.size > 0 && gotoSet != currSet) {
+          // Transition back to same set on a Null terminal can be ignored
+          this.setGoto(currSet, this.grammar.Null, gotoSet);
         }
       }
     }
@@ -207,7 +222,10 @@ export abstract class LRItemGraph {
       const item = this.items.get(itemId);
       // see if item.position points to "sym" in its rule
       const rule = item.rule;
-      if (item.position < rule.rhs.length) {
+      if (sym == this.grammar.Null && handleNullTermals && rule.rhs.length == 0) {
+        // null production and a transition on a null
+        out.add(this.items.ensure(item).id);
+      } else if (sym != null && item.position < rule.rhs.length) {
         if (rule.rhs.syms[item.position] == sym) {
           // advance the item and add it
           out.add(this.items.ensure(item.advance()).id);
@@ -285,12 +303,12 @@ export abstract class LRItemGraph {
 }
 
 /**
- * A parsing table generator for SLR parsers.
+ * A parsing table for LR parsers.
  */
 export class ParseTable {
   readonly grammar: Grammar;
   // Records which actions have conflicts
-  conflictActions: NumMap<NumMap<boolean>> = {};
+  conflictActions: NumMap<StringMap<boolean>> = {};
 
   /**
    * Maps symbol (by id) to the action;
@@ -324,12 +342,18 @@ export class ParseTable {
 
   addAction(state: LRItemSet, next: Sym, action: LRAction): void {
     const actions = this.getActions(state, next, true);
+    if (state.id == 1 && next.label == "b" && action.tag == LRActionType.REDUCE) {
+      // TSU.assert(false, "Shouldnt be here");
+    }
+    if (state.id == 4 && next.label == "x" && action.tag == LRActionType.REDUCE) {
+      // TSU.assert(false, "Shouldnt be here");
+    }
     if (actions.findIndex((ac) => ac.equals(action)) < 0) {
       actions.push(action);
     }
     if (actions.length > 1) {
       this.conflictActions[state.id] = this.conflictActions[state.id] || {};
-      this.conflictActions[state.id][next.id] = true;
+      this.conflictActions[state.id][next.label] = true;
     }
   }
 

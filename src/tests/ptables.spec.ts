@@ -1,5 +1,6 @@
 import { EBNFParser } from "../ebnf";
-import { testParseTable } from "./utils";
+import { testParseTable, verifyLRParseTable } from "./utils";
+import { makeSLRParseTable } from "../ptables";
 
 describe("LR ParseTable", () => {
   test("Dragon Book 4.39 LR", () => {
@@ -47,10 +48,20 @@ describe("Jison tests", () => {
   test("basic - LR", () => {
     testParseTable("./testcases/jison_basic.g", "./testcases/jison_basic.ptables", "lr1");
   });
-  test("dism - SLR", () => {
-    testParseTable("./testcases/jison_dism.g", "./testcases/jison_dism.ptables", "slr");
-  });
-  test("dism - LR", () => {
-    testParseTable("./testcases/jison_dism.g", "./testcases/jison_dism.ptables", "lr1");
+  // test("dism - SLR", () => { testParseTable("./testcases/jison_dism.g", "./testcases/jison_dism.ptables", "slr", true); });
+  // test("dism - LR", () => { testParseTable("./testcases/jison_dism.g", "./testcases/jison_dism.ptables", "lr1"); });
+});
+
+describe("LRItemSet", () => {
+  test("Test with Null Productions", () => {
+    /*
+    verifyLRParseTable(
+      "Null Prods",
+      new EBNFParser(`S -> A | ;`).grammar.augmentStartSymbol(),
+      makeSLRParseTable,
+      {},
+      true,
+    );
+    */
   });
 });

@@ -114,6 +114,16 @@ export function testParseTable(grammarFile: string, ptablesFile: string, ptabTyp
   const [ptable, ig] = ptMaker(g);
   const ptabValue = ptable.debugValue as StringMap<StringMap<string[]>>;
   const expectedPTables = JSON5.parse(fs.readFileSync(ptablesFile, "utf8"));
-  if (debug || !(ptabType in expectedPTables)) console.log(`${grammarFile} ${ptabType} Actions: `, ptabValue);
+  if (debug || !(ptabType in expectedPTables)) {
+    console.log(
+      `========================== Grammar: ${grammarFile} ${ptabType}\n`,
+      "==========================Item Graph: \n",
+      ig.debugValue,
+      "==========================Actions: \n",
+      ptabValue,
+      "==========================Conflicts: \n",
+      ptable.conflictActions,
+    );
+  }
   expect(expectedPTables[ptabType]).toEqual(ptabValue);
 }

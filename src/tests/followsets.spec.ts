@@ -16,33 +16,26 @@ describe("FollowSet Tests", () => {
 
     const ns = g.nullables;
     const firstSets = g.firstSets;
-    const fs = g.followSets;
-    expectFSEntries(g, fs, {
-      A: [g.Eof.label],
-      B: ["a"],
-    });
+    expect(g.followSets.debugValue).toEqual({ A: "<<EOF>>", B: "<a>" });
   });
 
   test("Tests 3", () => {
     const g = new EBNFParser(Samples.expr2).grammar;
 
     const ns = g.nullables;
-    const firstSets = g.firstSets;
-    expectFSEntries(g, firstSets, {
-      E: ["OPEN", "id"],
-      T: ["OPEN", "id"],
-      F: ["OPEN", "id"],
-      E1: ["PLUS", ""],
-      T1: ["STAR", ""],
+    expect(g.firstSets.debugValue).toEqual({
+      E: "<OPEN, id>",
+      T: "<OPEN, id>",
+      E1: "<, PLUS>",
+      F: "<OPEN, id>",
+      T1: "<, STAR>",
     });
-
-    const fs = g.followSets;
-    expectFSEntries(g, fs, {
-      E: [g.Eof.label, "CLOSE"],
-      E1: [g.Eof.label, "CLOSE"],
-      T: [g.Eof.label, "PLUS", "CLOSE"],
-      T1: [g.Eof.label, "PLUS", "CLOSE"],
-      F: [g.Eof.label, "PLUS", "STAR", "CLOSE"],
+    expect(g.followSets.debugValue).toEqual({
+      E: "<<EOF>, CLOSE>",
+      T: "<<EOF>, CLOSE, PLUS>",
+      E1: "<<EOF>, CLOSE>",
+      F: "<<EOF>, CLOSE, PLUS, STAR>",
+      T1: "<<EOF>, CLOSE, PLUS>",
     });
   });
 
@@ -54,26 +47,14 @@ describe("FollowSet Tests", () => {
       Y -> STAR T | ;
     `).grammar;
 
-    const ns = g.nullables;
-    const firstSets = g.firstSets;
-    expectFSEntries(g, firstSets, {
-      // int: ["int"],
-      // PLUS: ["PLUS"],
-      // STAR: ["STAR"],
-      // OPEN: ["OPEN"],
-      // CLOSE: ["CLOSE"],
-      Y: ["STAR", ""],
-      X: ["PLUS", ""],
-      T: ["int", "OPEN"],
-      E: ["int", "OPEN"],
+    expect(g.firstSets.debugValue).toEqual({
+      E: "<OPEN, int>", T: "<OPEN, int>", X: "<, PLUS>", Y: "<, STAR>"
     });
-
-    const fs = g.followSets;
-    expectFSEntries(g, fs, {
-      Y: [g.Eof.label, "CLOSE", "PLUS"],
-      X: [g.Eof.label, "CLOSE"],
-      T: [g.Eof.label, "PLUS", "CLOSE"],
-      E: [g.Eof.label, "CLOSE"],
+    expect(g.followSets.debugValue).toEqual({
+      E: "<<EOF>, CLOSE>",
+      T: "<<EOF>, CLOSE, PLUS>",
+      X: "<<EOF>, CLOSE>",
+      Y: "<<EOF>, CLOSE, PLUS>",
     });
   });
 
@@ -82,22 +63,18 @@ describe("FollowSet Tests", () => {
 
     const ns = g.nullables;
     expectNullables(ns, ["V", "W"]);
-    const firstSets = g.firstSets;
-    expectFSEntries(g, firstSets, {
-      S: ["a", "e", "d", "c", "f"],
-      T: ["a", "e"],
-      U: ["f"],
-      V: ["c", ""],
-      W: ["d", ""],
-    });
+    expect(g.firstSets.debugValue).toEqual({ S: '<a, c, d, e, f>', T: '<a, e>', U: '<f>', V: '<, c>', W: '<, d>' });
+    expect(g.followSets.debugValue).toEqual({ S: '<<EOF>>', T: '<<EOF>, f>', U: '<<EOF>, a, b, c, d, e>', V: '<<EOF>, d, f>', W: '<<EOF>, c, d, f>' });
+  });
 
-    const followSets = g.followSets;
-    expectFSEntries(g, followSets, {
-      S: [g.Eof.label],
-      T: ["f", g.Eof.label],
-      U: [g.Eof.label, "a", "b", "c", "d", "e"],
-      V: [g.Eof.label, "d", "f"],
-      W: [g.Eof.label, "d", "c", "f"],
-    });
+  test("Tests 6", () => {
+    const g = new EBNFParser(`
+      S -> S A | ;
+      A -> X | b X | c X ;
+      X -> X x | ;
+    `).grammar;
+
+    expect(g.firstSets.debugValue).toEqual({ S: '<, b, c, x>', A: '<, b, c, x>', X: '<, x>' });
+    expect(g.followSets.debugValue).toEqual({ S: '<<EOF>, b, c, x>', A: '<<EOF>, b, c, x>', X: '<<EOF>, b, c, x>' });
   });
 });

@@ -12,7 +12,7 @@ function tok(tag: any, value: any): Token {
 }
 
 function newParser(input: string, ptabType = "slr", debug = false): Parser {
-  const g = new EBNFParser(input).grammar.augmentStartSymbol();
+  const g = new EBNFParser(input).grammar.augmentStartSymbol("Start");
   const ptMaker = ptabType == "lr1" ? makeLRParseTable : makeSLRParseTable;
   const [ptable, ig] = ptMaker(g);
   if (debug) {
@@ -146,6 +146,26 @@ describe("LRParsing Tests", () => {
         num -> DIGIT | num DIGIT ;
       `,
       "slr",
+    );
+  });
+});
+
+describe("Non Amgiguous Grammar without Conflicts", () => {
+  test("Test1", () => {
+    const parser = newParser(
+      `
+        S -> S A ;
+        S -> ;
+
+        A -> X ;
+        A -> b X ;
+        A -> c X ;
+
+        X -> X x ;
+        X -> ;
+        `,
+      "slr",
+      true,
     );
   });
 });

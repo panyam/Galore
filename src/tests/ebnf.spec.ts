@@ -26,7 +26,7 @@ describe("EBNF Tests", () => {
     // console.log("G.nonTerminals: ", g.nonTerminals);
 
     expect(g.nonTerminals.length).toBe(1);
-    expect(g.terminals.length).toBe(3);
+    expect(g.terminals.length).toBe(5);
   });
 
   test("Test1", () => {
@@ -39,7 +39,7 @@ describe("EBNF Tests", () => {
     `).grammar;
 
     expectListsEqual(symLabels(g.nonTerminals), ["S", "A", "B", "C", "D"]);
-    expectListsEqual(symLabels(g.terminals), ["0", "1", '"d"']);
+    expectListsEqual(symLabels(g.terminals), ["0", "1", '"d"', "", "<EOF>"]);
     expectRules(g, "S", g.seq("A", "B"), "C");
     expectRules(g, "A", g.seq("0", "B"), "C");
     expectRules(g, "B", "1", g.seq("A", "0"));
@@ -53,7 +53,7 @@ describe("EBNF Tests", () => {
     `,
     );
     expectListsEqual(symLabels(g.nonTerminals), ["Y"]);
-    expectListsEqual(symLabels(g.terminals), ["1", "2", "3", "X", "Z", "A", "B", "C", "D"]);
+    expectListsEqual(symLabels(g.terminals), ["1", "2", "3", "X", "Z", "A", "B", "C", "D", "", "<EOF>"]);
     expectRules(
       g,
       "Y",
@@ -79,6 +79,8 @@ describe("EBNF Tests", () => {
     expectListsEqual(symLabels(g.nonTerminals), ["Expr", "Term", "Factor", "X"]);
     expectListsEqual(symLabels(g.terminals), [
       "1",
+      "",
+      "<EOF>",
       "2",
       "3",
       '"+"',
@@ -107,7 +109,7 @@ describe("EBNF Tests", () => {
     `).grammar;
 
     expectListsEqual(symLabels(g.nonTerminals), ["X", "Y"]);
-    expectListsEqual(symLabels(g.terminals), ["A", "B"]);
+    expectListsEqual(symLabels(g.terminals), ["", "<EOF>", "A", "B"]);
     expectRules(g, "X", "A", "B", new Str());
   });
 });

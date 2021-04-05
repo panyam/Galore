@@ -38,7 +38,7 @@ describe("Grammar Tests", () => {
       C -> A C | C;
     `).grammar;
 
-    expect(g.terminals.length).toBe(2);
+    expect(g.terminals.length).toBe(4);
     expect(() => g.newTerm("A")).toThrowError();
     expect(g.getSym("B")?.label).toBe("B");
     const ns = g.nullables.nonterms.map((n) => n.label);

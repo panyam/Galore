@@ -168,8 +168,13 @@ export class Grammar {
   protected _rulesForNT: Nullable<StringMap<Rule[]>> = null;
   protected _followSets: Nullable<FollowSets> = null;
 
-  readonly Eof = new Sym(this, "<EOF>", true, -1);
+  static readonly AUG_SYM_ID = -2;
+  // static readonly NULL_SYM_ID = -3;
+  // static readonly EOF_SYM_ID = -1;
+  readonly Null: Sym; // = new Sym(this, "", true, Grammar.NULL_SYM_ID);
+  readonly Eof: Sym; // = new Sym(this, "<EOF>", true, Grammar.EOF_SYM_ID);
   private _AugStartRule: Rule;
+  private _hasNull = false;
 
   /**
    * A way of creating Grammars with a "single expresssion".
@@ -178,6 +183,12 @@ export class Grammar {
     const g = new Grammar();
     callback(g);
     return g;
+  }
+
+  constructor(config?: any) {
+    config = config || {};
+    this.Null = this.newTerm("");
+    this.Eof = this.newTerm("<EOF>");
   }
 
   rulesForNT(nt: Sym): Rule[] {
@@ -220,7 +231,7 @@ export class Grammar {
   augmentStartSymbol(label = "$"): this {
     TSU.assert(this.getSym(label) == null);
     if (this.startSymbol) {
-      const augSym = new Sym(this, label, false, -2);
+      const augSym = new Sym(this, label, false, Grammar.AUG_SYM_ID);
       this._AugStartRule = new Rule(augSym, new Str(this.startSymbol));
       this.addRule(this._AugStartRule);
     }
@@ -327,6 +338,7 @@ export class Grammar {
       throw new Error("Duplicate rule");
     }
     rule.id = this.allRules.length;
+    if (rule.rhs.length == 0) this._hasNull = true;
     this.allRules.push(rule);
     this.rulesForNT(rule.nt).push(rule);
     this.modified = true;
@@ -379,8 +391,9 @@ export class Grammar {
    * and non terminal labels.
    */
   getSymById(id: number): Nullable<Sym> {
-    if (id == -1) return this.Eof;
-    else if (id == -2) return this._AugStartRule?.nt || null;
+    if (id == Grammar.AUG_SYM_ID) return this._AugStartRule?.nt || null;
+    // else if (id == this.Eof.id) return this.Eof;
+    // else if (id == this.Null.id) return this.Null;
     return this.symbolSet.get(id);
   }
 

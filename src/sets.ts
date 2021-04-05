@@ -279,7 +279,7 @@ class SymSymbolSets {
     if (entries.hasNull) visitor(null);
   }
 
-  get debugString(): any {
+  get debugValue(): any {
     const out = {} as any;
     for (const x in this.entries) out[this.grammar.getSymById(x as any)!.label] = this.entries[x].debugString;
     return out;

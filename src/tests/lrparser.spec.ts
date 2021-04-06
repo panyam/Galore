@@ -1,26 +1,12 @@
 const util = require("util");
 import * as TSU from "@panyam/tsutils";
-import { EBNFParser } from "../ebnf";
 import { PTNode } from "../parser";
 import { Token } from "../tokenizer";
 import { MockTokenizer } from "./mocks";
-import { Parser, LRItemGraph, LR0ItemGraph, LR1ItemGraph } from "../lr";
-import { makeSLRParseTable, makeLRParseTable } from "../ptables";
+import { newParser } from "./utils";
 
 function tok(tag: any, value: any): Token {
   return new Token(tag, { value: value });
-}
-
-function newParser(input: string, ptabType = "slr", debug = false): Parser {
-  const g = new EBNFParser(input).grammar.augmentStartSymbol("Start");
-  const ptMaker = ptabType == "lr1" ? makeLRParseTable : makeSLRParseTable;
-  const [ptable, ig] = ptMaker(g);
-  if (debug) {
-    console.log("===============================\nItemGraph: \n", ig.debugValue);
-    console.log("===============================\nParseTable: \n", ptable.debugValue);
-    console.log("===============================\nConflict States: \n", ptable.conflictActions);
-  }
-  return new Parser(g, ptable, ig);
 }
 
 function testParsing(ptabType: string, grammar: string, tokens: Token[], debug = false): TSU.Nullable<PTNode> {
@@ -150,22 +136,3 @@ describe("LRParsing Tests", () => {
   });
 });
 
-describe("Non Amgiguous Grammar without Conflicts", () => {
-  test("Test1", () => {
-    const parser = newParser(
-      `
-        S -> S A ;
-        S -> ;
-
-        A -> X ;
-        A -> b X ;
-        A -> c X ;
-
-        X -> X x ;
-        X -> ;
-        `,
-      "slr",
-      true,
-    );
-  });
-});

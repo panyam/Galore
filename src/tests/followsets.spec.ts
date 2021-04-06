@@ -48,7 +48,10 @@ describe("FollowSet Tests", () => {
     `).grammar;
 
     expect(g.firstSets.debugValue).toEqual({
-      E: "<OPEN, int>", T: "<OPEN, int>", X: "<, PLUS>", Y: "<, STAR>"
+      E: "<OPEN, int>",
+      T: "<OPEN, int>",
+      X: "<, PLUS>",
+      Y: "<, STAR>",
     });
     expect(g.followSets.debugValue).toEqual({
       E: "<<EOF>, CLOSE>",
@@ -63,8 +66,14 @@ describe("FollowSet Tests", () => {
 
     const ns = g.nullables;
     expectNullables(ns, ["V", "W"]);
-    expect(g.firstSets.debugValue).toEqual({ S: '<a, c, d, e, f>', T: '<a, e>', U: '<f>', V: '<, c>', W: '<, d>' });
-    expect(g.followSets.debugValue).toEqual({ S: '<<EOF>>', T: '<<EOF>, f>', U: '<<EOF>, a, b, c, d, e>', V: '<<EOF>, d, f>', W: '<<EOF>, c, d, f>' });
+    expect(g.firstSets.debugValue).toEqual({ S: "<a, c, d, e, f>", T: "<a, e>", U: "<f>", V: "<, c>", W: "<, d>" });
+    expect(g.followSets.debugValue).toEqual({
+      S: "<<EOF>>",
+      T: "<<EOF>, f>",
+      U: "<<EOF>, a, b, c, d, e>",
+      V: "<<EOF>, d, f>",
+      W: "<<EOF>, c, d, f>",
+    });
   });
 
   test("Tests 6", () => {
@@ -74,7 +83,7 @@ describe("FollowSet Tests", () => {
       X -> X x | ;
     `).grammar;
 
-    expect(g.firstSets.debugValue).toEqual({ S: '<, b, c, x>', A: '<, b, c, x>', X: '<, x>' });
-    expect(g.followSets.debugValue).toEqual({ S: '<<EOF>, b, c, x>', A: '<<EOF>, b, c, x>', X: '<<EOF>, b, c, x>' });
+    expect(g.firstSets.debugValue).toEqual({ S: "<, b, c, x>", A: "<, b, c, x>", X: "<, x>" });
+    expect(g.followSets.debugValue).toEqual({ S: "<<EOF>, b, c, x>", A: "<<EOF>, b, c, x>", X: "<<EOF>, b, c, x>" });
   });
 });

@@ -4,7 +4,6 @@ import { Tokenizer, PTNode, Parser as ParserBase } from "./parser";
 import { UnexpectedTokenError } from "./errors";
 import { IDSet } from "./sets";
 
-export const handleNullTermals = false;
 type Nullable<T> = TSU.Nullable<T>;
 type NumMap<T> = TSU.NumMap<T>;
 type StringMap<T> = TSU.StringMap<T>;
@@ -200,15 +199,6 @@ export abstract class LRItemGraph {
           }
         }
       }
-
-      if (handleNullTermals) {
-        // Do null now
-        const gotoSet = this.goto(currSet, this.grammar.Null);
-        if (gotoSet.size > 0 && gotoSet != currSet) {
-          // Transition back to same set on a Null terminal can be ignored
-          this.setGoto(currSet, this.grammar.Null, gotoSet);
-        }
-      }
     }
   }
 
@@ -222,10 +212,7 @@ export abstract class LRItemGraph {
       const item = this.items.get(itemId);
       // see if item.position points to "sym" in its rule
       const rule = item.rule;
-      if (sym == this.grammar.Null && handleNullTermals && rule.rhs.length == 0) {
-        // null production and a transition on a null
-        out.add(this.items.ensure(item).id);
-      } else if (sym != null && item.position < rule.rhs.length) {
+      if (item.position < rule.rhs.length) {
         if (rule.rhs.syms[item.position] == sym) {
           // advance the item and add it
           out.add(this.items.ensure(item.advance()).id);
@@ -295,6 +282,7 @@ export abstract class LRItemGraph {
       const g = this.gotoSets[iset.id];
       for (const symid in g) {
         const sym = this.grammar.getSymById(symid as any)!;
+        out[iset.id]["next"] = out[iset.id]["next"] || {};
         out[iset.id]["next"][sym.label] = g[symid].id;
       }
     });

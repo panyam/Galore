@@ -1,9 +1,14 @@
+const util = require("util");
+import fs from "fs";
+const JSON5 = require("json5");
 import * as TSU from "@panyam/tsutils";
+import { EBNFParser } from "../ebnf";
 import { Str, Grammar, Rule } from "../grammar";
 import { FirstSets, NullableSet, FollowSets } from "../sets";
 import { ParseTable as LLParseTable } from "../ll";
 import { LRAction, ParseTable, LRItemGraph } from "../lr";
 import { makeSLRParseTable, makeLRParseTable } from "../ptables";
+import { Parser, LR0ItemGraph, LR1ItemGraph } from "../lr";
 
 type StringMap<T> = TSU.StringMap<T>;
 
@@ -99,9 +104,38 @@ export function verifyLRParseTable(
   return true;
 }
 
-import fs from "fs";
-import { EBNFParser } from "../ebnf";
-const JSON5 = require("json5");
+/**
+ * Helper to create a grammar, and its parser.
+ */
+export function newParser(input: string, ptabType = "slr", debug = false): Parser {
+  const g = new EBNFParser(input).grammar.augmentStartSymbol("Start");
+  const ptMaker = ptabType == "lr1" ? makeLRParseTable : makeSLRParseTable;
+  const [ptable, ig] = ptMaker(g);
+  if (debug) {
+    console.log(
+      "===============================\nGrammar: \n",
+      g.debugValue.map((x, i) => `${i + 1}  -   ${x}`),
+      "===============================\nParseTable: \n",
+      util.inspect(mergedDebugValue(ptable, ig), { showHidden: false, depth: null }),
+      "===============================\nConflicts: \n",
+      ptable.conflictActions,
+    );
+  }
+  return new Parser(g, ptable, ig);
+}
+
+export function mergedDebugValue(ptable: ParseTable, ig: LRItemGraph): any {
+  const merged = {} as any;
+  const ptabDV = ptable.debugValue;
+  const igDV = ig.debugValue;
+  for (const stateId in ptabDV) {
+    const actions = ptabDV[stateId];
+    const items = igDV[stateId];
+    merged[stateId] = { items: items["items"], actions: actions };
+  }
+  return merged;
+}
+
 export function testParseTable(grammarFile: string, ptablesFile: string, ptabType: "lr1" | "slr", debug = false): void {
   if (!grammarFile.startsWith("/")) {
     grammarFile = __dirname + "/" + grammarFile;
@@ -109,21 +143,13 @@ export function testParseTable(grammarFile: string, ptablesFile: string, ptabTyp
   if (!ptablesFile.startsWith("/")) {
     ptablesFile = __dirname + "/" + ptablesFile;
   }
-  const g = new EBNFParser(fs.readFileSync(grammarFile, "utf8")).grammar.augmentStartSymbol("S1");
-  const ptMaker = ptabType == "lr1" ? makeLRParseTable : makeSLRParseTable;
-  const [ptable, ig] = ptMaker(g);
-  const ptabValue = ptable.debugValue as StringMap<StringMap<string[]>>;
   const expectedPTables = JSON5.parse(fs.readFileSync(ptablesFile, "utf8"));
   if (debug || !(ptabType in expectedPTables)) {
-    console.log(
-      `========================== Grammar: ${grammarFile} ${ptabType}\n`,
-      "==========================Item Graph: \n",
-      ig.debugValue,
-      "==========================Actions: \n",
-      ptabValue,
-      "==========================Conflicts: \n",
-      ptable.conflictActions,
-    );
+    console.log(`Testing Grammar (${ptabType}): ${grammarFile}`);
   }
+  const contents = fs.readFileSync(grammarFile, "utf8");
+  const parser = newParser(contents, ptabType, debug);
+  const [ptable, ig] = [parser.parseTable, parser.itemGraph];
+  const ptabValue = ptable.debugValue as StringMap<StringMap<string[]>>;
   expect(expectedPTables[ptabType]).toEqual(ptabValue);
 }

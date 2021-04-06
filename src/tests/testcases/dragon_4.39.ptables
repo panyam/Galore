@@ -1,30 +1,173 @@
 {
   lr1: {
-      "0": { S: ["1"], L: ["2"], R: ["3"], STAR: ["S4"], id: ["S5"] },
-      "1": { "<EOF>": ["Acc"] },
-      "2": { EQ: ["S6"], "<EOF>": ["R <R -> L>"] },
-      "3": { "<EOF>": ["R <S -> R>"] },
-      "4": { L: ["7"], R: ["8"], STAR: ["S4"], id: ["S5"] },
-      "5": { EQ: ["R <L -> id>"], "<EOF>": ["R <L -> id>"] },
-      "6": { L: ["9"], R: ["10"], STAR: ["S11"], id: ["S12"] },
-      "7": { EQ: ["R <R -> L>"], "<EOF>": ["R <R -> L>"] },
-      "8": { EQ: ["R <L -> STAR R>"], "<EOF>": ["R <L -> STAR R>"] },
-      "9": { "<EOF>": ["R <R -> L>"] },
-      "10": { "<EOF>": ["R <S -> L EQ R>"] },
-      "11": { L: ["9"], R: ["13"], STAR: ["S11"], id: ["S12"] },
-      "12": { "<EOF>": ["R <L -> id>"] },
-      "13": { "<EOF>": ["R <L -> STAR R>"] },
+    '0': {
+      items: [
+        'Start ->  . S   /   <EOF>',
+        'S ->  . L EQ R   /   <EOF>',
+        'S ->  . R   /   <EOF>',
+        'L ->  . STAR R   /   EQ',
+        'L ->  . id   /   EQ',
+        'R ->  . L   /   <EOF>',
+        'L ->  . STAR R   /   <EOF>',
+        'L ->  . id   /   <EOF>'
+      ],
+      actions: {
+        S: [ '1' ],
+        L: [ '2' ],
+        R: [ '3' ],
+        STAR: [ 'S4' ],
+        id: [ 'S5' ]
+      },
+      next: { S: 1, L: 2, R: 3, STAR: 4, id: 5 }
+    },
+    '1': {
+      items: [ 'Start -> S .    /   <EOF>' ],
+      actions: { '<EOF>': [ 'Acc' ] },
+      next: {}
+    },
+    '2': {
+      items: [ 'R -> L .    /   <EOF>', 'S -> L . EQ R   /   <EOF>' ],
+      actions: { '<EOF>': [ 'R <R -> L>' ], EQ: [ 'S6' ] },
+      next: { EQ: 6 }
+    },
+    '3': {
+      items: [ 'S -> R .    /   <EOF>' ],
+      actions: { '<EOF>': [ 'R <S -> R>' ] },
+      next: {}
+    },
+    '4': {
+      items: [
+        'L -> STAR . R   /   EQ',
+        'L -> STAR . R   /   <EOF>',
+        'R ->  . L   /   EQ',
+        'L ->  . STAR R   /   EQ',
+        'L ->  . id   /   EQ',
+        'R ->  . L   /   <EOF>',
+        'L ->  . STAR R   /   <EOF>',
+        'L ->  . id   /   <EOF>'
+      ],
+      actions: { L: [ '7' ], R: [ '8' ], STAR: [ 'S4' ], id: [ 'S5' ] },
+      next: { L: 7, R: 8, STAR: 4, id: 5 }
+    },
+    '5': {
+      items: [ 'L -> id .    /   EQ', 'L -> id .    /   <EOF>' ],
+      actions: { '<EOF>': [ 'R <L -> id>' ], EQ: [ 'R <L -> id>' ] },
+      next: {}
+    },
+    '6': {
+      items: [
+        'S -> L EQ . R   /   <EOF>',
+        'R ->  . L   /   <EOF>',
+        'L ->  . STAR R   /   <EOF>',
+        'L ->  . id   /   <EOF>'
+      ],
+      actions: { L: [ '9' ], R: [ '10' ], STAR: [ 'S11' ], id: [ 'S12' ] },
+      next: { L: 9, R: 10, STAR: 11, id: 12 }
+    },
+    '7': {
+      items: [ 'R -> L .    /   <EOF>', 'R -> L .    /   EQ' ],
+      actions: { '<EOF>': [ 'R <R -> L>' ], EQ: [ 'R <R -> L>' ] },
+      next: {}
+    },
+    '8': {
+      items: [ 'L -> STAR R .    /   EQ', 'L -> STAR R .    /   <EOF>' ],
+      actions: { '<EOF>': [ 'R <L -> STAR R>' ], EQ: [ 'R <L -> STAR R>' ] },
+      next: {}
+    },
+    '9': {
+      items: [ 'R -> L .    /   <EOF>' ],
+      actions: { '<EOF>': [ 'R <R -> L>' ] },
+      next: {}
+    },
+    '10': {
+      items: [ 'S -> L EQ R .    /   <EOF>' ],
+      actions: { '<EOF>': [ 'R <S -> L EQ R>' ] },
+      next: {}
+    },
+    '11': {
+      items: [
+        'L -> STAR . R   /   <EOF>',
+        'R ->  . L   /   <EOF>',
+        'L ->  . STAR R   /   <EOF>',
+        'L ->  . id   /   <EOF>'
+      ],
+      actions: { L: [ '9' ], R: [ '13' ], STAR: [ 'S11' ], id: [ 'S12' ] },
+      next: { L: 9, R: 13, STAR: 11, id: 12 }
+    },
+    '12': {
+      items: [ 'L -> id .    /   <EOF>' ],
+      actions: { '<EOF>': [ 'R <L -> id>' ] },
+      next: {}
+    },
+    '13': {
+      items: [ 'L -> STAR R .    /   <EOF>' ],
+      actions: { '<EOF>': [ 'R <L -> STAR R>' ] },
+      next: {}
+    }
   },
   slr: {
-      "0": { S: ["1"], L: ["2"], R: ["3"], STAR: ["S4"], id: ["S5"] },
-      "1": { "<EOF>": ["Acc"] },
-      "2": { EQ: ["S6", "R <R -> L>"], "<EOF>": ["R <R -> L>"] },
-      "3": { "<EOF>": ["R <S -> R>"] },
-      "4": { L: ["7"], R: ["8"], STAR: ["S4"], id: ["S5"] },
-      "5": { EQ: ["R <L -> id>"], "<EOF>": ["R <L -> id>"] },
-      "6": { L: ["7"], R: ["9"], STAR: ["S4"], id: ["S5"] },
-      "7": { EQ: ["R <R -> L>"], "<EOF>": ["R <R -> L>"] },
-      "8": { EQ: ["R <L -> STAR R>"], "<EOF>": ["R <L -> STAR R>"] },
-      "9": { "<EOF>": ["R <S -> L EQ R>"] },
+    '0': {
+      items: [
+        'Start ->  . S',
+        'S ->  . L EQ R',
+        'S ->  . R',
+        'L ->  . STAR R',
+        'L ->  . id',
+        'R ->  . L'
+      ],
+      actions: {
+        S: [ '1' ],
+        L: [ '2' ],
+        R: [ '3' ],
+        STAR: [ 'S4' ],
+        id: [ 'S5' ]
+      },
+      next: { S: 1, L: 2, R: 3, STAR: 4, id: 5 }
+    },
+    '1': {
+      items: [ 'Start -> S . ' ],
+      actions: { '<EOF>': [ 'Acc' ] },
+      next: {}
+    },
+    '2': {
+      items: [ 'S -> L . EQ R', 'R -> L . ' ],
+      actions: { '<EOF>': [ 'R <R -> L>' ], EQ: [ 'S6', 'R <R -> L>' ] },
+      next: { EQ: 6 }
+    },
+    '3': {
+      items: [ 'S -> R . ' ],
+      actions: { '<EOF>': [ 'R <S -> R>' ] },
+      next: {}
+    },
+    '4': {
+      items: [ 'L -> STAR . R', 'L ->  . STAR R', 'L ->  . id', 'R ->  . L' ],
+      actions: { L: [ '7' ], R: [ '8' ], STAR: [ 'S4' ], id: [ 'S5' ] },
+      next: { L: 7, R: 8, STAR: 4, id: 5 }
+    },
+    '5': {
+      items: [ 'L -> id . ' ],
+      actions: { '<EOF>': [ 'R <L -> id>' ], EQ: [ 'R <L -> id>' ] },
+      next: {}
+    },
+    '6': {
+      items: [ 'S -> L EQ . R', 'L ->  . STAR R', 'L ->  . id', 'R ->  . L' ],
+      actions: { L: [ '7' ], R: [ '9' ], STAR: [ 'S4' ], id: [ 'S5' ] },
+      next: { L: 7, R: 9, STAR: 4, id: 5 }
+    },
+    '7': {
+      items: [ 'R -> L . ' ],
+      actions: { '<EOF>': [ 'R <R -> L>' ], EQ: [ 'R <R -> L>' ] },
+      next: {}
+    },
+    '8': {
+      items: [ 'L -> STAR R . ' ],
+      actions: { '<EOF>': [ 'R <L -> STAR R>' ], EQ: [ 'R <L -> STAR R>' ] },
+      next: {}
+    },
+    '9': {
+      items: [ 'S -> L EQ R . ' ],
+      actions: { '<EOF>': [ 'R <S -> L EQ R>' ] },
+      next: {}
+    }
   }
 }

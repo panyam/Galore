@@ -1,56 +1,184 @@
 {
-  "lr1": {
-      "0": {
-        S: ["1"],
-        NP: ["2"],
-        det: ["S3"],
-        n: ["S4"],
-        that: ["S5"],
-      },
-      "1": { "<EOF>": ["Acc"] },
-      "2": { VP: ["6"], be: ["S7"] },
-      "3": { n: ["S8"] },
-      "4": { be: ["R <NP -> n>"] },
-      "5": {
-        S: ["9"],
-        NP: ["10"],
-        det: ["S3"],
-        n: ["S4"],
-        that: ["S5"],
-      },
-      "6": { "<EOF>": ["R <S -> NP VP>"] },
-      "7": { adj: ["S11"] },
-      "8": { be: ["R <NP -> det n>"] },
-      "9": { be: ["R <NP -> that S>"] },
-      "10": { VP: ["12"], be: ["S13"] },
-      "11": { "<EOF>": ["R <VP -> be adj>"] },
-      "12": { be: ["R <S -> NP VP>"] },
-      "13": { adj: ["S14"] },
-      "14": { be: ["R <VP -> be adj>"] },
-  },
-  slr: {
+  "slr": {
     '0': {
-      S: [ '1' ],
-      NP: [ '2' ],
-      det: [ 'S3' ],
-      n: [ 'S4' ],
-      that: [ 'S5' ]
+      items: [
+        'Start ->  . S',
+        'S ->  . NP VP',
+        'NP ->  . det n',
+        'NP ->  . n',
+        'NP ->  . that S'
+      ],
+      actions: {
+        S: [ '1' ],
+        NP: [ '2' ],
+        det: [ 'S3' ],
+        n: [ 'S4' ],
+        that: [ 'S5' ]
+      },
+      next: { S: 1, NP: 2, det: 3, n: 4, that: 5 }
     },
-    '1': { '<EOF>': [ 'Acc' ] },
-    '2': { VP: [ '6' ], be: [ 'S7' ] },
-    '3': { n: [ 'S8' ] },
-    '4': { be: [ 'R <NP -> n>' ] },
+    '1': {
+      items: [ 'Start -> S . ' ],
+      actions: { '<EOF>': [ 'Acc' ] },
+      next: {}
+    },
+    '2': {
+      items: [ 'S -> NP . VP', 'VP ->  . be adj' ],
+      actions: { VP: [ '6' ], be: [ 'S7' ] },
+      next: { VP: 6, be: 7 }
+    },
+    '3': {
+      items: [ 'NP -> det . n' ],
+      actions: { n: [ 'S8' ] },
+      next: { n: 8 }
+    },
+    '4': {
+      items: [ 'NP -> n . ' ],
+      actions: { be: [ 'R <NP -> n>' ] },
+      next: {}
+    },
     '5': {
-      S: [ '9' ],
-      NP: [ '2' ],
-      det: [ 'S3' ],
-      n: [ 'S4' ],
-      that: [ 'S5' ]
+      items: [
+        'S ->  . NP VP',
+        'NP -> that . S',
+        'NP ->  . det n',
+        'NP ->  . n',
+        'NP ->  . that S'
+      ],
+      actions: {
+        S: [ '9' ],
+        NP: [ '2' ],
+        det: [ 'S3' ],
+        n: [ 'S4' ],
+        that: [ 'S5' ]
+      },
+      next: { S: 9, NP: 2, det: 3, n: 4, that: 5 }
     },
-    '6': { be: [ 'R <S -> NP VP>' ], '<EOF>': [ 'R <S -> NP VP>' ] },
-    '7': { adj: [ 'S10' ] },
-    '8': { be: [ 'R <NP -> det n>' ] },
-    '9': { be: [ 'R <NP -> that S>' ] },
-    '10': { be: [ 'R <VP -> be adj>' ], '<EOF>': [ 'R <VP -> be adj>' ] }
+    '6': {
+      items: [ 'S -> NP VP . ' ],
+      actions: { '<EOF>': [ 'R <S -> NP VP>' ], be: [ 'R <S -> NP VP>' ] },
+      next: {}
+    },
+    '7': {
+      items: [ 'VP -> be . adj' ],
+      actions: { adj: [ 'S10' ] },
+      next: { adj: 10 }
+    },
+    '8': {
+      items: [ 'NP -> det n . ' ],
+      actions: { be: [ 'R <NP -> det n>' ] },
+      next: {}
+    },
+    '9': {
+      items: [ 'NP -> that S . ' ],
+      actions: { be: [ 'R <NP -> that S>' ] },
+      next: {}
+    },
+    '10': {
+      items: [ 'VP -> be adj . ' ],
+      actions: { '<EOF>': [ 'R <VP -> be adj>' ], be: [ 'R <VP -> be adj>' ] },
+      next: {}
+    }
+  },
+  lr1: {
+    '0': {
+      items: [
+        'Start ->  . S   /   <EOF>',
+        'S ->  . NP VP   /   <EOF>',
+        'NP ->  . det n   /   be',
+        'NP ->  . n   /   be',
+        'NP ->  . that S   /   be'
+      ],
+      actions: {
+        S: [ '1' ],
+        NP: [ '2' ],
+        det: [ 'S3' ],
+        n: [ 'S4' ],
+        that: [ 'S5' ]
+      },
+      next: { S: 1, NP: 2, det: 3, n: 4, that: 5 }
+    },
+    '1': {
+      items: [ 'Start -> S .    /   <EOF>' ],
+      actions: { '<EOF>': [ 'Acc' ] },
+      next: {}
+    },
+    '2': {
+      items: [ 'S -> NP . VP   /   <EOF>', 'VP ->  . be adj   /   <EOF>' ],
+      actions: { VP: [ '6' ], be: [ 'S7' ] },
+      next: { VP: 6, be: 7 }
+    },
+    '3': {
+      items: [ 'NP -> det . n   /   be' ],
+      actions: { n: [ 'S8' ] },
+      next: { n: 8 }
+    },
+    '4': {
+      items: [ 'NP -> n .    /   be' ],
+      actions: { be: [ 'R <NP -> n>' ] },
+      next: {}
+    },
+    '5': {
+      items: [
+        'NP -> that . S   /   be',
+        'S ->  . NP VP   /   be',
+        'NP ->  . det n   /   be',
+        'NP ->  . n   /   be',
+        'NP ->  . that S   /   be'
+      ],
+      actions: {
+        S: [ '9' ],
+        NP: [ '10' ],
+        det: [ 'S3' ],
+        n: [ 'S4' ],
+        that: [ 'S5' ]
+      },
+      next: { S: 9, NP: 10, det: 3, n: 4, that: 5 }
+    },
+    '6': {
+      items: [ 'S -> NP VP .    /   <EOF>' ],
+      actions: { '<EOF>': [ 'R <S -> NP VP>' ] },
+      next: {}
+    },
+    '7': {
+      items: [ 'VP -> be . adj   /   <EOF>' ],
+      actions: { adj: [ 'S11' ] },
+      next: { adj: 11 }
+    },
+    '8': {
+      items: [ 'NP -> det n .    /   be' ],
+      actions: { be: [ 'R <NP -> det n>' ] },
+      next: {}
+    },
+    '9': {
+      items: [ 'NP -> that S .    /   be' ],
+      actions: { be: [ 'R <NP -> that S>' ] },
+      next: {}
+    },
+    '10': {
+      items: [ 'S -> NP . VP   /   be', 'VP ->  . be adj   /   be' ],
+      actions: { VP: [ '12' ], be: [ 'S13' ] },
+      next: { VP: 12, be: 13 }
+    },
+    '11': {
+      items: [ 'VP -> be adj .    /   <EOF>' ],
+      actions: { '<EOF>': [ 'R <VP -> be adj>' ] },
+      next: {}
+    },
+    '12': {
+      items: [ 'S -> NP VP .    /   be' ],
+      actions: { be: [ 'R <S -> NP VP>' ] },
+      next: {}
+    },
+    '13': {
+      items: [ 'VP -> be . adj   /   be' ],
+      actions: { adj: [ 'S14' ] },
+      next: { adj: 14 }
+    },
+    '14': {
+      items: [ 'VP -> be adj .    /   be' ],
+      actions: { be: [ 'R <VP -> be adj>' ] },
+      next: {}
+    }
   }
 }

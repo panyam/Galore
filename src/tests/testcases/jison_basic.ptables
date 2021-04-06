@@ -1,18 +1,88 @@
 {
   "lr1": {
-      "0": { E: ["1"], T: ["2"], ZERO: ["S3"] },
-      "1": { PLUS: ["S4"], "<EOF>": ["Acc"] },
-      "2": { PLUS: ["R <E -> T>"], "<EOF>": ["R <E -> T>"] },
-      "3": { PLUS: ["R <T -> ZERO>"], "<EOF>": ["R <T -> ZERO>"] },
-      "4": { T: ["5"], ZERO: ["S3"] },
-      "5": { PLUS: ["R <E -> E PLUS T>"], "<EOF>": ["R <E -> E PLUS T>"] },
+    '0': {
+      items: [
+        'Start ->  . E   /   <EOF>',
+        'E ->  . E PLUS T   /   <EOF>',
+        'E ->  . T   /   <EOF>',
+        'E ->  . E PLUS T   /   PLUS',
+        'E ->  . T   /   PLUS',
+        'T ->  . ZERO   /   <EOF>',
+        'T ->  . ZERO   /   PLUS'
+      ],
+      actions: { E: [ '1' ], T: [ '2' ], ZERO: [ 'S3' ] },
+      next: { E: 1, T: 2, ZERO: 3 }
+    },
+    '1': {
+      items: [
+        'Start -> E .    /   <EOF>',
+        'E -> E . PLUS T   /   <EOF>',
+        'E -> E . PLUS T   /   PLUS'
+      ],
+      actions: { '<EOF>': [ 'Acc' ], PLUS: [ 'S4' ] },
+      next: { PLUS: 4 }
+    },
+    '2': {
+      items: [ 'E -> T .    /   <EOF>', 'E -> T .    /   PLUS' ],
+      actions: { '<EOF>': [ 'R <E -> T>' ], PLUS: [ 'R <E -> T>' ] },
+      next: {}
+    },
+    '3': {
+      items: [ 'T -> ZERO .    /   <EOF>', 'T -> ZERO .    /   PLUS' ],
+      actions: { '<EOF>': [ 'R <T -> ZERO>' ], PLUS: [ 'R <T -> ZERO>' ] },
+      next: {}
+    },
+    '4': {
+      items: [
+        'E -> E PLUS . T   /   <EOF>',
+        'E -> E PLUS . T   /   PLUS',
+        'T ->  . ZERO   /   <EOF>',
+        'T ->  . ZERO   /   PLUS'
+      ],
+      actions: { T: [ '5' ], ZERO: [ 'S3' ] },
+      next: { T: 5, ZERO: 3 }
+    },
+    '5': {
+      items: [ 'E -> E PLUS T .    /   <EOF>', 'E -> E PLUS T .    /   PLUS' ],
+      actions: { '<EOF>': [ 'R <E -> E PLUS T>' ], PLUS: [ 'R <E -> E PLUS T>' ] },
+      next: {}
+    }
   },
-  "slr": {
-      "0": { E: ["1"], T: ["2"], ZERO: ["S3"] },
-      "1": { PLUS: ["S4"], "<EOF>": ["Acc"] },
-      "2": { PLUS: ["R <E -> T>"], "<EOF>": ["R <E -> T>"] },
-      "3": { PLUS: ["R <T -> ZERO>"], "<EOF>": ["R <T -> ZERO>"] },
-      "4": { T: ["5"], ZERO: ["S3"] },
-      "5": { PLUS: ["R <E -> E PLUS T>"], "<EOF>": ["R <E -> E PLUS T>"] },
+  "slr":  {
+    '0': {
+      items: [
+        'Start ->  . E',
+        'E ->  . E PLUS T',
+        'E ->  . T',
+        'T ->  . ZERO'
+      ],
+      actions: { E: [ '1' ], T: [ '2' ], ZERO: [ 'S3' ] },
+      next: { E: 1, T: 2, ZERO: 3 }
+    },
+    '1': {
+      items: [ 'Start -> E . ', 'E -> E . PLUS T' ],
+      actions: { '<EOF>': [ 'Acc' ], PLUS: [ 'S4' ] },
+      next: { PLUS: 4 }
+    },
+    '2': {
+      items: [ 'E -> T . ' ],
+      actions: { '<EOF>': [ 'R <E -> T>' ], PLUS: [ 'R <E -> T>' ] },
+      next: {}
+    },
+    '3': {
+      items: [ 'T -> ZERO . ' ],
+      actions: { '<EOF>': [ 'R <T -> ZERO>' ], PLUS: [ 'R <T -> ZERO>' ] },
+      next: {}
+    },
+    '4': {
+      items: [ 'T ->  . ZERO', 'E -> E PLUS . T' ],
+      actions: { T: [ '5' ], ZERO: [ 'S3' ] },
+      next: { T: 5, ZERO: 3 }
+    },
+    '5': {
+      items: [ 'E -> E PLUS T . ' ],
+      actions: { '<EOF>': [ 'R <E -> E PLUS T>' ], PLUS: [ 'R <E -> E PLUS T>' ] },
+      next: {}
+    }
   }
 }

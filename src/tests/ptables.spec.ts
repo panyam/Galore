@@ -46,21 +46,11 @@ describe("Jison tests", () => {
   test("basic - LR", () => {
     testParseTable("./testcases/jison_basic.g", "./testcases/jison_basic.ptables", "lr1");
   });
-  // test("dism - SLR", () => { testParseTable("./testcases/jison_dism.g", "./testcases/jison_dism.ptables", "slr", true); });
-  // test("dism - LR", () => { testParseTable("./testcases/jison_dism.g", "./testcases/jison_dism.ptables", "lr1"); });
-});
-
-describe("LRItemSet", () => {
-  test("Test with Null Productions", () => {
-    /*
-    verifyLRParseTable(
-      "Null Prods",
-      new EBNFParser(`S -> A | ;`).grammar.augmentStartSymbol(),
-      makeSLRParseTable,
-      {},
-      true,
-    );
-    */
+  test("dism - SLR", () => {
+    testParseTable("./testcases/jison_dism.g", "./testcases/jison_dism.ptables", "slr", true);
+  });
+  test("dism - LR", () => {
+    testParseTable("./testcases/jison_dism.g", "./testcases/jison_dism.ptables", "lr1", true);
   });
 });
 
@@ -80,8 +70,13 @@ describe("Sample Parse Tables", () => {
       "0": {
         items: ["Start ->  . E", "E ->  . T X", "T ->  . int Y", "T ->  . OPEN E CLOSE"],
         actions: { E: ["1"], T: ["2"], int: ["S3"], OPEN: ["S4"] },
+        next: { E: 1, T: 2, int: 3, OPEN: 4 },
       },
-      "1": { items: ["Start -> E . "], actions: { "<EOF>": ["Acc"] } },
+      "1": {
+        items: ["Start -> E . "],
+        actions: { "<EOF>": ["Acc"] },
+        next: {},
+      },
       "2": {
         items: ["E -> T . X", "X ->  . PLUS E", "X ->  . "],
         actions: {
@@ -90,6 +85,7 @@ describe("Sample Parse Tables", () => {
           PLUS: ["S6"],
           CLOSE: ["R <X -> >"],
         },
+        next: { X: 5, PLUS: 6 },
       },
       "3": {
         items: ["Y ->  . ", "T -> int . Y", "Y ->  . STAR T"],
@@ -100,18 +96,22 @@ describe("Sample Parse Tables", () => {
           CLOSE: ["R <Y -> >"],
           STAR: ["S8"],
         },
+        next: { Y: 7, STAR: 8 },
       },
       "4": {
         items: ["E ->  . T X", "T -> OPEN . E CLOSE", "T ->  . int Y", "T ->  . OPEN E CLOSE"],
         actions: { E: ["9"], T: ["2"], int: ["S3"], OPEN: ["S4"] },
+        next: { E: 9, T: 2, int: 3, OPEN: 4 },
       },
       "5": {
         items: ["E -> T X . "],
         actions: { "<EOF>": ["R <E -> T X>"], CLOSE: ["R <E -> T X>"] },
+        next: {},
       },
       "6": {
         items: ["E ->  . T X", "X -> PLUS . E", "T ->  . int Y", "T ->  . OPEN E CLOSE"],
         actions: { E: ["10"], T: ["2"], int: ["S3"], OPEN: ["S4"] },
+        next: { E: 10, T: 2, int: 3, OPEN: 4 },
       },
       "7": {
         items: ["T -> int Y . "],
@@ -120,15 +120,22 @@ describe("Sample Parse Tables", () => {
           PLUS: ["R <T -> int Y>"],
           CLOSE: ["R <T -> int Y>"],
         },
+        next: {},
       },
       "8": {
         items: ["Y -> STAR . T", "T ->  . int Y", "T ->  . OPEN E CLOSE"],
         actions: { T: ["11"], int: ["S3"], OPEN: ["S4"] },
+        next: { T: 11, int: 3, OPEN: 4 },
       },
-      "9": { items: ["T -> OPEN E . CLOSE"], actions: { CLOSE: ["S12"] } },
+      "9": {
+        items: ["T -> OPEN E . CLOSE"],
+        actions: { CLOSE: ["S12"] },
+        next: { CLOSE: 12 },
+      },
       "10": {
         items: ["X -> PLUS E . "],
         actions: { "<EOF>": ["R <X -> PLUS E>"], CLOSE: ["R <X -> PLUS E>"] },
+        next: {},
       },
       "11": {
         items: ["Y -> STAR T . "],
@@ -137,6 +144,7 @@ describe("Sample Parse Tables", () => {
           PLUS: ["R <Y -> STAR T>"],
           CLOSE: ["R <Y -> STAR T>"],
         },
+        next: {},
       },
       "12": {
         items: ["T -> OPEN E CLOSE . "],
@@ -145,112 +153,7 @@ describe("Sample Parse Tables", () => {
           PLUS: ["R <T -> OPEN E CLOSE>"],
           CLOSE: ["R <T -> OPEN E CLOSE>"],
         },
-      },
-    });
-  });
-
-  test("Test2", () => {
-    const parser = newParser(
-      `
-        S -> S A ;
-        S -> ;
-
-        A -> X ;
-        A -> b X ;
-        A -> c X ;
-
-        X -> X x ;
-        X -> ;
-      `,
-      "slr",
-    );
-    const v = mergedDebugValue(parser.parseTable, parser.itemGraph);
-    expect(v).toEqual({
-      "0": {
-        items: ["Start ->  . S", "S ->  . S A", "S ->  . "],
-        actions: {
-          "<EOF>": ["R <S -> >"],
-          S: ["1"],
-          b: ["R <S -> >"],
-          c: ["R <S -> >"],
-          x: ["R <S -> >"],
-        },
-      },
-      "1": {
-        items: ["Start -> S . ", "S -> S . A", "A ->  . X", "A ->  . b X", "A ->  . c X", "X ->  . X x", "X ->  . "],
-        actions: {
-          "<EOF>": ["R <X -> >", "Acc"],
-          A: ["2"],
-          X: ["3"],
-          b: ["S4", "R <X -> >"],
-          c: ["S5", "R <X -> >"],
-          x: ["R <X -> >"],
-        },
-      },
-      "2": {
-        items: ["S -> S A . "],
-        actions: {
-          "<EOF>": ["R <S -> S A>"],
-          b: ["R <S -> S A>"],
-          c: ["R <S -> S A>"],
-          x: ["R <S -> S A>"],
-        },
-      },
-      "3": {
-        items: ["A -> X . ", "X -> X . x"],
-        actions: {
-          "<EOF>": ["R <A -> X>"],
-          b: ["R <A -> X>"],
-          c: ["R <A -> X>"],
-          x: ["R <A -> X>", "S6"],
-        },
-      },
-      "4": {
-        items: ["A -> b . X", "X ->  . X x", "X ->  . "],
-        actions: {
-          "<EOF>": ["R <X -> >"],
-          X: ["7"],
-          b: ["R <X -> >"],
-          c: ["R <X -> >"],
-          x: ["R <X -> >"],
-        },
-      },
-      "5": {
-        items: ["A -> c . X", "X ->  . X x", "X ->  . "],
-        actions: {
-          "<EOF>": ["R <X -> >"],
-          X: ["8"],
-          b: ["R <X -> >"],
-          c: ["R <X -> >"],
-          x: ["R <X -> >"],
-        },
-      },
-      "6": {
-        items: ["X -> X x . "],
-        actions: {
-          "<EOF>": ["R <X -> X x>"],
-          b: ["R <X -> X x>"],
-          c: ["R <X -> X x>"],
-          x: ["R <X -> X x>"],
-        },
-      },
-      "7": {
-        items: ["X -> X . x", "A -> b X . "],
-        actions: {
-          "<EOF>": ["R <A -> b X>"],
-          b: ["R <A -> b X>"],
-          c: ["R <A -> b X>"],
-          x: ["S6", "R <A -> b X>"],
-        },
-      },
-      "8": {
-        items: ["X -> X . x", "A -> c X . "],
-        actions: {
-          "<EOF>": ["R <A -> c X>"],
-          b: ["R <A -> c X>"],
-          c: ["R <A -> c X>"],
-          x: ["S6", "R <A -> c X>"],
-        },
+        next: {},
       },
     });
   });

@@ -113,10 +113,17 @@ export function newParser(input: string, ptabType = "slr", debug = false): Parse
   const [ptable, ig] = ptMaker(g);
   if (debug) {
     console.log(
-      "===============================\nGrammar: \n",
+      "===============================\nGrammar (as default): \n",
       g.debugValue.map((x, i) => `${i + 1}  -   ${x}`),
+      "===============================\nGrammar (as Bison): \n",
+      g.debugValue.map((x, i) => `${x.replace("->", ":")} ; \n`).join(""),
       "===============================\nParseTable: \n",
-      util.inspect(mergedDebugValue(ptable, ig), { showHidden: false, depth: null }),
+      util.inspect(mergedDebugValue(ptable, ig), {
+        showHidden: false,
+        depth: null,
+        maxArrayLength: null,
+        maxStringLength: null,
+      }),
       "===============================\nConflicts: \n",
       ptable.conflictActions,
     );
@@ -131,7 +138,7 @@ export function mergedDebugValue(ptable: ParseTable, ig: LRItemGraph): any {
   for (const stateId in ptabDV) {
     const actions = ptabDV[stateId];
     const items = igDV[stateId];
-    merged[stateId] = { items: items["items"], actions: actions };
+    merged[stateId] = { items: items["items"], actions: actions, next: items["next"] };
   }
   return merged;
 }
@@ -149,7 +156,6 @@ export function testParseTable(grammarFile: string, ptablesFile: string, ptabTyp
   }
   const contents = fs.readFileSync(grammarFile, "utf8");
   const parser = newParser(contents, ptabType, debug);
-  const [ptable, ig] = [parser.parseTable, parser.itemGraph];
-  const ptabValue = ptable.debugValue as StringMap<StringMap<string[]>>;
-  expect(expectedPTables[ptabType]).toEqual(ptabValue);
+  const foundValue = mergedDebugValue(parser.parseTable, parser.itemGraph);
+  expect(expectedPTables[ptabType]).toEqual(foundValue);
 }

@@ -1,11 +1,11 @@
 import * as TSU from "@panyam/tsutils";
 import { EBNFParser } from "../ebnf";
-import { LRItemSet, LR0Item, LR0ItemGraph } from "../lr";
+import { LRItemSet, LRItem, LR0ItemGraph } from "../lr";
 import { Grammar } from "../grammar";
 import { verifyItemGraphs } from "./utils";
 
 function From(ig: LR0ItemGraph, ...entries: [string, number, number][]): LRItemSet {
-  const items = entries.map(([label, ri, pos]) => ig.items.ensure(new LR0Item(ig.grammar.getRule(label, ri), pos)).id);
+  const items = entries.map(([label, ri, pos]) => ig.items.ensure(new LRItem(ig.grammar.getRule(label, ri), pos)).id);
   const set = new LRItemSet(ig, ...items);
   return ig.itemSets.ensure(set);
 }
@@ -16,7 +16,7 @@ export function expectItemSet(g: Grammar, set: LRItemSet, entries: [string, numb
   for (const [sym, index, pos] of entries) {
     const nt = g.getSym(sym);
     TSU.assert(nt != null, "Cannot find symbol: " + sym);
-    expect(set.has(ig.items.ensure(new LR0Item(g.getRule(nt, index), pos)).id)).toBe(true);
+    expect(set.has(ig.items.ensure(new LRItem(g.getRule(nt, index), pos)).id)).toBe(true);
   }
 }
 
@@ -37,8 +37,8 @@ describe("LRItem", () => {
     const ig = new LR0ItemGraph(g1).refresh();
     const E = g1.getSym("E")!;
     const rule = g1.getRule(E, 1);
-    const l1 = ig.items.ensure(new LR0Item(rule));
-    const l1a = ig.items.ensure(new LR0Item(rule));
+    const l1 = ig.items.ensure(new LRItem(rule));
+    const l1a = ig.items.ensure(new LRItem(rule));
     expect(l1.equals(l1a)).toBe(true);
     expect(l1.key).toEqual(`${rule.id}:0`);
     const l2 = l1.advance();

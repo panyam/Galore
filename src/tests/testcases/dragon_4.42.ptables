@@ -2,73 +2,68 @@
   lr1: {
     '0': {
       items: [
-        'Start ->  . S   /   <EOF>',
-        'S ->  . C C   /   <EOF>',
-        'C ->  . c C   /   c',
-        'C ->  . d   /   c',
-        'C ->  . c C   /   d',
-        'C ->  . d   /   d'
+        'Start ->  . S / ( <EOF> )',
+        'S ->  . C C / ( <EOF> )',
+        'C ->  . c C / ( c, d )',
+        'C ->  . d / ( c, d )'
       ],
       actions: { S: [ '1' ], C: [ '2' ], c: [ 'S3' ], d: [ 'S4' ] },
       next: { S: 1, C: 2, c: 3, d: 4 }
     },
     '1': {
-      items: [ 'Start -> S .    /   <EOF>' ],
+      items: [ 'Start -> S .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'Acc' ] },
       next: {}
     },
     '2': {
       items: [
-        'S -> C . C   /   <EOF>',
-        'C ->  . c C   /   <EOF>',
-        'C ->  . d   /   <EOF>'
+        'C ->  . c C / ( <EOF> )',
+        'C ->  . d / ( <EOF> )',
+        'S -> C . C / ( <EOF> )'
       ],
       actions: { C: [ '5' ], c: [ 'S6' ], d: [ 'S7' ] },
       next: { C: 5, c: 6, d: 7 }
     },
     '3': {
       items: [
-        'C -> c . C   /   c',
-        'C -> c . C   /   d',
-        'C ->  . c C   /   c',
-        'C ->  . d   /   c',
-        'C ->  . c C   /   d',
-        'C ->  . d   /   d'
+        'C ->  . c C / ( c, d )',
+        'C ->  . d / ( c, d )',
+        'C -> c . C / ( c, d )'
       ],
       actions: { C: [ '8' ], c: [ 'S3' ], d: [ 'S4' ] },
       next: { C: 8, c: 3, d: 4 }
     },
     '4': {
-      items: [ 'C -> d .    /   c', 'C -> d .    /   d' ],
+      items: [ 'C -> d .  / ( c, d )' ],
       actions: { c: [ 'R <C -> d>' ], d: [ 'R <C -> d>' ] },
       next: {}
     },
     '5': {
-      items: [ 'S -> C C .    /   <EOF>' ],
+      items: [ 'S -> C C .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <S -> C C>' ] },
       next: {}
     },
     '6': {
       items: [
-        'C -> c . C   /   <EOF>',
-        'C ->  . c C   /   <EOF>',
-        'C ->  . d   /   <EOF>'
+        'C ->  . c C / ( <EOF> )',
+        'C ->  . d / ( <EOF> )',
+        'C -> c . C / ( <EOF> )'
       ],
       actions: { C: [ '9' ], c: [ 'S6' ], d: [ 'S7' ] },
       next: { C: 9, c: 6, d: 7 }
     },
     '7': {
-      items: [ 'C -> d .    /   <EOF>' ],
+      items: [ 'C -> d .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <C -> d>' ] },
       next: {}
     },
     '8': {
-      items: [ 'C -> c C .    /   c', 'C -> c C .    /   d' ],
+      items: [ 'C -> c C .  / ( c, d )' ],
       actions: { c: [ 'R <C -> c C>' ], d: [ 'R <C -> c C>' ] },
       next: {}
     },
     '9': {
-      items: [ 'C -> c C .    /   <EOF>' ],
+      items: [ 'C -> c C .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <C -> c C>' ] },
       next: {}
     }

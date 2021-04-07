@@ -2,14 +2,12 @@
   lr1: {
     '0': {
       items: [
-        'Start ->  . S   /   <EOF>',
-        'S ->  . L EQ R   /   <EOF>',
-        'S ->  . R   /   <EOF>',
-        'L ->  . STAR R   /   EQ',
-        'L ->  . id   /   EQ',
-        'R ->  . L   /   <EOF>',
-        'L ->  . STAR R   /   <EOF>',
-        'L ->  . id   /   <EOF>'
+        'Start ->  . S / ( <EOF> )',
+        'S ->  . L EQ R / ( <EOF> )',
+        'S ->  . R / ( <EOF> )',
+        'L ->  . STAR R / ( <EOF>, EQ )',
+        'L ->  . id / ( <EOF>, EQ )',
+        'R ->  . L / ( <EOF> )'
       ],
       actions: {
         S: [ '1' ],
@@ -21,86 +19,82 @@
       next: { S: 1, L: 2, R: 3, STAR: 4, id: 5 }
     },
     '1': {
-      items: [ 'Start -> S .    /   <EOF>' ],
+      items: [ 'Start -> S .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'Acc' ] },
       next: {}
     },
     '2': {
-      items: [ 'R -> L .    /   <EOF>', 'S -> L . EQ R   /   <EOF>' ],
+      items: [ 'S -> L . EQ R / ( <EOF> )', 'R -> L .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <R -> L>' ], EQ: [ 'S6' ] },
       next: { EQ: 6 }
     },
     '3': {
-      items: [ 'S -> R .    /   <EOF>' ],
+      items: [ 'S -> R .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <S -> R>' ] },
       next: {}
     },
     '4': {
       items: [
-        'L -> STAR . R   /   EQ',
-        'L -> STAR . R   /   <EOF>',
-        'R ->  . L   /   EQ',
-        'L ->  . STAR R   /   EQ',
-        'L ->  . id   /   EQ',
-        'R ->  . L   /   <EOF>',
-        'L ->  . STAR R   /   <EOF>',
-        'L ->  . id   /   <EOF>'
+        'L -> STAR . R / ( <EOF>, EQ )',
+        'L ->  . STAR R / ( <EOF>, EQ )',
+        'L ->  . id / ( <EOF>, EQ )',
+        'R ->  . L / ( <EOF>, EQ )'
       ],
       actions: { L: [ '7' ], R: [ '8' ], STAR: [ 'S4' ], id: [ 'S5' ] },
       next: { L: 7, R: 8, STAR: 4, id: 5 }
     },
     '5': {
-      items: [ 'L -> id .    /   EQ', 'L -> id .    /   <EOF>' ],
+      items: [ 'L -> id .  / ( <EOF>, EQ )' ],
       actions: { '<EOF>': [ 'R <L -> id>' ], EQ: [ 'R <L -> id>' ] },
       next: {}
     },
     '6': {
       items: [
-        'S -> L EQ . R   /   <EOF>',
-        'R ->  . L   /   <EOF>',
-        'L ->  . STAR R   /   <EOF>',
-        'L ->  . id   /   <EOF>'
+        'S -> L EQ . R / ( <EOF> )',
+        'L ->  . STAR R / ( <EOF> )',
+        'L ->  . id / ( <EOF> )',
+        'R ->  . L / ( <EOF> )'
       ],
       actions: { L: [ '9' ], R: [ '10' ], STAR: [ 'S11' ], id: [ 'S12' ] },
       next: { L: 9, R: 10, STAR: 11, id: 12 }
     },
     '7': {
-      items: [ 'R -> L .    /   <EOF>', 'R -> L .    /   EQ' ],
+      items: [ 'R -> L .  / ( <EOF>, EQ )' ],
       actions: { '<EOF>': [ 'R <R -> L>' ], EQ: [ 'R <R -> L>' ] },
       next: {}
     },
     '8': {
-      items: [ 'L -> STAR R .    /   EQ', 'L -> STAR R .    /   <EOF>' ],
+      items: [ 'L -> STAR R .  / ( <EOF>, EQ )' ],
       actions: { '<EOF>': [ 'R <L -> STAR R>' ], EQ: [ 'R <L -> STAR R>' ] },
       next: {}
     },
     '9': {
-      items: [ 'R -> L .    /   <EOF>' ],
+      items: [ 'R -> L .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <R -> L>' ] },
       next: {}
     },
     '10': {
-      items: [ 'S -> L EQ R .    /   <EOF>' ],
+      items: [ 'S -> L EQ R .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <S -> L EQ R>' ] },
       next: {}
     },
     '11': {
       items: [
-        'L -> STAR . R   /   <EOF>',
-        'R ->  . L   /   <EOF>',
-        'L ->  . STAR R   /   <EOF>',
-        'L ->  . id   /   <EOF>'
+        'L -> STAR . R / ( <EOF> )',
+        'L ->  . STAR R / ( <EOF> )',
+        'L ->  . id / ( <EOF> )',
+        'R ->  . L / ( <EOF> )'
       ],
       actions: { L: [ '9' ], R: [ '13' ], STAR: [ 'S11' ], id: [ 'S12' ] },
       next: { L: 9, R: 13, STAR: 11, id: 12 }
     },
     '12': {
-      items: [ 'L -> id .    /   <EOF>' ],
+      items: [ 'L -> id .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <L -> id>' ] },
       next: {}
     },
     '13': {
-      items: [ 'L -> STAR R .    /   <EOF>' ],
+      items: [ 'L -> STAR R .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <L -> STAR R>' ] },
       next: {}
     }

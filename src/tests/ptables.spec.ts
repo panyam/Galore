@@ -22,17 +22,17 @@ describe("Tomita Test Cases", () => {
   test("2.2.1 - SLR", () => {
     testParseTable("./testcases/tomita_2.2.1.g", "./testcases/tomita_2.2.1.ptables", "slr");
   });
-  test("2.2.1 - LR", () => {
-    testParseTable("./testcases/tomita_2.2.1.g", "./testcases/tomita_2.2.1.ptables", "lr1");
-  });
   test("2.2.2 - SLR", () => {
     testParseTable("./testcases/tomita_2.2.2.g", "./testcases/tomita_2.2.2.ptables", "slr");
   });
-  test("2.2.2 - LR", () => {
-    testParseTable("./testcases/tomita_2.2.2.g", "./testcases/tomita_2.2.2.ptables", "lr1");
-  });
   test("3.3 - SLR", () => {
     testParseTable("./testcases/tomita_3.3.g", "./testcases/tomita_3.3.ptables", "slr");
+  });
+  test("2.2.1 - LR", () => {
+    testParseTable("./testcases/tomita_2.2.1.g", "./testcases/tomita_2.2.1.ptables", "lr1");
+  });
+  test("2.2.2 - LR", () => {
+    testParseTable("./testcases/tomita_2.2.2.g", "./testcases/tomita_2.2.2.ptables", "lr1");
   });
   test("3.3 - LR", () => {
     testParseTable("./testcases/tomita_3.3.g", "./testcases/tomita_3.3.ptables", "lr1");
@@ -43,15 +43,29 @@ describe("Jison tests", () => {
   test("basic - SLR", () => {
     testParseTable("./testcases/jison_basic.g", "./testcases/jison_basic.ptables", "slr");
   });
+  test("dism - SLR", () => {
+    testParseTable("./testcases/jison_dism.g", "./testcases/jison_dism.ptables", "slr");
+  });
+  test("RR Conflict - SLR", () => {
+    testParseTable("./testcases/jison_rrconflict.g", "./testcases/jison_rrconflict.ptables", "slr");
+  });
   test("basic - LR", () => {
     testParseTable("./testcases/jison_basic.g", "./testcases/jison_basic.ptables", "lr1");
   });
-  test("dism - SLR", () => {
-    testParseTable("./testcases/jison_dism.g", "./testcases/jison_dism.ptables", "slr", true);
-  });
   test("dism - LR", () => {
-    testParseTable("./testcases/jison_dism.g", "./testcases/jison_dism.ptables", "lr1", true);
+    testParseTable("./testcases/jison_dism.g", "./testcases/jison_dism.ptables", "lr1");
   });
+  test("RR Conflict - LR Should not have any", () => {
+    testParseTable("./testcases/jison_rrconflict.g", "./testcases/jison_rrconflict.ptables", "lr1");
+  });
+  /*
+  test("Anci C - SLR", () => {
+    testParseTable("./testcases/jison_ansic.g", "./testcases/jison_ansic.ptables", "slr", true);
+  });
+  test("Anci C - LR", () => {
+    testParseTable("./testcases/jison_ansic.g", "./testcases/jison_ansic.ptables", "lr1");
+  });
+ */
 });
 
 describe("Sample Parse Tables", () => {

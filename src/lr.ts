@@ -68,23 +68,6 @@ export class LRAction {
   }
 }
 
-export interface LRItem {
-  id: number;
-  readonly rule: Rule;
-  readonly position: number;
-  readonly key: string;
-  readonly debugString: string;
-  compareTo(another: this): number;
-  equals(another: this): boolean;
-  copy(): LRItem;
-
-  /**
-   * Get the LRItem corresponding to the given item by advancing
-   * its cursor position.
-   */
-  advance(): LRItem;
-}
-
 export class LRItemSet {
   id = 0;
   readonly itemGraph: LRItemGraph;
@@ -100,9 +83,13 @@ export class LRItemSet {
   // Keys help make the comparison of two sets easy.
   get key(): string {
     if (this._key == null) {
-      return this.sortedValues.join("/");
+      this._key = this.revalKey();
     }
     return this._key;
+  }
+
+  protected revalKey(): string {
+    return this.sortedValues.join("/");
   }
 
   has(itemId: number): boolean {
@@ -139,6 +126,59 @@ export class LRItemSet {
   }
 }
 
+export class LR1ItemSet extends LRItemSet {
+  private _lookaheads: NumMap<Sym[]> = {};
+
+  copy(): LR1ItemSet {
+    const out = new LR1ItemSet(this.itemGraph, ...this.values);
+    out._lookaheads = { ...this._lookaheads };
+    return out;
+  }
+
+  /**
+   * Adds a new look ahead symbol for a given item.
+   */
+  addLookAhead(item: LRItem, sym: Sym): boolean {
+    if (!(item.id in this._lookaheads)) {
+      this._lookaheads[item.id] = [];
+    }
+    for (const s of this._lookaheads[item.id]) if (s == sym) return false;
+    this._key = null;
+    this._lookaheads[item.id].push(sym);
+    this._lookaheads[item.id].sort();
+    return true;
+  }
+
+  /**
+   * Key also here includes the look ahead symbols.
+   */
+  protected revalKey(): string {
+    return this.sortedValues
+      .map((itemId) => {
+        const la = this._lookaheads[itemId] || [];
+        return itemId + "[" + la.map((s) => s.id).join(",") + "]";
+      })
+      .join("/");
+  }
+
+  /**
+   * Gets the lookahead symbols for a given item.
+   */
+  getLookAheads(item: LRItem): ReadonlyArray<Sym> {
+    return this._lookaheads[item.id] || [];
+  }
+
+  get debugValue(): any {
+    return this.sortedValues.map((v: number) => {
+      const item = this.itemGraph.items.get(v);
+      const las = this.getLookAheads(item)
+        .map((s) => s.label)
+        .join(", ");
+      return `${item.debugString} / ( ${las} )`;
+    });
+  }
+}
+
 export abstract class LRItemGraph {
   readonly grammar: Grammar;
 
@@ -158,14 +198,21 @@ export abstract class LRItemGraph {
   // Goto sets for a set and a given transition out of it
   gotoSets: NumMap<NumMap<LRItemSet>> = {};
 
+  abstract closure(itemSet: LRItemSet): LRItemSet;
+  abstract startSet(): LRItemSet;
+
   constructor(grammar: Grammar) {
     this.grammar = grammar;
     this.items = new IDSet();
     this.itemSets = new IDSet();
   }
 
-  abstract closure(itemSet: LRItemSet): LRItemSet;
-  protected abstract startItem(): LRItem;
+  protected startItem(): LRItem {
+    const startSymbol = this.grammar.startSymbol;
+    TSU.assert(startSymbol != null, "Start symbol must be set");
+    TSU.assert((this.grammar.augStartRule || null) != null, "Grammar is not augmented");
+    return this.items.ensure(new LRItem(this.grammar.augStartRule));
+  }
 
   reset(): void {
     this.grammar.refresh();
@@ -207,7 +254,7 @@ export abstract class LRItemGraph {
    * out of this item set.
    */
   goto(itemSet: LRItemSet, sym: Sym): LRItemSet {
-    const out = new LRItemSet(this);
+    const out = this.newItemSet() as LR1ItemSet;
     for (const itemId of itemSet.values) {
       const item = this.items.get(itemId);
       // see if item.position points to "sym" in its rule
@@ -215,12 +262,17 @@ export abstract class LRItemGraph {
       if (item.position < rule.rhs.length) {
         if (rule.rhs.syms[item.position] == sym) {
           // advance the item and add it
-          out.add(this.items.ensure(item.advance()).id);
+          this.advanceItemAndAdd(item, itemSet, out);
         }
       }
     }
     // compute the closure of the new set
     return this.closure(out);
+  }
+
+  protected advanceItemAndAdd(itemToAdvance: LRItem, fromItemSet: LRItemSet, toItemSet: LRItemSet): void {
+    const newItem = this.items.ensure(itemToAdvance.advance());
+    toItemSet.add(newItem.id);
   }
 
   protected newItemSet(...items: LRItem[]): LRItemSet {
@@ -229,19 +281,6 @@ export abstract class LRItemGraph {
 
   get size(): number {
     return this.itemSets.size;
-  }
-
-  /**
-   * Creates the set for the grammar.  This is done by creating an
-   * augmented rule of the form S' -> S (where S is the start symbol of
-   * the grammar) and creating the closure of this starting rule, ie:
-   *
-   * StartSet = closure({S' -> . S})
-   */
-  startSet(): LRItemSet {
-    const startItem = this.startItem();
-    const newset = this.newItemSet(startItem);
-    return this.closure(newset);
   }
 
   protected ensureGotoSet(fromSet: LRItemSet): NumMap<LRItemSet> {
@@ -485,7 +524,7 @@ export class Parser extends ParserBase {
   }
 }
 
-export class LR0Item implements LRItem {
+export class LRItem {
   id = 0;
   readonly rule: Rule;
   readonly position: number;
@@ -496,11 +535,11 @@ export class LR0Item implements LRItem {
 
   advance(): LRItem {
     TSU.assert(this.position < this.rule.rhs.length);
-    return new LR0Item(this.rule, this.position + 1);
+    return new LRItem(this.rule, this.position + 1);
   }
 
   copy(): LRItem {
-    return new LR0Item(this.rule, this.position);
+    return new LRItem(this.rule, this.position);
   }
 
   /**
@@ -539,11 +578,17 @@ export class LR0Item implements LRItem {
 }
 
 export class LR0ItemGraph extends LRItemGraph {
-  protected startItem(): LRItem {
-    const startSymbol = this.grammar.startSymbol;
-    TSU.assert(startSymbol != null, "Start symbol must be set");
-    TSU.assert((this.grammar.augStartRule || null) != null, "Grammar is not augmented");
-    return this.items.ensure(new LR0Item(this.grammar.augStartRule));
+  /**
+   * Creates the set for the grammar.  This is done by creating an
+   * augmented rule of the form S' -> S (where S is the start symbol of
+   * the grammar) and creating the closure of this starting rule, ie:
+   *
+   * StartSet = closure({S' -> . S})
+   */
+  startSet(): LRItemSet {
+    const startItem = this.startItem();
+    const newset = this.newItemSet(startItem);
+    return this.closure(newset);
   }
 
   /**
@@ -562,51 +607,13 @@ export class LR0ItemGraph extends LRItemGraph {
         const sym = rule.rhs.syms[item.position];
         if (!sym.isTerminal) {
           for (const rule of this.grammar.rulesForNT(sym)) {
-            const newItem = this.items.ensure(new LR0Item(rule, 0));
+            const newItem = this.items.ensure(new LRItem(rule, 0));
             out.add(newItem.id);
           }
         }
       }
     }
     return out.size == 0 ? out : this.itemSets.ensure(out);
-  }
-}
-
-export class LR1Item extends LR0Item {
-  readonly lookahead: Sym;
-  constructor(lookahead: Sym, rule: Rule, position = 0) {
-    super(rule, position);
-    this.lookahead = lookahead;
-  }
-
-  copy(): LR1Item {
-    return new LR1Item(this.lookahead, this.rule, this.position);
-  }
-
-  advance(): LRItem {
-    TSU.assert(this.position < this.rule.rhs.length);
-    return new LR1Item(this.lookahead, this.rule, this.position + 1);
-  }
-
-  get key(): string {
-    return this.rule.id + ":" + this.position + ":" + this.lookahead.id;
-  }
-
-  compareTo(another: this): number {
-    let diff = super.compareTo(another);
-    if (diff == 0) diff = this.lookahead.id - another.lookahead.id;
-    return diff;
-  }
-
-  equals(another: this): boolean {
-    return this.compareTo(another) == 0;
-  }
-
-  get debugString(): string {
-    const pos = this.position;
-    const pre = this.rule.rhs.syms.slice(0, pos).join(" ");
-    const post = this.rule.rhs.syms.slice(pos).join(" ");
-    return `${this.rule.nt.label} -> ${pre} . ${post}` + "   /   " + this.lookahead.label;
   }
 }
 
@@ -617,41 +624,61 @@ export class LR1ItemGraph extends LRItemGraph {
    *
    * StartSet = closure({S' -> . S, $})
    */
-  startItem(): LRItem {
-    const startSymbol = this.grammar.startSymbol;
-    TSU.assert(startSymbol != null, "Start symbol must be set");
-    TSU.assert((this.grammar.augStartRule || null) != null, "Grammar is not augmented");
-    return this.items.ensure(new LR1Item(this.grammar.Eof, this.grammar.augStartRule, 0));
+  startSet(): LRItemSet {
+    const startItem = this.startItem();
+    const newset = this.newItemSet(startItem) as LR1ItemSet;
+    newset.addLookAhead(startItem, this.grammar.Eof);
+    return this.closure(newset);
+  }
+
+  /**
+   * Overridden to create LR1 item sets so we can associate lookahead
+   * symbols for each item in the set.
+   */
+  protected newItemSet(...items: LRItem[]): LRItemSet {
+    return new LR1ItemSet(this, ...items.map((item) => item.id));
   }
 
   /**
    * Computes the closure of this item set and returns a new
    * item set.
    */
-  closure(itemSet: LRItemSet): LRItemSet {
-    const out = new LRItemSet(this, ...itemSet.values);
+  closure(itemSet: LR1ItemSet): LR1ItemSet {
+    const out = itemSet.copy();
     for (let i = 0; i < out.values.length; i++) {
       const itemId = out.values[i];
-      const item = this.items.get(itemId) as LR1Item;
+      const item = this.items.get(itemId) as LRItem;
       // Evaluate the closure
       // Cannot do anything past the end
       if (item.position >= item.rule.rhs.length) continue;
       const B = item.rule.rhs.syms[item.position];
       if (B.isTerminal) continue;
 
-      const suffix = item.rule.rhs.copy().append(item.lookahead);
-      this.grammar.firstSets.forEachTermIn(suffix, item.position + 1, (term) => {
-        if (term != null) {
-          // For each rule [ B -> beta, term ] add it to
-          // our list of items if it doesnt already exist
-          const bRules = this.grammar.rulesForNT(B);
-          for (const br of bRules) {
-            const newItem = this.items.ensure(new LR1Item(term, br, 0));
-            out.add(newItem.id);
+      for (const lookahead of out.getLookAheads(item)) {
+        const suffix = item.rule.rhs.copy().append(lookahead);
+        this.grammar.firstSets.forEachTermIn(suffix, item.position + 1, (term) => {
+          if (term != null) {
+            // For each rule [ B -> beta, term ] add it to
+            // our list of items if it doesnt already exist
+            const bRules = this.grammar.rulesForNT(B);
+            for (const br of bRules) {
+              const newItem = this.items.ensure(new LRItem(br, 0));
+              out.add(newItem.id);
+              out.addLookAhead(newItem, term);
+            }
           }
-        }
-      });
+        });
+      }
     }
-    return out.size == 0 ? out : this.itemSets.ensure(out);
+    return out.size == 0 ? out : (this.itemSets.ensure(out) as LR1ItemSet);
+  }
+
+  protected advanceItemAndAdd(itemToAdvance: LRItem, fromItemSet: LR1ItemSet, toItemSet: LR1ItemSet): void {
+    super.advanceItemAndAdd(itemToAdvance, fromItemSet, toItemSet);
+    const newItem = this.items.ensure(itemToAdvance.advance());
+    // copy over the look aheads
+    for (const laSym of fromItemSet.getLookAheads(itemToAdvance)) {
+      toItemSet.addLookAhead(newItem, laSym);
+    }
   }
 }

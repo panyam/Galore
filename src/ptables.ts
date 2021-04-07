@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Grammar } from "./grammar";
-import { LRAction, ParseTable, LR0Item, LR0ItemGraph, LR1Item, LR1ItemGraph } from "./lr";
+import { LRAction, ParseTable, LRItem, LR1ItemSet, LR0ItemGraph, LR1ItemGraph } from "./lr";
 
 export function makeSLRParseTable(grammar: Grammar): [ParseTable, LR0ItemGraph] {
   const ig = new LR0ItemGraph(grammar).refresh();
@@ -40,7 +40,7 @@ export function makeSLRParseTable(grammar: Grammar): [ParseTable, LR0ItemGraph] 
 
     // If this state contains the augmented item, S' -> S .
     // then add accept
-    if (itemSet.has(ig.items.ensure(new LR0Item(grammar.augStartRule, 1)).id)) {
+    if (itemSet.has(ig.items.ensure(new LRItem(grammar.augStartRule, 1)).id)) {
       parseTable.addAction(itemSet, grammar.Eof, LRAction.Accept());
     }
   }
@@ -56,7 +56,7 @@ export function makeLRParseTable(grammar: Grammar): [ParseTable, LR1ItemGraph] {
   for (const itemSet of ig.itemSets.entries) {
     // Look for transitions from this set
     for (const itemId of itemSet.values) {
-      const item = ig.items.get(itemId) as LR1Item;
+      const item = ig.items.get(itemId);
       const rule = item.rule;
       if (item.position < rule.rhs.length) {
         // possibilities of shift
@@ -71,7 +71,10 @@ export function makeLRParseTable(grammar: Grammar): [ParseTable, LR1ItemGraph] {
         // ensure nt != S'
         // if we have nt -> rule DOT / t
         // Reduce nt -> rule for t
-        parseTable.addAction(itemSet, item.lookahead, LRAction.Reduce(rule));
+        const lookaheads = (itemSet as LR1ItemSet).getLookAheads(item);
+        for (const lookahead of lookaheads) {
+          parseTable.addAction(itemSet, lookahead, LRAction.Reduce(rule));
+        }
       }
     }
 
@@ -84,7 +87,9 @@ export function makeLRParseTable(grammar: Grammar): [ParseTable, LR1ItemGraph] {
 
     // If this state contains the augmented item, S' -> S . / $
     // then add accept
-    if (itemSet.has(ig.items.ensure(new LR1Item(grammar.Eof, grammar.augStartRule, 1)).id)) {
+    const lr1Item = ig.items.ensure(new LRItem(grammar.augStartRule, 1));
+    (itemSet as LR1ItemSet).addLookAhead(lr1Item, grammar.Eof);
+    if (itemSet.has(lr1Item.id)) {
       parseTable.addAction(itemSet, grammar.Eof, LRAction.Accept());
     }
   }

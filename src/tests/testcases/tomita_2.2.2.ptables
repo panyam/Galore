@@ -10,7 +10,7 @@
         'NP ->  . NP PP / ( prep, v )'
       ],
       actions: { S: [ '1' ], NP: [ '2' ], n: [ 'S3' ], det: [ 'S4' ] },
-      next: { S: 1, NP: 2, n: 3, det: 4 }
+      goto: { S: 1, NP: 2, n: 3, det: 4 }
     },
     '1': {
       items: [
@@ -19,7 +19,7 @@
         'PP ->  . prep NP / ( <EOF>, prep )'
       ],
       actions: { '<EOF>': [ 'Acc' ], PP: [ '5' ], prep: [ 'S6' ] },
-      next: { PP: 5, prep: 6 }
+      goto: { PP: 5, prep: 6 }
     },
     '2': {
       items: [
@@ -29,22 +29,22 @@
         'S -> NP . VP / ( <EOF>, prep )'
       ],
       actions: { VP: [ '7' ], PP: [ '8' ], prep: [ 'S9' ], v: [ 'S10' ] },
-      next: { VP: 7, PP: 8, prep: 9, v: 10 }
+      goto: { VP: 7, PP: 8, prep: 9, v: 10 }
     },
     '3': {
       items: [ 'NP -> n .  / ( prep, v )' ],
       actions: { prep: [ 'R <NP -> n>' ], v: [ 'R <NP -> n>' ] },
-      next: {}
+      goto: {}
     },
     '4': {
       items: [ 'NP -> det . n / ( prep, v )' ],
       actions: { n: [ 'S11' ] },
-      next: { n: 11 }
+      goto: { n: 11 }
     },
     '5': {
       items: [ 'S -> S PP .  / ( <EOF>, prep )' ],
       actions: { '<EOF>': [ 'R <S -> S PP>' ], prep: [ 'R <S -> S PP>' ] },
-      next: {}
+      goto: {}
     },
     '6': {
       items: [
@@ -54,17 +54,17 @@
         'NP ->  . NP PP / ( <EOF>, prep )'
       ],
       actions: { NP: [ '12' ], n: [ 'S13' ], det: [ 'S14' ] },
-      next: { NP: 12, n: 13, det: 14 }
+      goto: { NP: 12, n: 13, det: 14 }
     },
     '7': {
       items: [ 'S -> NP VP .  / ( <EOF>, prep )' ],
       actions: { '<EOF>': [ 'R <S -> NP VP>' ], prep: [ 'R <S -> NP VP>' ] },
-      next: {}
+      goto: {}
     },
     '8': {
       items: [ 'NP -> NP PP .  / ( prep, v )' ],
       actions: { prep: [ 'R <NP -> NP PP>' ], v: [ 'R <NP -> NP PP>' ] },
-      next: {}
+      goto: {}
     },
     '9': {
       items: [
@@ -74,7 +74,7 @@
         'NP ->  . NP PP / ( prep, v )'
       ],
       actions: { NP: [ '15' ], n: [ 'S3' ], det: [ 'S4' ] },
-      next: { NP: 15, n: 3, det: 4 }
+      goto: { NP: 15, n: 3, det: 4 }
     },
     '10': {
       items: [
@@ -84,12 +84,12 @@
         'NP ->  . NP PP / ( <EOF>, prep )'
       ],
       actions: { NP: [ '16' ], n: [ 'S13' ], det: [ 'S14' ] },
-      next: { NP: 16, n: 13, det: 14 }
+      goto: { NP: 16, n: 13, det: 14 }
     },
     '11': {
       items: [ 'NP -> det n .  / ( prep, v )' ],
       actions: { prep: [ 'R <NP -> det n>' ], v: [ 'R <NP -> det n>' ] },
-      next: {}
+      goto: {}
     },
     '12': {
       items: [
@@ -102,17 +102,17 @@
         PP: [ '17' ],
         prep: [ 'R <PP -> prep NP>', 'S6' ]
       },
-      next: { PP: 17, prep: 6 }
+      goto: { PP: 17, prep: 6 }
     },
     '13': {
       items: [ 'NP -> n .  / ( <EOF>, prep )' ],
       actions: { '<EOF>': [ 'R <NP -> n>' ], prep: [ 'R <NP -> n>' ] },
-      next: {}
+      goto: {}
     },
     '14': {
       items: [ 'NP -> det . n / ( <EOF>, prep )' ],
       actions: { n: [ 'S18' ] },
-      next: { n: 18 }
+      goto: { n: 18 }
     },
     '15': {
       items: [
@@ -125,7 +125,7 @@
         prep: [ 'R <PP -> prep NP>', 'S9' ],
         v: [ 'R <PP -> prep NP>' ]
       },
-      next: { PP: 8, prep: 9 }
+      goto: { PP: 8, prep: 9 }
     },
     '16': {
       items: [
@@ -138,17 +138,17 @@
         PP: [ '17' ],
         prep: [ 'R <VP -> v NP>', 'S6' ]
       },
-      next: { PP: 17, prep: 6 }
+      goto: { PP: 17, prep: 6 }
     },
     '17': {
       items: [ 'NP -> NP PP .  / ( <EOF>, prep )' ],
       actions: { '<EOF>': [ 'R <NP -> NP PP>' ], prep: [ 'R <NP -> NP PP>' ] },
-      next: {}
+      goto: {}
     },
     '18': {
       items: [ 'NP -> det n .  / ( <EOF>, prep )' ],
       actions: { '<EOF>': [ 'R <NP -> det n>' ], prep: [ 'R <NP -> det n>' ] },
-      next: {}
+      goto: {}
     }
   },
   slr: {
@@ -162,12 +162,12 @@
         'NP ->  . NP PP'
       ],
       actions: { S: [ '1' ], NP: [ '2' ], n: [ 'S3' ], det: [ 'S4' ] },
-      next: { S: 1, NP: 2, n: 3, det: 4 }
+      goto: { S: 1, NP: 2, n: 3, det: 4 }
     },
     '1': {
       items: [ 'Start -> S . ', 'S -> S . PP', 'PP ->  . prep NP' ],
       actions: { '<EOF>': [ 'Acc' ], PP: [ '5' ], prep: [ 'S6' ] },
-      next: { PP: 5, prep: 6 }
+      goto: { PP: 5, prep: 6 }
     },
     '2': {
       items: [
@@ -177,7 +177,7 @@
         'S -> NP . VP'
       ],
       actions: { VP: [ '7' ], PP: [ '8' ], prep: [ 'S6' ], v: [ 'S9' ] },
-      next: { VP: 7, PP: 8, prep: 6, v: 9 }
+      goto: { VP: 7, PP: 8, prep: 6, v: 9 }
     },
     '3': {
       items: [ 'NP -> n . ' ],
@@ -186,17 +186,17 @@
         prep: [ 'R <NP -> n>' ],
         v: [ 'R <NP -> n>' ]
       },
-      next: {}
+      goto: {}
     },
     '4': {
       items: [ 'NP -> det . n' ],
       actions: { n: [ 'S10' ] },
-      next: { n: 10 }
+      goto: { n: 10 }
     },
     '5': {
       items: [ 'S -> S PP . ' ],
       actions: { '<EOF>': [ 'R <S -> S PP>' ], prep: [ 'R <S -> S PP>' ] },
-      next: {}
+      goto: {}
     },
     '6': {
       items: [
@@ -206,12 +206,12 @@
         'NP ->  . NP PP'
       ],
       actions: { NP: [ '11' ], n: [ 'S3' ], det: [ 'S4' ] },
-      next: { NP: 11, n: 3, det: 4 }
+      goto: { NP: 11, n: 3, det: 4 }
     },
     '7': {
       items: [ 'S -> NP VP . ' ],
       actions: { '<EOF>': [ 'R <S -> NP VP>' ], prep: [ 'R <S -> NP VP>' ] },
-      next: {}
+      goto: {}
     },
     '8': {
       items: [ 'NP -> NP PP . ' ],
@@ -220,7 +220,7 @@
         prep: [ 'R <NP -> NP PP>' ],
         v: [ 'R <NP -> NP PP>' ]
       },
-      next: {}
+      goto: {}
     },
     '9': {
       items: [
@@ -230,7 +230,7 @@
         'NP ->  . NP PP'
       ],
       actions: { NP: [ '12' ], n: [ 'S3' ], det: [ 'S4' ] },
-      next: { NP: 12, n: 3, det: 4 }
+      goto: { NP: 12, n: 3, det: 4 }
     },
     '10': {
       items: [ 'NP -> det n . ' ],
@@ -239,7 +239,7 @@
         prep: [ 'R <NP -> det n>' ],
         v: [ 'R <NP -> det n>' ]
       },
-      next: {}
+      goto: {}
     },
     '11': {
       items: [ 'NP -> NP . PP', 'PP -> prep NP . ', 'PP ->  . prep NP' ],
@@ -249,7 +249,7 @@
         prep: [ 'R <PP -> prep NP>', 'S6' ],
         v: [ 'R <PP -> prep NP>' ]
       },
-      next: { PP: 8, prep: 6 }
+      goto: { PP: 8, prep: 6 }
     },
     '12': {
       items: [ 'NP -> NP . PP', 'VP -> v NP . ', 'PP ->  . prep NP' ],
@@ -258,7 +258,7 @@
         PP: [ '8' ],
         prep: [ 'R <VP -> v NP>', 'S6' ]
       },
-      next: { PP: 8, prep: 6 }
+      goto: { PP: 8, prep: 6 }
     }
   }
 }

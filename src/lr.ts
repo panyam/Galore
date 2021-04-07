@@ -20,7 +20,7 @@ export class LRAction {
   tag: LRActionType;
 
   // Next state to go to after performing the action (if valid).
-  nextState: Nullable<LRItemSet> = null;
+  gotoState: Nullable<LRItemSet> = null;
 
   // The rule to be used for a reduce action
   rule: Nullable<Rule> = null;
@@ -28,22 +28,22 @@ export class LRAction {
   toString(): string {
     if (this.tag == LRActionType.ACCEPT) return "Acc";
     else if (this.tag == LRActionType.SHIFT) {
-      return "S" + this.nextState!.id;
+      return "S" + this.gotoState!.id;
     } else if (this.tag == LRActionType.REDUCE) {
       return "R <" + this.rule!.debugString + ">";
     } else {
-      return "" + this.nextState!.id;
+      return "" + this.gotoState!.id;
     }
   }
 
   equals(another: LRAction): boolean {
-    return this.tag == another.tag && this.nextState == another.nextState && this.rule == another.rule;
+    return this.tag == another.tag && this.gotoState == another.gotoState && this.rule == another.rule;
   }
 
-  static Shift(next: LRItemSet): LRAction {
+  static Shift(goto: LRItemSet): LRAction {
     const out = new LRAction();
     out.tag = LRActionType.SHIFT;
-    out.nextState = next;
+    out.gotoState = goto;
     return out;
   }
 
@@ -54,10 +54,10 @@ export class LRAction {
     return out;
   }
 
-  static Goto(nextState: LRItemSet): LRAction {
+  static Goto(gotoState: LRItemSet): LRAction {
     const out = new LRAction();
     out.tag = LRActionType.GOTO;
-    out.nextState = nextState;
+    out.gotoState = gotoState;
     return out;
   }
 
@@ -315,14 +315,13 @@ export abstract class LRItemGraph {
   get debugValue(): any {
     const out = {} as any;
     this.itemSets.entries.forEach((iset) => {
-      out[iset.id] = { items: [], next: {} };
+      out[iset.id] = { items: [], goto: {} };
       out[iset.id]["items"] = iset.debugValue;
-      out[iset.id]["next"] = {};
       const g = this.gotoSets[iset.id];
       for (const symid in g) {
         const sym = this.grammar.getSymById(symid as any)!;
-        out[iset.id]["next"] = out[iset.id]["next"] || {};
-        out[iset.id]["next"][sym.label] = g[symid].id;
+        out[iset.id]["goto"] = out[iset.id]["goto"] || {};
+        out[iset.id]["goto"][sym.label] = g[symid].id;
       }
     });
     return out;
@@ -477,7 +476,7 @@ export class Parser extends ParserBase {
       } else if (action.tag == LRActionType.SHIFT) {
         tokenizer.next();
         const newNode = new PTNode(nextSym, nextValue);
-        stack.push(action.nextState!, newNode);
+        stack.push(action.gotoState!, newNode);
       } else {
         // reduce
         TSU.assert(action.rule != null, "Nonterm and ruleindex must be provided for a reduction action");
@@ -492,7 +491,7 @@ export class Parser extends ParserBase {
         [topState, topNode] = stack.top();
         const newAction = this.resolveActions(this.parseTable.getActions(topState, action.rule.nt), stack, tokenizer);
         TSU.assert(newAction != null, "Top item does not have an action.");
-        stack.push(newAction.nextState!, newNode);
+        stack.push(newAction.gotoState!, newNode);
         this.notifyReduction(newNode, action.rule);
         output = newNode;
       }

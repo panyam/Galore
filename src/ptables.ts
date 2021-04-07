@@ -14,9 +14,9 @@ export function makeSLRParseTable(grammar: Grammar): [ParseTable, LR0ItemGraph] 
         // possibilities of shift
         const sym = rule.rhs.syms[item.position];
         if (sym.isTerminal) {
-          const nextSet = ig.getGoto(itemSet, sym);
-          if (nextSet) {
-            parseTable.addAction(itemSet, sym, LRAction.Shift(nextSet));
+          const gotoSet = ig.getGoto(itemSet, sym);
+          if (gotoSet) {
+            parseTable.addAction(itemSet, sym, LRAction.Shift(gotoSet));
           }
         }
       } else {

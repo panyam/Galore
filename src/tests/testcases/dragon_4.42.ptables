@@ -8,12 +8,12 @@
         'C ->  . d / ( c, d )'
       ],
       actions: { S: [ '1' ], C: [ '2' ], c: [ 'S3' ], d: [ 'S4' ] },
-      next: { S: 1, C: 2, c: 3, d: 4 }
+      goto: { S: 1, C: 2, c: 3, d: 4 }
     },
     '1': {
       items: [ 'Start -> S .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'Acc' ] },
-      next: {}
+      goto: {}
     },
     '2': {
       items: [
@@ -22,7 +22,7 @@
         'S -> C . C / ( <EOF> )'
       ],
       actions: { C: [ '5' ], c: [ 'S6' ], d: [ 'S7' ] },
-      next: { C: 5, c: 6, d: 7 }
+      goto: { C: 5, c: 6, d: 7 }
     },
     '3': {
       items: [
@@ -31,17 +31,17 @@
         'C -> c . C / ( c, d )'
       ],
       actions: { C: [ '8' ], c: [ 'S3' ], d: [ 'S4' ] },
-      next: { C: 8, c: 3, d: 4 }
+      goto: { C: 8, c: 3, d: 4 }
     },
     '4': {
       items: [ 'C -> d .  / ( c, d )' ],
       actions: { c: [ 'R <C -> d>' ], d: [ 'R <C -> d>' ] },
-      next: {}
+      goto: {}
     },
     '5': {
       items: [ 'S -> C C .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <S -> C C>' ] },
-      next: {}
+      goto: {}
     },
     '6': {
       items: [
@@ -50,44 +50,44 @@
         'C -> c . C / ( <EOF> )'
       ],
       actions: { C: [ '9' ], c: [ 'S6' ], d: [ 'S7' ] },
-      next: { C: 9, c: 6, d: 7 }
+      goto: { C: 9, c: 6, d: 7 }
     },
     '7': {
       items: [ 'C -> d .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <C -> d>' ] },
-      next: {}
+      goto: {}
     },
     '8': {
       items: [ 'C -> c C .  / ( c, d )' ],
       actions: { c: [ 'R <C -> c C>' ], d: [ 'R <C -> c C>' ] },
-      next: {}
+      goto: {}
     },
     '9': {
       items: [ 'C -> c C .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <C -> c C>' ] },
-      next: {}
+      goto: {}
     }
   },
   slr: {
     '0': {
       items: [ 'Start ->  . S', 'S ->  . C C', 'C ->  . c C', 'C ->  . d' ],
       actions: { S: [ '1' ], C: [ '2' ], c: [ 'S3' ], d: [ 'S4' ] },
-      next: { S: 1, C: 2, c: 3, d: 4 }
+      goto: { S: 1, C: 2, c: 3, d: 4 }
     },
     '1': {
       items: [ 'Start -> S . ' ],
       actions: { '<EOF>': [ 'Acc' ] },
-      next: {}
+      goto: {}
     },
     '2': {
       items: [ 'C ->  . c C', 'C ->  . d', 'S -> C . C' ],
       actions: { C: [ '5' ], c: [ 'S3' ], d: [ 'S4' ] },
-      next: { C: 5, c: 3, d: 4 }
+      goto: { C: 5, c: 3, d: 4 }
     },
     '3': {
       items: [ 'C ->  . c C', 'C ->  . d', 'C -> c . C' ],
       actions: { C: [ '6' ], c: [ 'S3' ], d: [ 'S4' ] },
-      next: { C: 6, c: 3, d: 4 }
+      goto: { C: 6, c: 3, d: 4 }
     },
     '4': {
       items: [ 'C -> d . ' ],
@@ -96,12 +96,12 @@
         c: [ 'R <C -> d>' ],
         d: [ 'R <C -> d>' ]
       },
-      next: {}
+      goto: {}
     },
     '5': {
       items: [ 'S -> C C . ' ],
       actions: { '<EOF>': [ 'R <S -> C C>' ] },
-      next: {}
+      goto: {}
     },
     '6': {
       items: [ 'C -> c C . ' ],
@@ -110,7 +110,7 @@
         c: [ 'R <C -> c C>' ],
         d: [ 'R <C -> c C>' ]
       },
-      next: {}
+      goto: {}
     }
   }
 }

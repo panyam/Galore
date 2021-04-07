@@ -1,5 +1,4 @@
 
-
 Components of the CLI.
 
 1. Grammar Analyzer

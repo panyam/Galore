@@ -9,12 +9,12 @@
         'S ->  . b B c / ( <EOF> )'
       ],
       actions: { S: [ '1' ], a: [ 'S2' ], b: [ 'S3' ] },
-      next: { S: 1, a: 2, b: 3 }
+      goto: { S: 1, a: 2, b: 3 }
     },
     '1': {
       items: [ 'Start -> S .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'Acc' ] },
-      next: {}
+      goto: {}
     },
     '2': {
       items: [
@@ -24,7 +24,7 @@
         'B ->  . z / ( d )'
       ],
       actions: { A: [ '4' ], B: [ '5' ], z: [ 'S6' ] },
-      next: { A: 4, B: 5, z: 6 }
+      goto: { A: 4, B: 5, z: 6 }
     },
     '3': {
       items: [
@@ -34,57 +34,57 @@
         'B ->  . z / ( c )'
       ],
       actions: { A: [ '7' ], B: [ '8' ], z: [ 'S9' ] },
-      next: { A: 7, B: 8, z: 9 }
+      goto: { A: 7, B: 8, z: 9 }
     },
     '4': {
       items: [ 'S -> a A . c / ( <EOF> )' ],
       actions: { c: [ 'S10' ] },
-      next: { c: 10 }
+      goto: { c: 10 }
     },
     '5': {
       items: [ 'S -> a B . d / ( <EOF> )' ],
       actions: { d: [ 'S11' ] },
-      next: { d: 11 }
+      goto: { d: 11 }
     },
     '6': {
       items: [ 'A -> z .  / ( c )', 'B -> z .  / ( d )' ],
       actions: { c: [ 'R <A -> z>' ], d: [ 'R <B -> z>' ] },
-      next: {}
+      goto: {}
     },
     '7': {
       items: [ 'S -> b A . d / ( <EOF> )' ],
       actions: { d: [ 'S12' ] },
-      next: { d: 12 }
+      goto: { d: 12 }
     },
     '8': {
       items: [ 'S -> b B . c / ( <EOF> )' ],
       actions: { c: [ 'S13' ] },
-      next: { c: 13 }
+      goto: { c: 13 }
     },
     '9': {
       items: [ 'A -> z .  / ( d )', 'B -> z .  / ( c )' ],
       actions: { c: [ 'R <B -> z>' ], d: [ 'R <A -> z>' ] },
-      next: {}
+      goto: {}
     },
     '10': {
       items: [ 'S -> a A c .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <S -> a A c>' ] },
-      next: {}
+      goto: {}
     },
     '11': {
       items: [ 'S -> a B d .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <S -> a B d>' ] },
-      next: {}
+      goto: {}
     },
     '12': {
       items: [ 'S -> b A d .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <S -> b A d>' ] },
-      next: {}
+      goto: {}
     },
     '13': {
       items: [ 'S -> b B c .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <S -> b B c>' ] },
-      next: {}
+      goto: {}
     }
   },
   "slr": {
@@ -97,32 +97,32 @@
         'S ->  . b B c'
       ],
       actions: { S: [ '1' ], a: [ 'S2' ], b: [ 'S3' ] },
-      next: { S: 1, a: 2, b: 3 }
+      goto: { S: 1, a: 2, b: 3 }
     },
     '1': {
       items: [ 'Start -> S . ' ],
       actions: { '<EOF>': [ 'Acc' ] },
-      next: {}
+      goto: {}
     },
     '2': {
       items: [ 'S -> a . A c', 'S -> a . B d', 'A ->  . z', 'B ->  . z' ],
       actions: { A: [ '4' ], B: [ '5' ], z: [ 'S6' ] },
-      next: { A: 4, B: 5, z: 6 }
+      goto: { A: 4, B: 5, z: 6 }
     },
     '3': {
       items: [ 'S -> b . A d', 'S -> b . B c', 'A ->  . z', 'B ->  . z' ],
       actions: { A: [ '7' ], B: [ '8' ], z: [ 'S6' ] },
-      next: { A: 7, B: 8, z: 6 }
+      goto: { A: 7, B: 8, z: 6 }
     },
     '4': {
       items: [ 'S -> a A . c' ],
       actions: { c: [ 'S9' ] },
-      next: { c: 9 }
+      goto: { c: 9 }
     },
     '5': {
       items: [ 'S -> a B . d' ],
       actions: { d: [ 'S10' ] },
-      next: { d: 10 }
+      goto: { d: 10 }
     },
     '6': {
       items: [ 'A -> z . ', 'B -> z . ' ],
@@ -130,37 +130,37 @@
         c: [ 'R <A -> z>', 'R <B -> z>' ],
         d: [ 'R <A -> z>', 'R <B -> z>' ]
       },
-      next: {}
+      goto: {}
     },
     '7': {
       items: [ 'S -> b A . d' ],
       actions: { d: [ 'S11' ] },
-      next: { d: 11 }
+      goto: { d: 11 }
     },
     '8': {
       items: [ 'S -> b B . c' ],
       actions: { c: [ 'S12' ] },
-      next: { c: 12 }
+      goto: { c: 12 }
     },
     '9': {
       items: [ 'S -> a A c . ' ],
       actions: { '<EOF>': [ 'R <S -> a A c>' ] },
-      next: {}
+      goto: {}
     },
     '10': {
       items: [ 'S -> a B d . ' ],
       actions: { '<EOF>': [ 'R <S -> a B d>' ] },
-      next: {}
+      goto: {}
     },
     '11': {
       items: [ 'S -> b A d . ' ],
       actions: { '<EOF>': [ 'R <S -> b A d>' ] },
-      next: {}
+      goto: {}
     },
     '12': {
       items: [ 'S -> b B c . ' ],
       actions: { '<EOF>': [ 'R <S -> b B c>' ] },
-      next: {}
+      goto: {}
     }
   }
 }

@@ -15,27 +15,27 @@
         n: [ 'S4' ],
         that: [ 'S5' ]
       },
-      next: { S: 1, NP: 2, det: 3, n: 4, that: 5 }
+      goto: { S: 1, NP: 2, det: 3, n: 4, that: 5 }
     },
     '1': {
       items: [ 'Start -> S . ' ],
       actions: { '<EOF>': [ 'Acc' ] },
-      next: {}
+      goto: {}
     },
     '2': {
       items: [ 'S -> NP . VP', 'VP ->  . be adj' ],
       actions: { VP: [ '6' ], be: [ 'S7' ] },
-      next: { VP: 6, be: 7 }
+      goto: { VP: 6, be: 7 }
     },
     '3': {
       items: [ 'NP -> det . n' ],
       actions: { n: [ 'S8' ] },
-      next: { n: 8 }
+      goto: { n: 8 }
     },
     '4': {
       items: [ 'NP -> n . ' ],
       actions: { be: [ 'R <NP -> n>' ] },
-      next: {}
+      goto: {}
     },
     '5': {
       items: [
@@ -52,32 +52,32 @@
         n: [ 'S4' ],
         that: [ 'S5' ]
       },
-      next: { S: 9, NP: 2, det: 3, n: 4, that: 5 }
+      goto: { S: 9, NP: 2, det: 3, n: 4, that: 5 }
     },
     '6': {
       items: [ 'S -> NP VP . ' ],
       actions: { '<EOF>': [ 'R <S -> NP VP>' ], be: [ 'R <S -> NP VP>' ] },
-      next: {}
+      goto: {}
     },
     '7': {
       items: [ 'VP -> be . adj' ],
       actions: { adj: [ 'S10' ] },
-      next: { adj: 10 }
+      goto: { adj: 10 }
     },
     '8': {
       items: [ 'NP -> det n . ' ],
       actions: { be: [ 'R <NP -> det n>' ] },
-      next: {}
+      goto: {}
     },
     '9': {
       items: [ 'NP -> that S . ' ],
       actions: { be: [ 'R <NP -> that S>' ] },
-      next: {}
+      goto: {}
     },
     '10': {
       items: [ 'VP -> be adj . ' ],
       actions: { '<EOF>': [ 'R <VP -> be adj>' ], be: [ 'R <VP -> be adj>' ] },
-      next: {}
+      goto: {}
     }
   },
   lr1: {
@@ -96,27 +96,27 @@
         n: [ 'S4' ],
         that: [ 'S5' ]
       },
-      next: { S: 1, NP: 2, det: 3, n: 4, that: 5 }
+      goto: { S: 1, NP: 2, det: 3, n: 4, that: 5 }
     },
     '1': {
       items: [ 'Start -> S .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'Acc' ] },
-      next: {}
+      goto: {}
     },
     '2': {
       items: [ 'S -> NP . VP / ( <EOF> )', 'VP ->  . be adj / ( <EOF> )' ],
       actions: { VP: [ '6' ], be: [ 'S7' ] },
-      next: { VP: 6, be: 7 }
+      goto: { VP: 6, be: 7 }
     },
     '3': {
       items: [ 'NP -> det . n / ( be )' ],
       actions: { n: [ 'S8' ] },
-      next: { n: 8 }
+      goto: { n: 8 }
     },
     '4': {
       items: [ 'NP -> n .  / ( be )' ],
       actions: { be: [ 'R <NP -> n>' ] },
-      next: {}
+      goto: {}
     },
     '5': {
       items: [
@@ -133,52 +133,52 @@
         n: [ 'S4' ],
         that: [ 'S5' ]
       },
-      next: { S: 9, NP: 10, det: 3, n: 4, that: 5 }
+      goto: { S: 9, NP: 10, det: 3, n: 4, that: 5 }
     },
     '6': {
       items: [ 'S -> NP VP .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <S -> NP VP>' ] },
-      next: {}
+      goto: {}
     },
     '7': {
       items: [ 'VP -> be . adj / ( <EOF> )' ],
       actions: { adj: [ 'S11' ] },
-      next: { adj: 11 }
+      goto: { adj: 11 }
     },
     '8': {
       items: [ 'NP -> det n .  / ( be )' ],
       actions: { be: [ 'R <NP -> det n>' ] },
-      next: {}
+      goto: {}
     },
     '9': {
       items: [ 'NP -> that S .  / ( be )' ],
       actions: { be: [ 'R <NP -> that S>' ] },
-      next: {}
+      goto: {}
     },
     '10': {
       items: [ 'S -> NP . VP / ( be )', 'VP ->  . be adj / ( be )' ],
       actions: { VP: [ '12' ], be: [ 'S13' ] },
-      next: { VP: 12, be: 13 }
+      goto: { VP: 12, be: 13 }
     },
     '11': {
       items: [ 'VP -> be adj .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <VP -> be adj>' ] },
-      next: {}
+      goto: {}
     },
     '12': {
       items: [ 'S -> NP VP .  / ( be )' ],
       actions: { be: [ 'R <S -> NP VP>' ] },
-      next: {}
+      goto: {}
     },
     '13': {
       items: [ 'VP -> be . adj / ( be )' ],
       actions: { adj: [ 'S14' ] },
-      next: { adj: 14 }
+      goto: { adj: 14 }
     },
     '14': {
       items: [ 'VP -> be adj .  / ( be )' ],
       actions: { be: [ 'R <VP -> be adj>' ] },
-      next: {}
+      goto: {}
     }
   }
 }

@@ -62,11 +62,11 @@ describe("LRItemSet", () => {
           "F ->  . OPEN E CLOSE",
           "F ->  . id",
         ],
-        next: { E: 1, T: 2, F: 3, OPEN: 4, id: 5 },
+        goto: { E: 1, T: 2, F: 3, OPEN: 4, id: 5 },
       },
-      "1": { items: ["E1 -> E . ", "E -> E . PLUS T"], next: { PLUS: 6 } },
-      "2": { items: ["T -> T . STAR F", "E -> T . "], next: { STAR: 7 } },
-      "3": { items: ["T -> F . "], next: {} },
+      "1": { items: ["E1 -> E . ", "E -> E . PLUS T"], goto: { PLUS: 6 } },
+      "2": { items: ["T -> T . STAR F", "E -> T . "], goto: { STAR: 7 } },
+      "3": { items: ["T -> F . "], goto: {} },
       "4": {
         items: [
           "E ->  . E PLUS T",
@@ -77,27 +77,27 @@ describe("LRItemSet", () => {
           "F ->  . OPEN E CLOSE",
           "F ->  . id",
         ],
-        next: { E: 8, T: 2, F: 3, OPEN: 4, id: 5 },
+        goto: { E: 8, T: 2, F: 3, OPEN: 4, id: 5 },
       },
-      "5": { items: ["F -> id . "], next: {} },
+      "5": { items: ["F -> id . "], goto: {} },
       "6": {
         items: ["E -> E PLUS . T", "T ->  . T STAR F", "T ->  . F", "F ->  . OPEN E CLOSE", "F ->  . id"],
-        next: { T: 9, F: 3, OPEN: 4, id: 5 },
+        goto: { T: 9, F: 3, OPEN: 4, id: 5 },
       },
       "7": {
         items: ["T -> T STAR . F", "F ->  . OPEN E CLOSE", "F ->  . id"],
-        next: { F: 10, OPEN: 4, id: 5 },
+        goto: { F: 10, OPEN: 4, id: 5 },
       },
       "8": {
         items: ["F -> OPEN E . CLOSE", "E -> E . PLUS T"],
-        next: { PLUS: 6, CLOSE: 11 },
+        goto: { PLUS: 6, CLOSE: 11 },
       },
       "9": {
         items: ["T -> T . STAR F", "E -> E PLUS T . "],
-        next: { STAR: 7 },
+        goto: { STAR: 7 },
       },
-      "10": { items: ["T -> T STAR F . "], next: {} },
-      "11": { items: ["F -> OPEN E CLOSE . "], next: {} },
+      "10": { items: ["T -> T STAR F . "], goto: {} },
+      "11": { items: ["F -> OPEN E CLOSE . "], goto: {} },
     });
   });
 });

@@ -84,12 +84,12 @@ describe("Sample Parse Tables", () => {
       "0": {
         items: ["Start ->  . E", "E ->  . T X", "T ->  . int Y", "T ->  . OPEN E CLOSE"],
         actions: { E: ["1"], T: ["2"], int: ["S3"], OPEN: ["S4"] },
-        next: { E: 1, T: 2, int: 3, OPEN: 4 },
+        goto: { E: 1, T: 2, int: 3, OPEN: 4 },
       },
       "1": {
         items: ["Start -> E . "],
         actions: { "<EOF>": ["Acc"] },
-        next: {},
+        goto: {},
       },
       "2": {
         items: ["E -> T . X", "X ->  . PLUS E", "X ->  . "],
@@ -99,7 +99,7 @@ describe("Sample Parse Tables", () => {
           PLUS: ["S6"],
           CLOSE: ["R <X -> >"],
         },
-        next: { X: 5, PLUS: 6 },
+        goto: { X: 5, PLUS: 6 },
       },
       "3": {
         items: ["Y ->  . ", "T -> int . Y", "Y ->  . STAR T"],
@@ -110,22 +110,22 @@ describe("Sample Parse Tables", () => {
           CLOSE: ["R <Y -> >"],
           STAR: ["S8"],
         },
-        next: { Y: 7, STAR: 8 },
+        goto: { Y: 7, STAR: 8 },
       },
       "4": {
         items: ["E ->  . T X", "T -> OPEN . E CLOSE", "T ->  . int Y", "T ->  . OPEN E CLOSE"],
         actions: { E: ["9"], T: ["2"], int: ["S3"], OPEN: ["S4"] },
-        next: { E: 9, T: 2, int: 3, OPEN: 4 },
+        goto: { E: 9, T: 2, int: 3, OPEN: 4 },
       },
       "5": {
         items: ["E -> T X . "],
         actions: { "<EOF>": ["R <E -> T X>"], CLOSE: ["R <E -> T X>"] },
-        next: {},
+        goto: {},
       },
       "6": {
         items: ["E ->  . T X", "X -> PLUS . E", "T ->  . int Y", "T ->  . OPEN E CLOSE"],
         actions: { E: ["10"], T: ["2"], int: ["S3"], OPEN: ["S4"] },
-        next: { E: 10, T: 2, int: 3, OPEN: 4 },
+        goto: { E: 10, T: 2, int: 3, OPEN: 4 },
       },
       "7": {
         items: ["T -> int Y . "],
@@ -134,22 +134,22 @@ describe("Sample Parse Tables", () => {
           PLUS: ["R <T -> int Y>"],
           CLOSE: ["R <T -> int Y>"],
         },
-        next: {},
+        goto: {},
       },
       "8": {
         items: ["Y -> STAR . T", "T ->  . int Y", "T ->  . OPEN E CLOSE"],
         actions: { T: ["11"], int: ["S3"], OPEN: ["S4"] },
-        next: { T: 11, int: 3, OPEN: 4 },
+        goto: { T: 11, int: 3, OPEN: 4 },
       },
       "9": {
         items: ["T -> OPEN E . CLOSE"],
         actions: { CLOSE: ["S12"] },
-        next: { CLOSE: 12 },
+        goto: { CLOSE: 12 },
       },
       "10": {
         items: ["X -> PLUS E . "],
         actions: { "<EOF>": ["R <X -> PLUS E>"], CLOSE: ["R <X -> PLUS E>"] },
-        next: {},
+        goto: {},
       },
       "11": {
         items: ["Y -> STAR T . "],
@@ -158,7 +158,7 @@ describe("Sample Parse Tables", () => {
           PLUS: ["R <Y -> STAR T>"],
           CLOSE: ["R <Y -> STAR T>"],
         },
-        next: {},
+        goto: {},
       },
       "12": {
         items: ["T -> OPEN E CLOSE . "],
@@ -167,7 +167,7 @@ describe("Sample Parse Tables", () => {
           PLUS: ["R <T -> OPEN E CLOSE>"],
           CLOSE: ["R <T -> OPEN E CLOSE>"],
         },
-        next: {},
+        goto: {},
       },
     });
   });

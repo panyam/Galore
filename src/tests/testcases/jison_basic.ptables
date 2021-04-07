@@ -8,7 +8,7 @@
         'T ->  . ZERO / ( <EOF>, PLUS )'
       ],
       actions: { E: [ '1' ], T: [ '2' ], ZERO: [ 'S3' ] },
-      next: { E: 1, T: 2, ZERO: 3 }
+      goto: { E: 1, T: 2, ZERO: 3 }
     },
     '1': {
       items: [
@@ -16,17 +16,17 @@
         'E -> E . PLUS T / ( <EOF>, PLUS )'
       ],
       actions: { '<EOF>': [ 'Acc' ], PLUS: [ 'S4' ] },
-      next: { PLUS: 4 }
+      goto: { PLUS: 4 }
     },
     '2': {
       items: [ 'E -> T .  / ( <EOF>, PLUS )' ],
       actions: { '<EOF>': [ 'R <E -> T>' ], PLUS: [ 'R <E -> T>' ] },
-      next: {}
+      goto: {}
     },
     '3': {
       items: [ 'T -> ZERO .  / ( <EOF>, PLUS )' ],
       actions: { '<EOF>': [ 'R <T -> ZERO>' ], PLUS: [ 'R <T -> ZERO>' ] },
-      next: {}
+      goto: {}
     },
     '4': {
       items: [
@@ -34,12 +34,12 @@
         'E -> E PLUS . T / ( <EOF>, PLUS )'
       ],
       actions: { T: [ '5' ], ZERO: [ 'S3' ] },
-      next: { T: 5, ZERO: 3 }
+      goto: { T: 5, ZERO: 3 }
     },
     '5': {
       items: [ 'E -> E PLUS T .  / ( <EOF>, PLUS )' ],
       actions: { '<EOF>': [ 'R <E -> E PLUS T>' ], PLUS: [ 'R <E -> E PLUS T>' ] },
-      next: {}
+      goto: {}
     }
   },
   "slr":  {
@@ -51,32 +51,32 @@
         'T ->  . ZERO'
       ],
       actions: { E: [ '1' ], T: [ '2' ], ZERO: [ 'S3' ] },
-      next: { E: 1, T: 2, ZERO: 3 }
+      goto: { E: 1, T: 2, ZERO: 3 }
     },
     '1': {
       items: [ 'Start -> E . ', 'E -> E . PLUS T' ],
       actions: { '<EOF>': [ 'Acc' ], PLUS: [ 'S4' ] },
-      next: { PLUS: 4 }
+      goto: { PLUS: 4 }
     },
     '2': {
       items: [ 'E -> T . ' ],
       actions: { '<EOF>': [ 'R <E -> T>' ], PLUS: [ 'R <E -> T>' ] },
-      next: {}
+      goto: {}
     },
     '3': {
       items: [ 'T -> ZERO . ' ],
       actions: { '<EOF>': [ 'R <T -> ZERO>' ], PLUS: [ 'R <T -> ZERO>' ] },
-      next: {}
+      goto: {}
     },
     '4': {
       items: [ 'T ->  . ZERO', 'E -> E PLUS . T' ],
       actions: { T: [ '5' ], ZERO: [ 'S3' ] },
-      next: { T: 5, ZERO: 3 }
+      goto: { T: 5, ZERO: 3 }
     },
     '5': {
       items: [ 'E -> E PLUS T . ' ],
       actions: { '<EOF>': [ 'R <E -> E PLUS T>' ], PLUS: [ 'R <E -> E PLUS T>' ] },
-      next: {}
+      goto: {}
     }
   }
 }

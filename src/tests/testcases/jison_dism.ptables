@@ -41,7 +41,7 @@
         HLT: [ 'S16' ],
         LABEL: [ 'S17' ]
       },
-      next: {
+      goto: {
         pgm: 1,
         instlist: 2,
         label: 3,
@@ -64,17 +64,17 @@
     '1': {
       items: [ 'Start -> pgm . ' ],
       actions: { '<EOF>': [ 'Acc' ] },
-      next: {}
+      goto: {}
     },
     '2': {
       items: [ 'pgm -> instlist . ' ],
       actions: { '<EOF>': [ 'R <pgm -> instlist>' ] },
-      next: {}
+      goto: {}
     },
     '3': {
       items: [ 'instlist -> label . COLON inst instlist' ],
       actions: { COLON: [ 'S18' ] },
-      next: { COLON: 18 }
+      goto: { COLON: 18 }
     },
     '4': {
       items: [
@@ -115,7 +115,7 @@
         HLT: [ 'S16' ],
         LABEL: [ 'S17' ]
       },
-      next: {
+      goto: {
         instlist: 19,
         label: 3,
         inst: 4,
@@ -147,7 +147,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 21, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 21, LABEL: 17, INT: 22 }
     },
     '6': {
       items: [
@@ -162,7 +162,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 23, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 23, LABEL: 17, INT: 22 }
     },
     '7': {
       items: [
@@ -177,7 +177,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 24, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 24, LABEL: 17, INT: 22 }
     },
     '8': {
       items: [
@@ -192,7 +192,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 25, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 25, LABEL: 17, INT: 22 }
     },
     '9': {
       items: [
@@ -207,7 +207,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 26, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 26, LABEL: 17, INT: 22 }
     },
     '10': {
       items: [
@@ -222,7 +222,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 27, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 27, LABEL: 17, INT: 22 }
     },
     '11': {
       items: [
@@ -237,7 +237,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 28, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 28, LABEL: 17, INT: 22 }
     },
     '12': {
       items: [
@@ -252,7 +252,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 29, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 29, LABEL: 17, INT: 22 }
     },
     '13': {
       items: [
@@ -267,7 +267,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 30, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 30, LABEL: 17, INT: 22 }
     },
     '14': {
       items: [
@@ -282,7 +282,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 31, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 31, LABEL: 17, INT: 22 }
     },
     '15': {
       items: [
@@ -297,7 +297,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 32, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 32, LABEL: 17, INT: 22 }
     },
     '16': {
       items: [
@@ -312,7 +312,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 33, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 33, LABEL: 17, INT: 22 }
     },
     '17': {
       items: [ 'label -> LABEL . ' ],
@@ -334,7 +334,7 @@
         LABEL: [ 'R <label -> LABEL>' ],
         INT: [ 'R <label -> LABEL>' ]
       },
-      next: {}
+      goto: {}
     },
     '18': {
       items: [
@@ -367,7 +367,7 @@
         PTN: [ 'S15' ],
         HLT: [ 'S16' ]
       },
-      next: {
+      goto: {
         inst: 34,
         ADD: 5,
         SUB: 6,
@@ -386,7 +386,7 @@
     '19': {
       items: [ 'instlist -> inst instlist . ' ],
       actions: { '<EOF>': [ 'R <instlist -> inst instlist>' ] },
-      next: {}
+      goto: {}
     },
     '20': {
       items: [ 'intt -> label . ' ],
@@ -407,7 +407,7 @@
         LABEL: [ 'R <intt -> label>' ],
         INT: [ 'R <intt -> label>' ]
       },
-      next: {}
+      goto: {}
     },
     '21': {
       items: [
@@ -422,7 +422,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 35, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 35, LABEL: 17, INT: 22 }
     },
     '22': {
       items: [ 'intt -> INT . ' ],
@@ -443,7 +443,7 @@
         LABEL: [ 'R <intt -> INT>' ],
         INT: [ 'R <intt -> INT>' ]
       },
-      next: {}
+      goto: {}
     },
     '23': {
       items: [
@@ -458,7 +458,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 36, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 36, LABEL: 17, INT: 22 }
     },
     '24': {
       items: [
@@ -473,7 +473,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 37, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 37, LABEL: 17, INT: 22 }
     },
     '25': {
       items: [
@@ -488,7 +488,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 38, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 38, LABEL: 17, INT: 22 }
     },
     '26': {
       items: [
@@ -503,7 +503,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 39, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 39, LABEL: 17, INT: 22 }
     },
     '27': {
       items: [
@@ -518,7 +518,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 40, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 40, LABEL: 17, INT: 22 }
     },
     '28': {
       items: [
@@ -533,7 +533,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 41, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 41, LABEL: 17, INT: 22 }
     },
     '29': {
       items: [
@@ -548,7 +548,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 42, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 42, LABEL: 17, INT: 22 }
     },
     '30': {
       items: [
@@ -563,7 +563,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 43, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 43, LABEL: 17, INT: 22 }
     },
     '31': {
       items: [ 'inst -> RDN intt . ' ],
@@ -583,7 +583,7 @@
         HLT: [ 'R <inst -> RDN intt>' ],
         LABEL: [ 'R <inst -> RDN intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '32': {
       items: [ 'inst -> PTN intt . ' ],
@@ -603,7 +603,7 @@
         HLT: [ 'R <inst -> PTN intt>' ],
         LABEL: [ 'R <inst -> PTN intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '33': {
       items: [ 'inst -> HLT intt . ' ],
@@ -623,7 +623,7 @@
         HLT: [ 'R <inst -> HLT intt>' ],
         LABEL: [ 'R <inst -> HLT intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '34': {
       items: [
@@ -664,7 +664,7 @@
         HLT: [ 'S16' ],
         LABEL: [ 'S17' ]
       },
-      next: {
+      goto: {
         instlist: 44,
         label: 3,
         inst: 4,
@@ -696,7 +696,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 45, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 45, LABEL: 17, INT: 22 }
     },
     '36': {
       items: [
@@ -711,7 +711,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 46, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 46, LABEL: 17, INT: 22 }
     },
     '37': {
       items: [
@@ -726,7 +726,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 47, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 47, LABEL: 17, INT: 22 }
     },
     '38': {
       items: [ 'inst -> MOV intt intt . ' ],
@@ -746,7 +746,7 @@
         HLT: [ 'R <inst -> MOV intt intt>' ],
         LABEL: [ 'R <inst -> MOV intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '39': {
       items: [
@@ -761,7 +761,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 48, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 48, LABEL: 17, INT: 22 }
     },
     '40': {
       items: [
@@ -776,7 +776,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 49, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 49, LABEL: 17, INT: 22 }
     },
     '41': {
       items: [
@@ -791,7 +791,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 50, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 50, LABEL: 17, INT: 22 }
     },
     '42': {
       items: [
@@ -806,7 +806,7 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 51, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 51, LABEL: 17, INT: 22 }
     },
     '43': {
       items: [
@@ -821,12 +821,12 @@
         LABEL: [ 'S17' ],
         INT: [ 'S22' ]
       },
-      next: { label: 20, intt: 52, LABEL: 17, INT: 22 }
+      goto: { label: 20, intt: 52, LABEL: 17, INT: 22 }
     },
     '44': {
       items: [ 'instlist -> label COLON inst instlist . ' ],
       actions: { '<EOF>': [ 'R <instlist -> label COLON inst instlist>' ] },
-      next: {}
+      goto: {}
     },
     '45': {
       items: [ 'inst -> ADD intt intt intt . ' ],
@@ -846,7 +846,7 @@
         HLT: [ 'R <inst -> ADD intt intt intt>' ],
         LABEL: [ 'R <inst -> ADD intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '46': {
       items: [ 'inst -> SUB intt intt intt . ' ],
@@ -866,7 +866,7 @@
         HLT: [ 'R <inst -> SUB intt intt intt>' ],
         LABEL: [ 'R <inst -> SUB intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '47': {
       items: [ 'inst -> MUL intt intt intt . ' ],
@@ -886,7 +886,7 @@
         HLT: [ 'R <inst -> MUL intt intt intt>' ],
         LABEL: [ 'R <inst -> MUL intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '48': {
       items: [ 'inst -> LOD intt intt intt . ' ],
@@ -906,7 +906,7 @@
         HLT: [ 'R <inst -> LOD intt intt intt>' ],
         LABEL: [ 'R <inst -> LOD intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '49': {
       items: [ 'inst -> STR intt intt intt . ' ],
@@ -926,7 +926,7 @@
         HLT: [ 'R <inst -> STR intt intt intt>' ],
         LABEL: [ 'R <inst -> STR intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '50': {
       items: [ 'inst -> JMP intt intt intt . ' ],
@@ -946,7 +946,7 @@
         HLT: [ 'R <inst -> JMP intt intt intt>' ],
         LABEL: [ 'R <inst -> JMP intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '51': {
       items: [ 'inst -> BEQ intt intt intt . ' ],
@@ -966,7 +966,7 @@
         HLT: [ 'R <inst -> BEQ intt intt intt>' ],
         LABEL: [ 'R <inst -> BEQ intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '52': {
       items: [ 'inst -> BLT intt intt intt . ' ],
@@ -986,7 +986,7 @@
         HLT: [ 'R <inst -> BLT intt intt intt>' ],
         LABEL: [ 'R <inst -> BLT intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     }
   },
   "lr1": {
@@ -1031,7 +1031,7 @@
         HLT: [ 'S16' ],
         LABEL: [ 'S17' ]
       },
-      next: {
+      goto: {
         pgm: 1,
         instlist: 2,
         label: 3,
@@ -1054,17 +1054,17 @@
     '1': {
       items: [ 'Start -> pgm .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'Acc' ] },
-      next: {}
+      goto: {}
     },
     '2': {
       items: [ 'pgm -> instlist .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <pgm -> instlist>' ] },
-      next: {}
+      goto: {}
     },
     '3': {
       items: [ 'instlist -> label . COLON inst instlist / ( <EOF> )' ],
       actions: { COLON: [ 'S18' ] },
-      next: { COLON: 18 }
+      goto: { COLON: 18 }
     },
     '4': {
       items: [
@@ -1105,7 +1105,7 @@
         HLT: [ 'S16' ],
         LABEL: [ 'S17' ]
       },
-      next: {
+      goto: {
         instlist: 19,
         label: 3,
         inst: 4,
@@ -1137,7 +1137,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 21, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 21, LABEL: 22, INT: 23 }
     },
     '6': {
       items: [
@@ -1152,7 +1152,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 24, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 24, LABEL: 22, INT: 23 }
     },
     '7': {
       items: [
@@ -1167,7 +1167,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 25, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 25, LABEL: 22, INT: 23 }
     },
     '8': {
       items: [
@@ -1182,7 +1182,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 26, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 26, LABEL: 22, INT: 23 }
     },
     '9': {
       items: [
@@ -1197,7 +1197,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 27, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 27, LABEL: 22, INT: 23 }
     },
     '10': {
       items: [
@@ -1212,7 +1212,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 28, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 28, LABEL: 22, INT: 23 }
     },
     '11': {
       items: [
@@ -1227,7 +1227,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 29, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 29, LABEL: 22, INT: 23 }
     },
     '12': {
       items: [
@@ -1242,7 +1242,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 30, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 30, LABEL: 22, INT: 23 }
     },
     '13': {
       items: [
@@ -1257,7 +1257,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 31, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 31, LABEL: 22, INT: 23 }
     },
     '14': {
       items: [
@@ -1272,7 +1272,7 @@
         LABEL: [ 'S34' ],
         INT: [ 'S35' ]
       },
-      next: { label: 32, intt: 33, LABEL: 34, INT: 35 }
+      goto: { label: 32, intt: 33, LABEL: 34, INT: 35 }
     },
     '15': {
       items: [
@@ -1287,7 +1287,7 @@
         LABEL: [ 'S34' ],
         INT: [ 'S35' ]
       },
-      next: { label: 32, intt: 36, LABEL: 34, INT: 35 }
+      goto: { label: 32, intt: 36, LABEL: 34, INT: 35 }
     },
     '16': {
       items: [
@@ -1302,12 +1302,12 @@
         LABEL: [ 'S34' ],
         INT: [ 'S35' ]
       },
-      next: { label: 32, intt: 37, LABEL: 34, INT: 35 }
+      goto: { label: 32, intt: 37, LABEL: 34, INT: 35 }
     },
     '17': {
       items: [ 'label -> LABEL .  / ( COLON )' ],
       actions: { COLON: [ 'R <label -> LABEL>' ] },
-      next: {}
+      goto: {}
     },
     '18': {
       items: [
@@ -1340,7 +1340,7 @@
         PTN: [ 'S15' ],
         HLT: [ 'S16' ]
       },
-      next: {
+      goto: {
         inst: 38,
         ADD: 5,
         SUB: 6,
@@ -1359,12 +1359,12 @@
     '19': {
       items: [ 'instlist -> inst instlist .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <instlist -> inst instlist>' ] },
-      next: {}
+      goto: {}
     },
     '20': {
       items: [ 'intt -> label .  / ( INT, LABEL )' ],
       actions: { LABEL: [ 'R <intt -> label>' ], INT: [ 'R <intt -> label>' ] },
-      next: {}
+      goto: {}
     },
     '21': {
       items: [
@@ -1379,17 +1379,17 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 39, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 39, LABEL: 22, INT: 23 }
     },
     '22': {
       items: [ 'label -> LABEL .  / ( INT, LABEL )' ],
       actions: { LABEL: [ 'R <label -> LABEL>' ], INT: [ 'R <label -> LABEL>' ] },
-      next: {}
+      goto: {}
     },
     '23': {
       items: [ 'intt -> INT .  / ( INT, LABEL )' ],
       actions: { LABEL: [ 'R <intt -> INT>' ], INT: [ 'R <intt -> INT>' ] },
-      next: {}
+      goto: {}
     },
     '24': {
       items: [
@@ -1404,7 +1404,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 40, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 40, LABEL: 22, INT: 23 }
     },
     '25': {
       items: [
@@ -1419,7 +1419,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 41, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 41, LABEL: 22, INT: 23 }
     },
     '26': {
       items: [
@@ -1434,7 +1434,7 @@
         LABEL: [ 'S34' ],
         INT: [ 'S35' ]
       },
-      next: { label: 32, intt: 42, LABEL: 34, INT: 35 }
+      goto: { label: 32, intt: 42, LABEL: 34, INT: 35 }
     },
     '27': {
       items: [
@@ -1449,7 +1449,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 43, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 43, LABEL: 22, INT: 23 }
     },
     '28': {
       items: [
@@ -1464,7 +1464,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 44, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 44, LABEL: 22, INT: 23 }
     },
     '29': {
       items: [
@@ -1479,7 +1479,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 45, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 45, LABEL: 22, INT: 23 }
     },
     '30': {
       items: [
@@ -1494,7 +1494,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 46, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 46, LABEL: 22, INT: 23 }
     },
     '31': {
       items: [
@@ -1509,7 +1509,7 @@
         LABEL: [ 'S22' ],
         INT: [ 'S23' ]
       },
-      next: { label: 20, intt: 47, LABEL: 22, INT: 23 }
+      goto: { label: 20, intt: 47, LABEL: 22, INT: 23 }
     },
     '32': {
       items: [
@@ -1531,7 +1531,7 @@
         HLT: [ 'R <intt -> label>' ],
         LABEL: [ 'R <intt -> label>' ]
       },
-      next: {}
+      goto: {}
     },
     '33': {
       items: [
@@ -1553,7 +1553,7 @@
         HLT: [ 'R <inst -> RDN intt>' ],
         LABEL: [ 'R <inst -> RDN intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '34': {
       items: [
@@ -1575,7 +1575,7 @@
         HLT: [ 'R <label -> LABEL>' ],
         LABEL: [ 'R <label -> LABEL>' ]
       },
-      next: {}
+      goto: {}
     },
     '35': {
       items: [
@@ -1597,7 +1597,7 @@
         HLT: [ 'R <intt -> INT>' ],
         LABEL: [ 'R <intt -> INT>' ]
       },
-      next: {}
+      goto: {}
     },
     '36': {
       items: [
@@ -1619,7 +1619,7 @@
         HLT: [ 'R <inst -> PTN intt>' ],
         LABEL: [ 'R <inst -> PTN intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '37': {
       items: [
@@ -1641,7 +1641,7 @@
         HLT: [ 'R <inst -> HLT intt>' ],
         LABEL: [ 'R <inst -> HLT intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '38': {
       items: [
@@ -1682,7 +1682,7 @@
         HLT: [ 'S16' ],
         LABEL: [ 'S17' ]
       },
-      next: {
+      goto: {
         instlist: 48,
         label: 3,
         inst: 4,
@@ -1714,7 +1714,7 @@
         LABEL: [ 'S34' ],
         INT: [ 'S35' ]
       },
-      next: { label: 32, intt: 49, LABEL: 34, INT: 35 }
+      goto: { label: 32, intt: 49, LABEL: 34, INT: 35 }
     },
     '40': {
       items: [
@@ -1729,7 +1729,7 @@
         LABEL: [ 'S34' ],
         INT: [ 'S35' ]
       },
-      next: { label: 32, intt: 50, LABEL: 34, INT: 35 }
+      goto: { label: 32, intt: 50, LABEL: 34, INT: 35 }
     },
     '41': {
       items: [
@@ -1744,7 +1744,7 @@
         LABEL: [ 'S34' ],
         INT: [ 'S35' ]
       },
-      next: { label: 32, intt: 51, LABEL: 34, INT: 35 }
+      goto: { label: 32, intt: 51, LABEL: 34, INT: 35 }
     },
     '42': {
       items: [
@@ -1766,7 +1766,7 @@
         HLT: [ 'R <inst -> MOV intt intt>' ],
         LABEL: [ 'R <inst -> MOV intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '43': {
       items: [
@@ -1781,7 +1781,7 @@
         LABEL: [ 'S34' ],
         INT: [ 'S35' ]
       },
-      next: { label: 32, intt: 52, LABEL: 34, INT: 35 }
+      goto: { label: 32, intt: 52, LABEL: 34, INT: 35 }
     },
     '44': {
       items: [
@@ -1796,7 +1796,7 @@
         LABEL: [ 'S34' ],
         INT: [ 'S35' ]
       },
-      next: { label: 32, intt: 53, LABEL: 34, INT: 35 }
+      goto: { label: 32, intt: 53, LABEL: 34, INT: 35 }
     },
     '45': {
       items: [
@@ -1811,7 +1811,7 @@
         LABEL: [ 'S34' ],
         INT: [ 'S35' ]
       },
-      next: { label: 32, intt: 54, LABEL: 34, INT: 35 }
+      goto: { label: 32, intt: 54, LABEL: 34, INT: 35 }
     },
     '46': {
       items: [
@@ -1826,7 +1826,7 @@
         LABEL: [ 'S34' ],
         INT: [ 'S35' ]
       },
-      next: { label: 32, intt: 55, LABEL: 34, INT: 35 }
+      goto: { label: 32, intt: 55, LABEL: 34, INT: 35 }
     },
     '47': {
       items: [
@@ -1841,12 +1841,12 @@
         LABEL: [ 'S34' ],
         INT: [ 'S35' ]
       },
-      next: { label: 32, intt: 56, LABEL: 34, INT: 35 }
+      goto: { label: 32, intt: 56, LABEL: 34, INT: 35 }
     },
     '48': {
       items: [ 'instlist -> label COLON inst instlist .  / ( <EOF> )' ],
       actions: { '<EOF>': [ 'R <instlist -> label COLON inst instlist>' ] },
-      next: {}
+      goto: {}
     },
     '49': {
       items: [
@@ -1868,7 +1868,7 @@
         HLT: [ 'R <inst -> ADD intt intt intt>' ],
         LABEL: [ 'R <inst -> ADD intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '50': {
       items: [
@@ -1890,7 +1890,7 @@
         HLT: [ 'R <inst -> SUB intt intt intt>' ],
         LABEL: [ 'R <inst -> SUB intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '51': {
       items: [
@@ -1912,7 +1912,7 @@
         HLT: [ 'R <inst -> MUL intt intt intt>' ],
         LABEL: [ 'R <inst -> MUL intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '52': {
       items: [
@@ -1934,7 +1934,7 @@
         HLT: [ 'R <inst -> LOD intt intt intt>' ],
         LABEL: [ 'R <inst -> LOD intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '53': {
       items: [
@@ -1956,7 +1956,7 @@
         HLT: [ 'R <inst -> STR intt intt intt>' ],
         LABEL: [ 'R <inst -> STR intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '54': {
       items: [
@@ -1978,7 +1978,7 @@
         HLT: [ 'R <inst -> JMP intt intt intt>' ],
         LABEL: [ 'R <inst -> JMP intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '55': {
       items: [
@@ -2000,7 +2000,7 @@
         HLT: [ 'R <inst -> BEQ intt intt intt>' ],
         LABEL: [ 'R <inst -> BEQ intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     },
     '56': {
       items: [
@@ -2022,7 +2022,7 @@
         HLT: [ 'R <inst -> BLT intt intt intt>' ],
         LABEL: [ 'R <inst -> BLT intt intt intt>' ]
       },
-      next: {}
+      goto: {}
     }
   }
 }

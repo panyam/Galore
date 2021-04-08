@@ -22,17 +22,17 @@ describe("Tomita Test Cases", () => {
   test("2.2.1 - SLR", () => {
     testParseTable("./testcases/tomita_2.2.1.g", "./testcases/tomita_2.2.1.ptables", "slr");
   });
-  test("2.2.2 - SLR", () => {
-    testParseTable("./testcases/tomita_2.2.2.g", "./testcases/tomita_2.2.2.ptables", "slr");
-  });
-  test("3.3 - SLR", () => {
-    testParseTable("./testcases/tomita_3.3.g", "./testcases/tomita_3.3.ptables", "slr");
-  });
   test("2.2.1 - LR", () => {
     testParseTable("./testcases/tomita_2.2.1.g", "./testcases/tomita_2.2.1.ptables", "lr1");
   });
+  test("2.2.2 - SLR", () => {
+    testParseTable("./testcases/tomita_2.2.2.g", "./testcases/tomita_2.2.2.ptables", "slr");
+  });
   test("2.2.2 - LR", () => {
     testParseTable("./testcases/tomita_2.2.2.g", "./testcases/tomita_2.2.2.ptables", "lr1");
+  });
+  test("3.3 - SLR", () => {
+    testParseTable("./testcases/tomita_3.3.g", "./testcases/tomita_3.3.ptables", "slr");
   });
   test("3.3 - LR", () => {
     testParseTable("./testcases/tomita_3.3.g", "./testcases/tomita_3.3.ptables", "lr1");
@@ -43,17 +43,17 @@ describe("Jison tests", () => {
   test("basic - SLR", () => {
     testParseTable("./testcases/jison_basic.g", "./testcases/jison_basic.ptables", "slr");
   });
-  test("dism - SLR", () => {
-    testParseTable("./testcases/jison_dism.g", "./testcases/jison_dism.ptables", "slr");
-  });
-  test("RR Conflict - SLR", () => {
-    testParseTable("./testcases/jison_rrconflict.g", "./testcases/jison_rrconflict.ptables", "slr");
-  });
   test("basic - LR", () => {
     testParseTable("./testcases/jison_basic.g", "./testcases/jison_basic.ptables", "lr1");
   });
+  test("dism - SLR", () => {
+    testParseTable("./testcases/jison_dism.g", "./testcases/jison_dism.ptables", "slr");
+  });
   test("dism - LR", () => {
     testParseTable("./testcases/jison_dism.g", "./testcases/jison_dism.ptables", "lr1");
+  });
+  test("RR Conflict - SLR", () => {
+    testParseTable("./testcases/jison_rrconflict.g", "./testcases/jison_rrconflict.ptables", "slr");
   });
   test("RR Conflict - LR Should not have any", () => {
     testParseTable("./testcases/jison_rrconflict.g", "./testcases/jison_rrconflict.ptables", "lr1");
@@ -82,91 +82,74 @@ describe("Sample Parse Tables", () => {
     const v = mergedDebugValue(parser.parseTable, parser.itemGraph);
     expect(v).toEqual({
       "0": {
-        items: ["Start ->  . E", "E ->  . T X", "T ->  . int Y", "T ->  . OPEN E CLOSE"],
+        items: ["0  -  $accept ->  • E", "1  -  E ->  • T X", "4  -  T ->  • int Y", "5  -  T ->  • OPEN E CLOSE"],
         actions: { E: ["1"], T: ["2"], int: ["S3"], OPEN: ["S4"] },
         goto: { E: 1, T: 2, int: 3, OPEN: 4 },
       },
       "1": {
-        items: ["Start -> E . "],
-        actions: { "<EOF>": ["Acc"] },
+        items: ["0  -  $accept -> E • "],
+        actions: { $end: ["Acc"] },
         goto: {},
       },
       "2": {
-        items: ["E -> T . X", "X ->  . PLUS E", "X ->  . "],
-        actions: {
-          "<EOF>": ["R <X -> >"],
-          X: ["5"],
-          PLUS: ["S6"],
-          CLOSE: ["R <X -> >"],
-        },
+        items: ["1  -  E -> T • X", "2  -  X ->  • PLUS E", "3  -  X ->  • "],
+        actions: { $end: ["R 3"], X: ["5"], PLUS: ["S6"], CLOSE: ["R 3"] },
         goto: { X: 5, PLUS: 6 },
       },
       "3": {
-        items: ["Y ->  . ", "T -> int . Y", "Y ->  . STAR T"],
+        items: ["4  -  T -> int • Y", "6  -  Y ->  • STAR T", "7  -  Y ->  • "],
         actions: {
-          "<EOF>": ["R <Y -> >"],
-          PLUS: ["R <Y -> >"],
+          $end: ["R 7"],
+          PLUS: ["R 7"],
           Y: ["7"],
-          CLOSE: ["R <Y -> >"],
+          CLOSE: ["R 7"],
           STAR: ["S8"],
         },
         goto: { Y: 7, STAR: 8 },
       },
       "4": {
-        items: ["E ->  . T X", "T -> OPEN . E CLOSE", "T ->  . int Y", "T ->  . OPEN E CLOSE"],
+        items: ["1  -  E ->  • T X", "4  -  T ->  • int Y", "5  -  T ->  • OPEN E CLOSE", "5  -  T -> OPEN • E CLOSE"],
         actions: { E: ["9"], T: ["2"], int: ["S3"], OPEN: ["S4"] },
         goto: { E: 9, T: 2, int: 3, OPEN: 4 },
       },
       "5": {
-        items: ["E -> T X . "],
-        actions: { "<EOF>": ["R <E -> T X>"], CLOSE: ["R <E -> T X>"] },
+        items: ["1  -  E -> T X • "],
+        actions: { $end: ["R 1"], CLOSE: ["R 1"] },
         goto: {},
       },
       "6": {
-        items: ["E ->  . T X", "X -> PLUS . E", "T ->  . int Y", "T ->  . OPEN E CLOSE"],
+        items: ["1  -  E ->  • T X", "2  -  X -> PLUS • E", "4  -  T ->  • int Y", "5  -  T ->  • OPEN E CLOSE"],
         actions: { E: ["10"], T: ["2"], int: ["S3"], OPEN: ["S4"] },
         goto: { E: 10, T: 2, int: 3, OPEN: 4 },
       },
       "7": {
-        items: ["T -> int Y . "],
-        actions: {
-          "<EOF>": ["R <T -> int Y>"],
-          PLUS: ["R <T -> int Y>"],
-          CLOSE: ["R <T -> int Y>"],
-        },
+        items: ["4  -  T -> int Y • "],
+        actions: { $end: ["R 4"], PLUS: ["R 4"], CLOSE: ["R 4"] },
         goto: {},
       },
       "8": {
-        items: ["Y -> STAR . T", "T ->  . int Y", "T ->  . OPEN E CLOSE"],
+        items: ["4  -  T ->  • int Y", "5  -  T ->  • OPEN E CLOSE", "6  -  Y -> STAR • T"],
         actions: { T: ["11"], int: ["S3"], OPEN: ["S4"] },
         goto: { T: 11, int: 3, OPEN: 4 },
       },
       "9": {
-        items: ["T -> OPEN E . CLOSE"],
+        items: ["5  -  T -> OPEN E • CLOSE"],
         actions: { CLOSE: ["S12"] },
         goto: { CLOSE: 12 },
       },
       "10": {
-        items: ["X -> PLUS E . "],
-        actions: { "<EOF>": ["R <X -> PLUS E>"], CLOSE: ["R <X -> PLUS E>"] },
+        items: ["2  -  X -> PLUS E • "],
+        actions: { $end: ["R 2"], CLOSE: ["R 2"] },
         goto: {},
       },
       "11": {
-        items: ["Y -> STAR T . "],
-        actions: {
-          "<EOF>": ["R <Y -> STAR T>"],
-          PLUS: ["R <Y -> STAR T>"],
-          CLOSE: ["R <Y -> STAR T>"],
-        },
+        items: ["6  -  Y -> STAR T • "],
+        actions: { $end: ["R 6"], PLUS: ["R 6"], CLOSE: ["R 6"] },
         goto: {},
       },
       "12": {
-        items: ["T -> OPEN E CLOSE . "],
-        actions: {
-          "<EOF>": ["R <T -> OPEN E CLOSE>"],
-          PLUS: ["R <T -> OPEN E CLOSE>"],
-          CLOSE: ["R <T -> OPEN E CLOSE>"],
-        },
+        items: ["5  -  T -> OPEN E CLOSE • "],
+        actions: { $end: ["R 5"], PLUS: ["R 5"], CLOSE: ["R 5"] },
         goto: {},
       },
     });

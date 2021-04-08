@@ -44,3 +44,7 @@ export function allMinimalCycles<T>(
   });
   return cycles;
 }
+
+export function digraph(): void {
+  //
+}

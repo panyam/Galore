@@ -2,27 +2,27 @@
   "slr": {
     '0': {
       items: [
-        'Start ->  . pgm',
-        'pgm ->  . instlist',
-        'inst ->  . LOD intt intt intt',
-        'inst ->  . STR intt intt intt',
-        'inst ->  . JMP intt intt intt',
-        'inst ->  . BEQ intt intt intt',
-        'inst ->  . BLT intt intt intt',
-        'inst ->  . RDN intt',
-        'inst ->  . PTN intt',
-        'inst ->  . HLT intt',
-        'instlist ->  . label COLON inst instlist',
-        'instlist ->  . inst instlist',
-        'instlist ->  . ',
-        'label ->  . LABEL',
-        'inst ->  . ADD intt intt intt',
-        'inst ->  . SUB intt intt intt',
-        'inst ->  . MUL intt intt intt',
-        'inst ->  . MOV intt intt'
+        '0  -  $accept ->  • pgm',
+        '1  -  pgm ->  • instlist',
+        '2  -  instlist ->  • label COLON inst instlist',
+        '3  -  instlist ->  • inst instlist',
+        '4  -  instlist ->  • ',
+        '5  -  inst ->  • ADD intt intt intt',
+        '6  -  inst ->  • SUB intt intt intt',
+        '7  -  inst ->  • MUL intt intt intt',
+        '8  -  inst ->  • MOV intt intt',
+        '9  -  inst ->  • LOD intt intt intt',
+        '10  -  inst ->  • STR intt intt intt',
+        '11  -  inst ->  • JMP intt intt intt',
+        '12  -  inst ->  • BEQ intt intt intt',
+        '13  -  inst ->  • BLT intt intt intt',
+        '14  -  inst ->  • RDN intt',
+        '15  -  inst ->  • PTN intt',
+        '16  -  inst ->  • HLT intt',
+        '17  -  label ->  • LABEL'
       ],
       actions: {
-        '<EOF>': [ 'R <instlist -> >' ],
+        '$end': [ 'R 4' ],
         pgm: [ '1' ],
         instlist: [ '2' ],
         label: [ '3' ],
@@ -62,42 +62,42 @@
       }
     },
     '1': {
-      items: [ 'Start -> pgm . ' ],
-      actions: { '<EOF>': [ 'Acc' ] },
+      items: [ '0  -  $accept -> pgm • ' ],
+      actions: { '$end': [ 'Acc' ] },
       goto: {}
     },
     '2': {
-      items: [ 'pgm -> instlist . ' ],
-      actions: { '<EOF>': [ 'R <pgm -> instlist>' ] },
+      items: [ '1  -  pgm -> instlist • ' ],
+      actions: { '$end': [ 'R 1' ] },
       goto: {}
     },
     '3': {
-      items: [ 'instlist -> label . COLON inst instlist' ],
+      items: [ '2  -  instlist -> label • COLON inst instlist' ],
       actions: { COLON: [ 'S18' ] },
       goto: { COLON: 18 }
     },
     '4': {
       items: [
-        'inst ->  . LOD intt intt intt',
-        'inst ->  . STR intt intt intt',
-        'inst ->  . JMP intt intt intt',
-        'inst ->  . BEQ intt intt intt',
-        'inst ->  . BLT intt intt intt',
-        'inst ->  . RDN intt',
-        'inst ->  . PTN intt',
-        'inst ->  . HLT intt',
-        'instlist ->  . label COLON inst instlist',
-        'instlist -> inst . instlist',
-        'instlist ->  . inst instlist',
-        'instlist ->  . ',
-        'label ->  . LABEL',
-        'inst ->  . ADD intt intt intt',
-        'inst ->  . SUB intt intt intt',
-        'inst ->  . MUL intt intt intt',
-        'inst ->  . MOV intt intt'
+        '2  -  instlist ->  • label COLON inst instlist',
+        '3  -  instlist ->  • inst instlist',
+        '3  -  instlist -> inst • instlist',
+        '4  -  instlist ->  • ',
+        '5  -  inst ->  • ADD intt intt intt',
+        '6  -  inst ->  • SUB intt intt intt',
+        '7  -  inst ->  • MUL intt intt intt',
+        '8  -  inst ->  • MOV intt intt',
+        '9  -  inst ->  • LOD intt intt intt',
+        '10  -  inst ->  • STR intt intt intt',
+        '11  -  inst ->  • JMP intt intt intt',
+        '12  -  inst ->  • BEQ intt intt intt',
+        '13  -  inst ->  • BLT intt intt intt',
+        '14  -  inst ->  • RDN intt',
+        '15  -  inst ->  • PTN intt',
+        '16  -  inst ->  • HLT intt',
+        '17  -  label ->  • LABEL'
       ],
       actions: {
-        '<EOF>': [ 'R <instlist -> >' ],
+        '$end': [ 'R 4' ],
         instlist: [ '19' ],
         label: [ '3' ],
         inst: [ '4' ],
@@ -136,10 +136,10 @@
     },
     '5': {
       items: [
-        'inst -> ADD . intt intt intt',
-        'intt ->  . INT',
-        'intt ->  . label',
-        'label ->  . LABEL'
+        '5  -  inst -> ADD • intt intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -151,10 +151,10 @@
     },
     '6': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> SUB . intt intt intt',
-        'label ->  . LABEL'
+        '6  -  inst -> SUB • intt intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -166,10 +166,10 @@
     },
     '7': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> MUL . intt intt intt',
-        'label ->  . LABEL'
+        '7  -  inst -> MUL • intt intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -181,10 +181,10 @@
     },
     '8': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> MOV . intt intt',
-        'label ->  . LABEL'
+        '8  -  inst -> MOV • intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -196,10 +196,10 @@
     },
     '9': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> LOD . intt intt intt',
-        'label ->  . LABEL'
+        '9  -  inst -> LOD • intt intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -211,10 +211,10 @@
     },
     '10': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> STR . intt intt intt',
-        'label ->  . LABEL'
+        '10  -  inst -> STR • intt intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -226,10 +226,10 @@
     },
     '11': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> JMP . intt intt intt',
-        'label ->  . LABEL'
+        '11  -  inst -> JMP • intt intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -241,10 +241,10 @@
     },
     '12': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> BEQ . intt intt intt',
-        'label ->  . LABEL'
+        '12  -  inst -> BEQ • intt intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -256,10 +256,10 @@
     },
     '13': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> BLT . intt intt intt',
-        'label ->  . LABEL'
+        '13  -  inst -> BLT • intt intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -271,10 +271,10 @@
     },
     '14': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> RDN . intt',
-        'label ->  . LABEL'
+        '14  -  inst -> RDN • intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -286,10 +286,10 @@
     },
     '15': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> PTN . intt',
-        'label ->  . LABEL'
+        '15  -  inst -> PTN • intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -301,10 +301,10 @@
     },
     '16': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> HLT . intt',
-        'label ->  . LABEL'
+        '16  -  inst -> HLT • intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -315,42 +315,42 @@
       goto: { label: 20, intt: 33, LABEL: 17, INT: 22 }
     },
     '17': {
-      items: [ 'label -> LABEL . ' ],
+      items: [ '17  -  label -> LABEL • ' ],
       actions: {
-        '<EOF>': [ 'R <label -> LABEL>' ],
-        COLON: [ 'R <label -> LABEL>' ],
-        ADD: [ 'R <label -> LABEL>' ],
-        SUB: [ 'R <label -> LABEL>' ],
-        MUL: [ 'R <label -> LABEL>' ],
-        MOV: [ 'R <label -> LABEL>' ],
-        LOD: [ 'R <label -> LABEL>' ],
-        STR: [ 'R <label -> LABEL>' ],
-        JMP: [ 'R <label -> LABEL>' ],
-        BEQ: [ 'R <label -> LABEL>' ],
-        BLT: [ 'R <label -> LABEL>' ],
-        RDN: [ 'R <label -> LABEL>' ],
-        PTN: [ 'R <label -> LABEL>' ],
-        HLT: [ 'R <label -> LABEL>' ],
-        LABEL: [ 'R <label -> LABEL>' ],
-        INT: [ 'R <label -> LABEL>' ]
+        '$end': [ 'R 17' ],
+        COLON: [ 'R 17' ],
+        ADD: [ 'R 17' ],
+        SUB: [ 'R 17' ],
+        MUL: [ 'R 17' ],
+        MOV: [ 'R 17' ],
+        LOD: [ 'R 17' ],
+        STR: [ 'R 17' ],
+        JMP: [ 'R 17' ],
+        BEQ: [ 'R 17' ],
+        BLT: [ 'R 17' ],
+        RDN: [ 'R 17' ],
+        PTN: [ 'R 17' ],
+        HLT: [ 'R 17' ],
+        LABEL: [ 'R 17' ],
+        INT: [ 'R 17' ]
       },
       goto: {}
     },
     '18': {
       items: [
-        'inst ->  . LOD intt intt intt',
-        'inst ->  . STR intt intt intt',
-        'inst ->  . JMP intt intt intt',
-        'inst ->  . BEQ intt intt intt',
-        'inst ->  . BLT intt intt intt',
-        'inst ->  . RDN intt',
-        'inst ->  . PTN intt',
-        'inst ->  . HLT intt',
-        'instlist -> label COLON . inst instlist',
-        'inst ->  . ADD intt intt intt',
-        'inst ->  . SUB intt intt intt',
-        'inst ->  . MUL intt intt intt',
-        'inst ->  . MOV intt intt'
+        '2  -  instlist -> label COLON • inst instlist',
+        '5  -  inst ->  • ADD intt intt intt',
+        '6  -  inst ->  • SUB intt intt intt',
+        '7  -  inst ->  • MUL intt intt intt',
+        '8  -  inst ->  • MOV intt intt',
+        '9  -  inst ->  • LOD intt intt intt',
+        '10  -  inst ->  • STR intt intt intt',
+        '11  -  inst ->  • JMP intt intt intt',
+        '12  -  inst ->  • BEQ intt intt intt',
+        '13  -  inst ->  • BLT intt intt intt',
+        '14  -  inst ->  • RDN intt',
+        '15  -  inst ->  • PTN intt',
+        '16  -  inst ->  • HLT intt'
       ],
       actions: {
         inst: [ '34' ],
@@ -384,37 +384,37 @@
       }
     },
     '19': {
-      items: [ 'instlist -> inst instlist . ' ],
-      actions: { '<EOF>': [ 'R <instlist -> inst instlist>' ] },
+      items: [ '3  -  instlist -> inst instlist • ' ],
+      actions: { '$end': [ 'R 3' ] },
       goto: {}
     },
     '20': {
-      items: [ 'intt -> label . ' ],
+      items: [ '19  -  intt -> label • ' ],
       actions: {
-        '<EOF>': [ 'R <intt -> label>' ],
-        ADD: [ 'R <intt -> label>' ],
-        SUB: [ 'R <intt -> label>' ],
-        MUL: [ 'R <intt -> label>' ],
-        MOV: [ 'R <intt -> label>' ],
-        LOD: [ 'R <intt -> label>' ],
-        STR: [ 'R <intt -> label>' ],
-        JMP: [ 'R <intt -> label>' ],
-        BEQ: [ 'R <intt -> label>' ],
-        BLT: [ 'R <intt -> label>' ],
-        RDN: [ 'R <intt -> label>' ],
-        PTN: [ 'R <intt -> label>' ],
-        HLT: [ 'R <intt -> label>' ],
-        LABEL: [ 'R <intt -> label>' ],
-        INT: [ 'R <intt -> label>' ]
+        '$end': [ 'R 19' ],
+        ADD: [ 'R 19' ],
+        SUB: [ 'R 19' ],
+        MUL: [ 'R 19' ],
+        MOV: [ 'R 19' ],
+        LOD: [ 'R 19' ],
+        STR: [ 'R 19' ],
+        JMP: [ 'R 19' ],
+        BEQ: [ 'R 19' ],
+        BLT: [ 'R 19' ],
+        RDN: [ 'R 19' ],
+        PTN: [ 'R 19' ],
+        HLT: [ 'R 19' ],
+        LABEL: [ 'R 19' ],
+        INT: [ 'R 19' ]
       },
       goto: {}
     },
     '21': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> ADD intt . intt intt',
-        'label ->  . LABEL'
+        '5  -  inst -> ADD intt • intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -425,32 +425,32 @@
       goto: { label: 20, intt: 35, LABEL: 17, INT: 22 }
     },
     '22': {
-      items: [ 'intt -> INT . ' ],
+      items: [ '18  -  intt -> INT • ' ],
       actions: {
-        '<EOF>': [ 'R <intt -> INT>' ],
-        ADD: [ 'R <intt -> INT>' ],
-        SUB: [ 'R <intt -> INT>' ],
-        MUL: [ 'R <intt -> INT>' ],
-        MOV: [ 'R <intt -> INT>' ],
-        LOD: [ 'R <intt -> INT>' ],
-        STR: [ 'R <intt -> INT>' ],
-        JMP: [ 'R <intt -> INT>' ],
-        BEQ: [ 'R <intt -> INT>' ],
-        BLT: [ 'R <intt -> INT>' ],
-        RDN: [ 'R <intt -> INT>' ],
-        PTN: [ 'R <intt -> INT>' ],
-        HLT: [ 'R <intt -> INT>' ],
-        LABEL: [ 'R <intt -> INT>' ],
-        INT: [ 'R <intt -> INT>' ]
+        '$end': [ 'R 18' ],
+        ADD: [ 'R 18' ],
+        SUB: [ 'R 18' ],
+        MUL: [ 'R 18' ],
+        MOV: [ 'R 18' ],
+        LOD: [ 'R 18' ],
+        STR: [ 'R 18' ],
+        JMP: [ 'R 18' ],
+        BEQ: [ 'R 18' ],
+        BLT: [ 'R 18' ],
+        RDN: [ 'R 18' ],
+        PTN: [ 'R 18' ],
+        HLT: [ 'R 18' ],
+        LABEL: [ 'R 18' ],
+        INT: [ 'R 18' ]
       },
       goto: {}
     },
     '23': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> SUB intt . intt intt',
-        'label ->  . LABEL'
+        '6  -  inst -> SUB intt • intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -462,10 +462,10 @@
     },
     '24': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> MUL intt . intt intt',
-        'label ->  . LABEL'
+        '7  -  inst -> MUL intt • intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -477,10 +477,10 @@
     },
     '25': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> MOV intt . intt',
-        'label ->  . LABEL'
+        '8  -  inst -> MOV intt • intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -492,10 +492,10 @@
     },
     '26': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> LOD intt . intt intt',
-        'label ->  . LABEL'
+        '9  -  inst -> LOD intt • intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -507,10 +507,10 @@
     },
     '27': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> STR intt . intt intt',
-        'label ->  . LABEL'
+        '10  -  inst -> STR intt • intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -522,10 +522,10 @@
     },
     '28': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> JMP intt . intt intt',
-        'label ->  . LABEL'
+        '11  -  inst -> JMP intt • intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -537,10 +537,10 @@
     },
     '29': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> BEQ intt . intt intt',
-        'label ->  . LABEL'
+        '12  -  inst -> BEQ intt • intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -552,10 +552,10 @@
     },
     '30': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'inst -> BLT intt . intt intt',
-        'label ->  . LABEL'
+        '13  -  inst -> BLT intt • intt intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -566,87 +566,87 @@
       goto: { label: 20, intt: 43, LABEL: 17, INT: 22 }
     },
     '31': {
-      items: [ 'inst -> RDN intt . ' ],
+      items: [ '14  -  inst -> RDN intt • ' ],
       actions: {
-        '<EOF>': [ 'R <inst -> RDN intt>' ],
-        ADD: [ 'R <inst -> RDN intt>' ],
-        SUB: [ 'R <inst -> RDN intt>' ],
-        MUL: [ 'R <inst -> RDN intt>' ],
-        MOV: [ 'R <inst -> RDN intt>' ],
-        LOD: [ 'R <inst -> RDN intt>' ],
-        STR: [ 'R <inst -> RDN intt>' ],
-        JMP: [ 'R <inst -> RDN intt>' ],
-        BEQ: [ 'R <inst -> RDN intt>' ],
-        BLT: [ 'R <inst -> RDN intt>' ],
-        RDN: [ 'R <inst -> RDN intt>' ],
-        PTN: [ 'R <inst -> RDN intt>' ],
-        HLT: [ 'R <inst -> RDN intt>' ],
-        LABEL: [ 'R <inst -> RDN intt>' ]
+        '$end': [ 'R 14' ],
+        ADD: [ 'R 14' ],
+        SUB: [ 'R 14' ],
+        MUL: [ 'R 14' ],
+        MOV: [ 'R 14' ],
+        LOD: [ 'R 14' ],
+        STR: [ 'R 14' ],
+        JMP: [ 'R 14' ],
+        BEQ: [ 'R 14' ],
+        BLT: [ 'R 14' ],
+        RDN: [ 'R 14' ],
+        PTN: [ 'R 14' ],
+        HLT: [ 'R 14' ],
+        LABEL: [ 'R 14' ]
       },
       goto: {}
     },
     '32': {
-      items: [ 'inst -> PTN intt . ' ],
+      items: [ '15  -  inst -> PTN intt • ' ],
       actions: {
-        '<EOF>': [ 'R <inst -> PTN intt>' ],
-        ADD: [ 'R <inst -> PTN intt>' ],
-        SUB: [ 'R <inst -> PTN intt>' ],
-        MUL: [ 'R <inst -> PTN intt>' ],
-        MOV: [ 'R <inst -> PTN intt>' ],
-        LOD: [ 'R <inst -> PTN intt>' ],
-        STR: [ 'R <inst -> PTN intt>' ],
-        JMP: [ 'R <inst -> PTN intt>' ],
-        BEQ: [ 'R <inst -> PTN intt>' ],
-        BLT: [ 'R <inst -> PTN intt>' ],
-        RDN: [ 'R <inst -> PTN intt>' ],
-        PTN: [ 'R <inst -> PTN intt>' ],
-        HLT: [ 'R <inst -> PTN intt>' ],
-        LABEL: [ 'R <inst -> PTN intt>' ]
+        '$end': [ 'R 15' ],
+        ADD: [ 'R 15' ],
+        SUB: [ 'R 15' ],
+        MUL: [ 'R 15' ],
+        MOV: [ 'R 15' ],
+        LOD: [ 'R 15' ],
+        STR: [ 'R 15' ],
+        JMP: [ 'R 15' ],
+        BEQ: [ 'R 15' ],
+        BLT: [ 'R 15' ],
+        RDN: [ 'R 15' ],
+        PTN: [ 'R 15' ],
+        HLT: [ 'R 15' ],
+        LABEL: [ 'R 15' ]
       },
       goto: {}
     },
     '33': {
-      items: [ 'inst -> HLT intt . ' ],
+      items: [ '16  -  inst -> HLT intt • ' ],
       actions: {
-        '<EOF>': [ 'R <inst -> HLT intt>' ],
-        ADD: [ 'R <inst -> HLT intt>' ],
-        SUB: [ 'R <inst -> HLT intt>' ],
-        MUL: [ 'R <inst -> HLT intt>' ],
-        MOV: [ 'R <inst -> HLT intt>' ],
-        LOD: [ 'R <inst -> HLT intt>' ],
-        STR: [ 'R <inst -> HLT intt>' ],
-        JMP: [ 'R <inst -> HLT intt>' ],
-        BEQ: [ 'R <inst -> HLT intt>' ],
-        BLT: [ 'R <inst -> HLT intt>' ],
-        RDN: [ 'R <inst -> HLT intt>' ],
-        PTN: [ 'R <inst -> HLT intt>' ],
-        HLT: [ 'R <inst -> HLT intt>' ],
-        LABEL: [ 'R <inst -> HLT intt>' ]
+        '$end': [ 'R 16' ],
+        ADD: [ 'R 16' ],
+        SUB: [ 'R 16' ],
+        MUL: [ 'R 16' ],
+        MOV: [ 'R 16' ],
+        LOD: [ 'R 16' ],
+        STR: [ 'R 16' ],
+        JMP: [ 'R 16' ],
+        BEQ: [ 'R 16' ],
+        BLT: [ 'R 16' ],
+        RDN: [ 'R 16' ],
+        PTN: [ 'R 16' ],
+        HLT: [ 'R 16' ],
+        LABEL: [ 'R 16' ]
       },
       goto: {}
     },
     '34': {
       items: [
-        'inst ->  . LOD intt intt intt',
-        'inst ->  . STR intt intt intt',
-        'inst ->  . JMP intt intt intt',
-        'inst ->  . BEQ intt intt intt',
-        'inst ->  . BLT intt intt intt',
-        'inst ->  . RDN intt',
-        'inst ->  . PTN intt',
-        'inst ->  . HLT intt',
-        'instlist ->  . label COLON inst instlist',
-        'instlist ->  . inst instlist',
-        'instlist ->  . ',
-        'label ->  . LABEL',
-        'instlist -> label COLON inst . instlist',
-        'inst ->  . ADD intt intt intt',
-        'inst ->  . SUB intt intt intt',
-        'inst ->  . MUL intt intt intt',
-        'inst ->  . MOV intt intt'
+        '2  -  instlist ->  • label COLON inst instlist',
+        '2  -  instlist -> label COLON inst • instlist',
+        '3  -  instlist ->  • inst instlist',
+        '4  -  instlist ->  • ',
+        '5  -  inst ->  • ADD intt intt intt',
+        '6  -  inst ->  • SUB intt intt intt',
+        '7  -  inst ->  • MUL intt intt intt',
+        '8  -  inst ->  • MOV intt intt',
+        '9  -  inst ->  • LOD intt intt intt',
+        '10  -  inst ->  • STR intt intt intt',
+        '11  -  inst ->  • JMP intt intt intt',
+        '12  -  inst ->  • BEQ intt intt intt',
+        '13  -  inst ->  • BLT intt intt intt',
+        '14  -  inst ->  • RDN intt',
+        '15  -  inst ->  • PTN intt',
+        '16  -  inst ->  • HLT intt',
+        '17  -  label ->  • LABEL'
       ],
       actions: {
-        '<EOF>': [ 'R <instlist -> >' ],
+        '$end': [ 'R 4' ],
         instlist: [ '44' ],
         label: [ '3' ],
         inst: [ '4' ],
@@ -685,10 +685,10 @@
     },
     '35': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'label ->  . LABEL',
-        'inst -> ADD intt intt . intt'
+        '5  -  inst -> ADD intt intt • intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -700,10 +700,10 @@
     },
     '36': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'label ->  . LABEL',
-        'inst -> SUB intt intt . intt'
+        '6  -  inst -> SUB intt intt • intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -715,10 +715,10 @@
     },
     '37': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'label ->  . LABEL',
-        'inst -> MUL intt intt . intt'
+        '7  -  inst -> MUL intt intt • intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -729,31 +729,31 @@
       goto: { label: 20, intt: 47, LABEL: 17, INT: 22 }
     },
     '38': {
-      items: [ 'inst -> MOV intt intt . ' ],
+      items: [ '8  -  inst -> MOV intt intt • ' ],
       actions: {
-        '<EOF>': [ 'R <inst -> MOV intt intt>' ],
-        ADD: [ 'R <inst -> MOV intt intt>' ],
-        SUB: [ 'R <inst -> MOV intt intt>' ],
-        MUL: [ 'R <inst -> MOV intt intt>' ],
-        MOV: [ 'R <inst -> MOV intt intt>' ],
-        LOD: [ 'R <inst -> MOV intt intt>' ],
-        STR: [ 'R <inst -> MOV intt intt>' ],
-        JMP: [ 'R <inst -> MOV intt intt>' ],
-        BEQ: [ 'R <inst -> MOV intt intt>' ],
-        BLT: [ 'R <inst -> MOV intt intt>' ],
-        RDN: [ 'R <inst -> MOV intt intt>' ],
-        PTN: [ 'R <inst -> MOV intt intt>' ],
-        HLT: [ 'R <inst -> MOV intt intt>' ],
-        LABEL: [ 'R <inst -> MOV intt intt>' ]
+        '$end': [ 'R 8' ],
+        ADD: [ 'R 8' ],
+        SUB: [ 'R 8' ],
+        MUL: [ 'R 8' ],
+        MOV: [ 'R 8' ],
+        LOD: [ 'R 8' ],
+        STR: [ 'R 8' ],
+        JMP: [ 'R 8' ],
+        BEQ: [ 'R 8' ],
+        BLT: [ 'R 8' ],
+        RDN: [ 'R 8' ],
+        PTN: [ 'R 8' ],
+        HLT: [ 'R 8' ],
+        LABEL: [ 'R 8' ]
       },
       goto: {}
     },
     '39': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'label ->  . LABEL',
-        'inst -> LOD intt intt . intt'
+        '9  -  inst -> LOD intt intt • intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -765,10 +765,10 @@
     },
     '40': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'label ->  . LABEL',
-        'inst -> STR intt intt . intt'
+        '10  -  inst -> STR intt intt • intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -780,10 +780,10 @@
     },
     '41': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'label ->  . LABEL',
-        'inst -> JMP intt intt . intt'
+        '11  -  inst -> JMP intt intt • intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -795,10 +795,10 @@
     },
     '42': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'label ->  . LABEL',
-        'inst -> BEQ intt intt . intt'
+        '12  -  inst -> BEQ intt intt • intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -810,10 +810,10 @@
     },
     '43': {
       items: [
-        'intt ->  . INT',
-        'intt ->  . label',
-        'label ->  . LABEL',
-        'inst -> BLT intt intt . intt'
+        '13  -  inst -> BLT intt intt • intt',
+        '17  -  label ->  • LABEL',
+        '18  -  intt ->  • INT',
+        '19  -  intt ->  • label'
       ],
       actions: {
         label: [ '20' ],
@@ -824,167 +824,167 @@
       goto: { label: 20, intt: 52, LABEL: 17, INT: 22 }
     },
     '44': {
-      items: [ 'instlist -> label COLON inst instlist . ' ],
-      actions: { '<EOF>': [ 'R <instlist -> label COLON inst instlist>' ] },
+      items: [ '2  -  instlist -> label COLON inst instlist • ' ],
+      actions: { '$end': [ 'R 2' ] },
       goto: {}
     },
     '45': {
-      items: [ 'inst -> ADD intt intt intt . ' ],
+      items: [ '5  -  inst -> ADD intt intt intt • ' ],
       actions: {
-        '<EOF>': [ 'R <inst -> ADD intt intt intt>' ],
-        ADD: [ 'R <inst -> ADD intt intt intt>' ],
-        SUB: [ 'R <inst -> ADD intt intt intt>' ],
-        MUL: [ 'R <inst -> ADD intt intt intt>' ],
-        MOV: [ 'R <inst -> ADD intt intt intt>' ],
-        LOD: [ 'R <inst -> ADD intt intt intt>' ],
-        STR: [ 'R <inst -> ADD intt intt intt>' ],
-        JMP: [ 'R <inst -> ADD intt intt intt>' ],
-        BEQ: [ 'R <inst -> ADD intt intt intt>' ],
-        BLT: [ 'R <inst -> ADD intt intt intt>' ],
-        RDN: [ 'R <inst -> ADD intt intt intt>' ],
-        PTN: [ 'R <inst -> ADD intt intt intt>' ],
-        HLT: [ 'R <inst -> ADD intt intt intt>' ],
-        LABEL: [ 'R <inst -> ADD intt intt intt>' ]
+        '$end': [ 'R 5' ],
+        ADD: [ 'R 5' ],
+        SUB: [ 'R 5' ],
+        MUL: [ 'R 5' ],
+        MOV: [ 'R 5' ],
+        LOD: [ 'R 5' ],
+        STR: [ 'R 5' ],
+        JMP: [ 'R 5' ],
+        BEQ: [ 'R 5' ],
+        BLT: [ 'R 5' ],
+        RDN: [ 'R 5' ],
+        PTN: [ 'R 5' ],
+        HLT: [ 'R 5' ],
+        LABEL: [ 'R 5' ]
       },
       goto: {}
     },
     '46': {
-      items: [ 'inst -> SUB intt intt intt . ' ],
+      items: [ '6  -  inst -> SUB intt intt intt • ' ],
       actions: {
-        '<EOF>': [ 'R <inst -> SUB intt intt intt>' ],
-        ADD: [ 'R <inst -> SUB intt intt intt>' ],
-        SUB: [ 'R <inst -> SUB intt intt intt>' ],
-        MUL: [ 'R <inst -> SUB intt intt intt>' ],
-        MOV: [ 'R <inst -> SUB intt intt intt>' ],
-        LOD: [ 'R <inst -> SUB intt intt intt>' ],
-        STR: [ 'R <inst -> SUB intt intt intt>' ],
-        JMP: [ 'R <inst -> SUB intt intt intt>' ],
-        BEQ: [ 'R <inst -> SUB intt intt intt>' ],
-        BLT: [ 'R <inst -> SUB intt intt intt>' ],
-        RDN: [ 'R <inst -> SUB intt intt intt>' ],
-        PTN: [ 'R <inst -> SUB intt intt intt>' ],
-        HLT: [ 'R <inst -> SUB intt intt intt>' ],
-        LABEL: [ 'R <inst -> SUB intt intt intt>' ]
+        '$end': [ 'R 6' ],
+        ADD: [ 'R 6' ],
+        SUB: [ 'R 6' ],
+        MUL: [ 'R 6' ],
+        MOV: [ 'R 6' ],
+        LOD: [ 'R 6' ],
+        STR: [ 'R 6' ],
+        JMP: [ 'R 6' ],
+        BEQ: [ 'R 6' ],
+        BLT: [ 'R 6' ],
+        RDN: [ 'R 6' ],
+        PTN: [ 'R 6' ],
+        HLT: [ 'R 6' ],
+        LABEL: [ 'R 6' ]
       },
       goto: {}
     },
     '47': {
-      items: [ 'inst -> MUL intt intt intt . ' ],
+      items: [ '7  -  inst -> MUL intt intt intt • ' ],
       actions: {
-        '<EOF>': [ 'R <inst -> MUL intt intt intt>' ],
-        ADD: [ 'R <inst -> MUL intt intt intt>' ],
-        SUB: [ 'R <inst -> MUL intt intt intt>' ],
-        MUL: [ 'R <inst -> MUL intt intt intt>' ],
-        MOV: [ 'R <inst -> MUL intt intt intt>' ],
-        LOD: [ 'R <inst -> MUL intt intt intt>' ],
-        STR: [ 'R <inst -> MUL intt intt intt>' ],
-        JMP: [ 'R <inst -> MUL intt intt intt>' ],
-        BEQ: [ 'R <inst -> MUL intt intt intt>' ],
-        BLT: [ 'R <inst -> MUL intt intt intt>' ],
-        RDN: [ 'R <inst -> MUL intt intt intt>' ],
-        PTN: [ 'R <inst -> MUL intt intt intt>' ],
-        HLT: [ 'R <inst -> MUL intt intt intt>' ],
-        LABEL: [ 'R <inst -> MUL intt intt intt>' ]
+        '$end': [ 'R 7' ],
+        ADD: [ 'R 7' ],
+        SUB: [ 'R 7' ],
+        MUL: [ 'R 7' ],
+        MOV: [ 'R 7' ],
+        LOD: [ 'R 7' ],
+        STR: [ 'R 7' ],
+        JMP: [ 'R 7' ],
+        BEQ: [ 'R 7' ],
+        BLT: [ 'R 7' ],
+        RDN: [ 'R 7' ],
+        PTN: [ 'R 7' ],
+        HLT: [ 'R 7' ],
+        LABEL: [ 'R 7' ]
       },
       goto: {}
     },
     '48': {
-      items: [ 'inst -> LOD intt intt intt . ' ],
+      items: [ '9  -  inst -> LOD intt intt intt • ' ],
       actions: {
-        '<EOF>': [ 'R <inst -> LOD intt intt intt>' ],
-        ADD: [ 'R <inst -> LOD intt intt intt>' ],
-        SUB: [ 'R <inst -> LOD intt intt intt>' ],
-        MUL: [ 'R <inst -> LOD intt intt intt>' ],
-        MOV: [ 'R <inst -> LOD intt intt intt>' ],
-        LOD: [ 'R <inst -> LOD intt intt intt>' ],
-        STR: [ 'R <inst -> LOD intt intt intt>' ],
-        JMP: [ 'R <inst -> LOD intt intt intt>' ],
-        BEQ: [ 'R <inst -> LOD intt intt intt>' ],
-        BLT: [ 'R <inst -> LOD intt intt intt>' ],
-        RDN: [ 'R <inst -> LOD intt intt intt>' ],
-        PTN: [ 'R <inst -> LOD intt intt intt>' ],
-        HLT: [ 'R <inst -> LOD intt intt intt>' ],
-        LABEL: [ 'R <inst -> LOD intt intt intt>' ]
+        '$end': [ 'R 9' ],
+        ADD: [ 'R 9' ],
+        SUB: [ 'R 9' ],
+        MUL: [ 'R 9' ],
+        MOV: [ 'R 9' ],
+        LOD: [ 'R 9' ],
+        STR: [ 'R 9' ],
+        JMP: [ 'R 9' ],
+        BEQ: [ 'R 9' ],
+        BLT: [ 'R 9' ],
+        RDN: [ 'R 9' ],
+        PTN: [ 'R 9' ],
+        HLT: [ 'R 9' ],
+        LABEL: [ 'R 9' ]
       },
       goto: {}
     },
     '49': {
-      items: [ 'inst -> STR intt intt intt . ' ],
+      items: [ '10  -  inst -> STR intt intt intt • ' ],
       actions: {
-        '<EOF>': [ 'R <inst -> STR intt intt intt>' ],
-        ADD: [ 'R <inst -> STR intt intt intt>' ],
-        SUB: [ 'R <inst -> STR intt intt intt>' ],
-        MUL: [ 'R <inst -> STR intt intt intt>' ],
-        MOV: [ 'R <inst -> STR intt intt intt>' ],
-        LOD: [ 'R <inst -> STR intt intt intt>' ],
-        STR: [ 'R <inst -> STR intt intt intt>' ],
-        JMP: [ 'R <inst -> STR intt intt intt>' ],
-        BEQ: [ 'R <inst -> STR intt intt intt>' ],
-        BLT: [ 'R <inst -> STR intt intt intt>' ],
-        RDN: [ 'R <inst -> STR intt intt intt>' ],
-        PTN: [ 'R <inst -> STR intt intt intt>' ],
-        HLT: [ 'R <inst -> STR intt intt intt>' ],
-        LABEL: [ 'R <inst -> STR intt intt intt>' ]
+        '$end': [ 'R 10' ],
+        ADD: [ 'R 10' ],
+        SUB: [ 'R 10' ],
+        MUL: [ 'R 10' ],
+        MOV: [ 'R 10' ],
+        LOD: [ 'R 10' ],
+        STR: [ 'R 10' ],
+        JMP: [ 'R 10' ],
+        BEQ: [ 'R 10' ],
+        BLT: [ 'R 10' ],
+        RDN: [ 'R 10' ],
+        PTN: [ 'R 10' ],
+        HLT: [ 'R 10' ],
+        LABEL: [ 'R 10' ]
       },
       goto: {}
     },
     '50': {
-      items: [ 'inst -> JMP intt intt intt . ' ],
+      items: [ '11  -  inst -> JMP intt intt intt • ' ],
       actions: {
-        '<EOF>': [ 'R <inst -> JMP intt intt intt>' ],
-        ADD: [ 'R <inst -> JMP intt intt intt>' ],
-        SUB: [ 'R <inst -> JMP intt intt intt>' ],
-        MUL: [ 'R <inst -> JMP intt intt intt>' ],
-        MOV: [ 'R <inst -> JMP intt intt intt>' ],
-        LOD: [ 'R <inst -> JMP intt intt intt>' ],
-        STR: [ 'R <inst -> JMP intt intt intt>' ],
-        JMP: [ 'R <inst -> JMP intt intt intt>' ],
-        BEQ: [ 'R <inst -> JMP intt intt intt>' ],
-        BLT: [ 'R <inst -> JMP intt intt intt>' ],
-        RDN: [ 'R <inst -> JMP intt intt intt>' ],
-        PTN: [ 'R <inst -> JMP intt intt intt>' ],
-        HLT: [ 'R <inst -> JMP intt intt intt>' ],
-        LABEL: [ 'R <inst -> JMP intt intt intt>' ]
+        '$end': [ 'R 11' ],
+        ADD: [ 'R 11' ],
+        SUB: [ 'R 11' ],
+        MUL: [ 'R 11' ],
+        MOV: [ 'R 11' ],
+        LOD: [ 'R 11' ],
+        STR: [ 'R 11' ],
+        JMP: [ 'R 11' ],
+        BEQ: [ 'R 11' ],
+        BLT: [ 'R 11' ],
+        RDN: [ 'R 11' ],
+        PTN: [ 'R 11' ],
+        HLT: [ 'R 11' ],
+        LABEL: [ 'R 11' ]
       },
       goto: {}
     },
     '51': {
-      items: [ 'inst -> BEQ intt intt intt . ' ],
+      items: [ '12  -  inst -> BEQ intt intt intt • ' ],
       actions: {
-        '<EOF>': [ 'R <inst -> BEQ intt intt intt>' ],
-        ADD: [ 'R <inst -> BEQ intt intt intt>' ],
-        SUB: [ 'R <inst -> BEQ intt intt intt>' ],
-        MUL: [ 'R <inst -> BEQ intt intt intt>' ],
-        MOV: [ 'R <inst -> BEQ intt intt intt>' ],
-        LOD: [ 'R <inst -> BEQ intt intt intt>' ],
-        STR: [ 'R <inst -> BEQ intt intt intt>' ],
-        JMP: [ 'R <inst -> BEQ intt intt intt>' ],
-        BEQ: [ 'R <inst -> BEQ intt intt intt>' ],
-        BLT: [ 'R <inst -> BEQ intt intt intt>' ],
-        RDN: [ 'R <inst -> BEQ intt intt intt>' ],
-        PTN: [ 'R <inst -> BEQ intt intt intt>' ],
-        HLT: [ 'R <inst -> BEQ intt intt intt>' ],
-        LABEL: [ 'R <inst -> BEQ intt intt intt>' ]
+        '$end': [ 'R 12' ],
+        ADD: [ 'R 12' ],
+        SUB: [ 'R 12' ],
+        MUL: [ 'R 12' ],
+        MOV: [ 'R 12' ],
+        LOD: [ 'R 12' ],
+        STR: [ 'R 12' ],
+        JMP: [ 'R 12' ],
+        BEQ: [ 'R 12' ],
+        BLT: [ 'R 12' ],
+        RDN: [ 'R 12' ],
+        PTN: [ 'R 12' ],
+        HLT: [ 'R 12' ],
+        LABEL: [ 'R 12' ]
       },
       goto: {}
     },
     '52': {
-      items: [ 'inst -> BLT intt intt intt . ' ],
+      items: [ '13  -  inst -> BLT intt intt intt • ' ],
       actions: {
-        '<EOF>': [ 'R <inst -> BLT intt intt intt>' ],
-        ADD: [ 'R <inst -> BLT intt intt intt>' ],
-        SUB: [ 'R <inst -> BLT intt intt intt>' ],
-        MUL: [ 'R <inst -> BLT intt intt intt>' ],
-        MOV: [ 'R <inst -> BLT intt intt intt>' ],
-        LOD: [ 'R <inst -> BLT intt intt intt>' ],
-        STR: [ 'R <inst -> BLT intt intt intt>' ],
-        JMP: [ 'R <inst -> BLT intt intt intt>' ],
-        BEQ: [ 'R <inst -> BLT intt intt intt>' ],
-        BLT: [ 'R <inst -> BLT intt intt intt>' ],
-        RDN: [ 'R <inst -> BLT intt intt intt>' ],
-        PTN: [ 'R <inst -> BLT intt intt intt>' ],
-        HLT: [ 'R <inst -> BLT intt intt intt>' ],
-        LABEL: [ 'R <inst -> BLT intt intt intt>' ]
+        '$end': [ 'R 13' ],
+        ADD: [ 'R 13' ],
+        SUB: [ 'R 13' ],
+        MUL: [ 'R 13' ],
+        MOV: [ 'R 13' ],
+        LOD: [ 'R 13' ],
+        STR: [ 'R 13' ],
+        JMP: [ 'R 13' ],
+        BEQ: [ 'R 13' ],
+        BLT: [ 'R 13' ],
+        RDN: [ 'R 13' ],
+        PTN: [ 'R 13' ],
+        HLT: [ 'R 13' ],
+        LABEL: [ 'R 13' ]
       },
       goto: {}
     }
@@ -992,27 +992,27 @@
   "lr1": {
     '0': {
       items: [
-        'Start ->  . pgm / ( <EOF> )',
-        'pgm ->  . instlist / ( <EOF> )',
-        'inst ->  . LOD intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . STR intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . JMP intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . BEQ intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . BLT intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . RDN intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . PTN intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . HLT intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'instlist ->  . label COLON inst instlist / ( <EOF> )',
-        'instlist ->  . inst instlist / ( <EOF> )',
-        'instlist ->  .  / ( <EOF> )',
-        'label ->  . LABEL / ( COLON )',
-        'inst ->  . ADD intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . SUB intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . MUL intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . MOV intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '0  -  $accept ->  • pgm / ( $end )',
+        '1  -  pgm ->  • instlist / ( $end )',
+        '2  -  instlist ->  • label COLON inst instlist / ( $end )',
+        '3  -  instlist ->  • inst instlist / ( $end )',
+        '4  -  instlist ->  •  / ( $end )',
+        '5  -  inst ->  • ADD intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '6  -  inst ->  • SUB intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '7  -  inst ->  • MUL intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '8  -  inst ->  • MOV intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '9  -  inst ->  • LOD intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '10  -  inst ->  • STR intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '11  -  inst ->  • JMP intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '12  -  inst ->  • BEQ intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '13  -  inst ->  • BLT intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '14  -  inst ->  • RDN intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '15  -  inst ->  • PTN intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '16  -  inst ->  • HLT intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( COLON )'
       ],
       actions: {
-        '<EOF>': [ 'R <instlist -> >' ],
+        '$end': [ 'R 4' ],
         pgm: [ '1' ],
         instlist: [ '2' ],
         label: [ '3' ],
@@ -1052,42 +1052,42 @@
       }
     },
     '1': {
-      items: [ 'Start -> pgm .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'Acc' ] },
+      items: [ '0  -  $accept -> pgm •  / ( $end )' ],
+      actions: { '$end': [ 'Acc' ] },
       goto: {}
     },
     '2': {
-      items: [ 'pgm -> instlist .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'R <pgm -> instlist>' ] },
+      items: [ '1  -  pgm -> instlist •  / ( $end )' ],
+      actions: { '$end': [ 'R 1' ] },
       goto: {}
     },
     '3': {
-      items: [ 'instlist -> label . COLON inst instlist / ( <EOF> )' ],
+      items: [ '2  -  instlist -> label • COLON inst instlist / ( $end )' ],
       actions: { COLON: [ 'S18' ] },
       goto: { COLON: 18 }
     },
     '4': {
       items: [
-        'inst ->  . LOD intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . STR intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . JMP intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . BEQ intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . BLT intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . RDN intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . PTN intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . HLT intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'instlist ->  . label COLON inst instlist / ( <EOF> )',
-        'instlist -> inst . instlist / ( <EOF> )',
-        'instlist ->  . inst instlist / ( <EOF> )',
-        'instlist ->  .  / ( <EOF> )',
-        'label ->  . LABEL / ( COLON )',
-        'inst ->  . ADD intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . SUB intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . MUL intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . MOV intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '2  -  instlist ->  • label COLON inst instlist / ( $end )',
+        '3  -  instlist ->  • inst instlist / ( $end )',
+        '3  -  instlist -> inst • instlist / ( $end )',
+        '4  -  instlist ->  •  / ( $end )',
+        '5  -  inst ->  • ADD intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '6  -  inst ->  • SUB intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '7  -  inst ->  • MUL intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '8  -  inst ->  • MOV intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '9  -  inst ->  • LOD intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '10  -  inst ->  • STR intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '11  -  inst ->  • JMP intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '12  -  inst ->  • BEQ intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '13  -  inst ->  • BLT intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '14  -  inst ->  • RDN intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '15  -  inst ->  • PTN intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '16  -  inst ->  • HLT intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( COLON )'
       ],
       actions: {
-        '<EOF>': [ 'R <instlist -> >' ],
+        '$end': [ 'R 4' ],
         instlist: [ '19' ],
         label: [ '3' ],
         inst: [ '4' ],
@@ -1126,10 +1126,10 @@
     },
     '5': {
       items: [
-        'inst -> ADD . intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '5  -  inst -> ADD • intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1141,10 +1141,10 @@
     },
     '6': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> SUB . intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '6  -  inst -> SUB • intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1156,10 +1156,10 @@
     },
     '7': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> MUL . intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '7  -  inst -> MUL • intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1171,10 +1171,10 @@
     },
     '8': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> MOV . intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '8  -  inst -> MOV • intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1186,10 +1186,10 @@
     },
     '9': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> LOD . intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '9  -  inst -> LOD • intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1201,10 +1201,10 @@
     },
     '10': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> STR . intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '10  -  inst -> STR • intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1216,10 +1216,10 @@
     },
     '11': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> JMP . intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '11  -  inst -> JMP • intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1231,10 +1231,10 @@
     },
     '12': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> BEQ . intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '12  -  inst -> BEQ • intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1246,10 +1246,10 @@
     },
     '13': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> BLT . intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '13  -  inst -> BLT • intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1261,10 +1261,10 @@
     },
     '14': {
       items: [
-        'intt ->  . INT / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'intt ->  . label / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst -> RDN . intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '14  -  inst -> RDN • intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '18  -  intt ->  • INT / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '19  -  intt ->  • label / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
         label: [ '32' ],
@@ -1276,10 +1276,10 @@
     },
     '15': {
       items: [
-        'intt ->  . INT / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'intt ->  . label / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst -> PTN . intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '15  -  inst -> PTN • intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '18  -  intt ->  • INT / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '19  -  intt ->  • label / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
         label: [ '32' ],
@@ -1291,10 +1291,10 @@
     },
     '16': {
       items: [
-        'intt ->  . INT / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'intt ->  . label / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst -> HLT . intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '16  -  inst -> HLT • intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '18  -  intt ->  • INT / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '19  -  intt ->  • label / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
         label: [ '32' ],
@@ -1305,25 +1305,25 @@
       goto: { label: 32, intt: 37, LABEL: 34, INT: 35 }
     },
     '17': {
-      items: [ 'label -> LABEL .  / ( COLON )' ],
-      actions: { COLON: [ 'R <label -> LABEL>' ] },
+      items: [ '17  -  label -> LABEL •  / ( COLON )' ],
+      actions: { COLON: [ 'R 17' ] },
       goto: {}
     },
     '18': {
       items: [
-        'inst ->  . LOD intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . STR intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . JMP intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . BEQ intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . BLT intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . RDN intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . PTN intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . HLT intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'instlist -> label COLON . inst instlist / ( <EOF> )',
-        'inst ->  . ADD intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . SUB intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . MUL intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . MOV intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '2  -  instlist -> label COLON • inst instlist / ( $end )',
+        '5  -  inst ->  • ADD intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '6  -  inst ->  • SUB intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '7  -  inst ->  • MUL intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '8  -  inst ->  • MOV intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '9  -  inst ->  • LOD intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '10  -  inst ->  • STR intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '11  -  inst ->  • JMP intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '12  -  inst ->  • BEQ intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '13  -  inst ->  • BLT intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '14  -  inst ->  • RDN intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '15  -  inst ->  • PTN intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '16  -  inst ->  • HLT intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
         inst: [ '38' ],
@@ -1357,21 +1357,21 @@
       }
     },
     '19': {
-      items: [ 'instlist -> inst instlist .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'R <instlist -> inst instlist>' ] },
+      items: [ '3  -  instlist -> inst instlist •  / ( $end )' ],
+      actions: { '$end': [ 'R 3' ] },
       goto: {}
     },
     '20': {
-      items: [ 'intt -> label .  / ( INT, LABEL )' ],
-      actions: { LABEL: [ 'R <intt -> label>' ], INT: [ 'R <intt -> label>' ] },
+      items: [ '19  -  intt -> label •  / ( INT, LABEL )' ],
+      actions: { LABEL: [ 'R 19' ], INT: [ 'R 19' ] },
       goto: {}
     },
     '21': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> ADD intt . intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '5  -  inst -> ADD intt • intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1382,21 +1382,21 @@
       goto: { label: 20, intt: 39, LABEL: 22, INT: 23 }
     },
     '22': {
-      items: [ 'label -> LABEL .  / ( INT, LABEL )' ],
-      actions: { LABEL: [ 'R <label -> LABEL>' ], INT: [ 'R <label -> LABEL>' ] },
+      items: [ '17  -  label -> LABEL •  / ( INT, LABEL )' ],
+      actions: { LABEL: [ 'R 17' ], INT: [ 'R 17' ] },
       goto: {}
     },
     '23': {
-      items: [ 'intt -> INT .  / ( INT, LABEL )' ],
-      actions: { LABEL: [ 'R <intt -> INT>' ], INT: [ 'R <intt -> INT>' ] },
+      items: [ '18  -  intt -> INT •  / ( INT, LABEL )' ],
+      actions: { LABEL: [ 'R 18' ], INT: [ 'R 18' ] },
       goto: {}
     },
     '24': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> SUB intt . intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '6  -  inst -> SUB intt • intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1408,10 +1408,10 @@
     },
     '25': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> MUL intt . intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '7  -  inst -> MUL intt • intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1423,10 +1423,10 @@
     },
     '26': {
       items: [
-        'intt ->  . INT / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'intt ->  . label / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst -> MOV intt . intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '8  -  inst -> MOV intt • intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '18  -  intt ->  • INT / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '19  -  intt ->  • label / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
         label: [ '32' ],
@@ -1438,10 +1438,10 @@
     },
     '27': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> LOD intt . intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '9  -  inst -> LOD intt • intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1453,10 +1453,10 @@
     },
     '28': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> STR intt . intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '10  -  inst -> STR intt • intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1468,10 +1468,10 @@
     },
     '29': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> JMP intt . intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '11  -  inst -> JMP intt • intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1483,10 +1483,10 @@
     },
     '30': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> BEQ intt . intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '12  -  inst -> BEQ intt • intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1498,10 +1498,10 @@
     },
     '31': {
       items: [
-        'intt ->  . INT / ( INT, LABEL )',
-        'intt ->  . label / ( INT, LABEL )',
-        'inst -> BLT intt . intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( INT, LABEL )'
+        '13  -  inst -> BLT intt • intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( INT, LABEL )',
+        '18  -  intt ->  • INT / ( INT, LABEL )',
+        '19  -  intt ->  • label / ( INT, LABEL )'
       ],
       actions: {
         label: [ '20' ],
@@ -1513,158 +1513,158 @@
     },
     '32': {
       items: [
-        'intt -> label .  / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '19  -  intt -> label •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
-        '<EOF>': [ 'R <intt -> label>' ],
-        ADD: [ 'R <intt -> label>' ],
-        SUB: [ 'R <intt -> label>' ],
-        MUL: [ 'R <intt -> label>' ],
-        MOV: [ 'R <intt -> label>' ],
-        LOD: [ 'R <intt -> label>' ],
-        STR: [ 'R <intt -> label>' ],
-        JMP: [ 'R <intt -> label>' ],
-        BEQ: [ 'R <intt -> label>' ],
-        BLT: [ 'R <intt -> label>' ],
-        RDN: [ 'R <intt -> label>' ],
-        PTN: [ 'R <intt -> label>' ],
-        HLT: [ 'R <intt -> label>' ],
-        LABEL: [ 'R <intt -> label>' ]
+        '$end': [ 'R 19' ],
+        ADD: [ 'R 19' ],
+        SUB: [ 'R 19' ],
+        MUL: [ 'R 19' ],
+        MOV: [ 'R 19' ],
+        LOD: [ 'R 19' ],
+        STR: [ 'R 19' ],
+        JMP: [ 'R 19' ],
+        BEQ: [ 'R 19' ],
+        BLT: [ 'R 19' ],
+        RDN: [ 'R 19' ],
+        PTN: [ 'R 19' ],
+        HLT: [ 'R 19' ],
+        LABEL: [ 'R 19' ]
       },
       goto: {}
     },
     '33': {
       items: [
-        'inst -> RDN intt .  / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '14  -  inst -> RDN intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
-        '<EOF>': [ 'R <inst -> RDN intt>' ],
-        ADD: [ 'R <inst -> RDN intt>' ],
-        SUB: [ 'R <inst -> RDN intt>' ],
-        MUL: [ 'R <inst -> RDN intt>' ],
-        MOV: [ 'R <inst -> RDN intt>' ],
-        LOD: [ 'R <inst -> RDN intt>' ],
-        STR: [ 'R <inst -> RDN intt>' ],
-        JMP: [ 'R <inst -> RDN intt>' ],
-        BEQ: [ 'R <inst -> RDN intt>' ],
-        BLT: [ 'R <inst -> RDN intt>' ],
-        RDN: [ 'R <inst -> RDN intt>' ],
-        PTN: [ 'R <inst -> RDN intt>' ],
-        HLT: [ 'R <inst -> RDN intt>' ],
-        LABEL: [ 'R <inst -> RDN intt>' ]
+        '$end': [ 'R 14' ],
+        ADD: [ 'R 14' ],
+        SUB: [ 'R 14' ],
+        MUL: [ 'R 14' ],
+        MOV: [ 'R 14' ],
+        LOD: [ 'R 14' ],
+        STR: [ 'R 14' ],
+        JMP: [ 'R 14' ],
+        BEQ: [ 'R 14' ],
+        BLT: [ 'R 14' ],
+        RDN: [ 'R 14' ],
+        PTN: [ 'R 14' ],
+        HLT: [ 'R 14' ],
+        LABEL: [ 'R 14' ]
       },
       goto: {}
     },
     '34': {
       items: [
-        'label -> LABEL .  / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '17  -  label -> LABEL •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
-        '<EOF>': [ 'R <label -> LABEL>' ],
-        ADD: [ 'R <label -> LABEL>' ],
-        SUB: [ 'R <label -> LABEL>' ],
-        MUL: [ 'R <label -> LABEL>' ],
-        MOV: [ 'R <label -> LABEL>' ],
-        LOD: [ 'R <label -> LABEL>' ],
-        STR: [ 'R <label -> LABEL>' ],
-        JMP: [ 'R <label -> LABEL>' ],
-        BEQ: [ 'R <label -> LABEL>' ],
-        BLT: [ 'R <label -> LABEL>' ],
-        RDN: [ 'R <label -> LABEL>' ],
-        PTN: [ 'R <label -> LABEL>' ],
-        HLT: [ 'R <label -> LABEL>' ],
-        LABEL: [ 'R <label -> LABEL>' ]
+        '$end': [ 'R 17' ],
+        ADD: [ 'R 17' ],
+        SUB: [ 'R 17' ],
+        MUL: [ 'R 17' ],
+        MOV: [ 'R 17' ],
+        LOD: [ 'R 17' ],
+        STR: [ 'R 17' ],
+        JMP: [ 'R 17' ],
+        BEQ: [ 'R 17' ],
+        BLT: [ 'R 17' ],
+        RDN: [ 'R 17' ],
+        PTN: [ 'R 17' ],
+        HLT: [ 'R 17' ],
+        LABEL: [ 'R 17' ]
       },
       goto: {}
     },
     '35': {
       items: [
-        'intt -> INT .  / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '18  -  intt -> INT •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
-        '<EOF>': [ 'R <intt -> INT>' ],
-        ADD: [ 'R <intt -> INT>' ],
-        SUB: [ 'R <intt -> INT>' ],
-        MUL: [ 'R <intt -> INT>' ],
-        MOV: [ 'R <intt -> INT>' ],
-        LOD: [ 'R <intt -> INT>' ],
-        STR: [ 'R <intt -> INT>' ],
-        JMP: [ 'R <intt -> INT>' ],
-        BEQ: [ 'R <intt -> INT>' ],
-        BLT: [ 'R <intt -> INT>' ],
-        RDN: [ 'R <intt -> INT>' ],
-        PTN: [ 'R <intt -> INT>' ],
-        HLT: [ 'R <intt -> INT>' ],
-        LABEL: [ 'R <intt -> INT>' ]
+        '$end': [ 'R 18' ],
+        ADD: [ 'R 18' ],
+        SUB: [ 'R 18' ],
+        MUL: [ 'R 18' ],
+        MOV: [ 'R 18' ],
+        LOD: [ 'R 18' ],
+        STR: [ 'R 18' ],
+        JMP: [ 'R 18' ],
+        BEQ: [ 'R 18' ],
+        BLT: [ 'R 18' ],
+        RDN: [ 'R 18' ],
+        PTN: [ 'R 18' ],
+        HLT: [ 'R 18' ],
+        LABEL: [ 'R 18' ]
       },
       goto: {}
     },
     '36': {
       items: [
-        'inst -> PTN intt .  / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '15  -  inst -> PTN intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
-        '<EOF>': [ 'R <inst -> PTN intt>' ],
-        ADD: [ 'R <inst -> PTN intt>' ],
-        SUB: [ 'R <inst -> PTN intt>' ],
-        MUL: [ 'R <inst -> PTN intt>' ],
-        MOV: [ 'R <inst -> PTN intt>' ],
-        LOD: [ 'R <inst -> PTN intt>' ],
-        STR: [ 'R <inst -> PTN intt>' ],
-        JMP: [ 'R <inst -> PTN intt>' ],
-        BEQ: [ 'R <inst -> PTN intt>' ],
-        BLT: [ 'R <inst -> PTN intt>' ],
-        RDN: [ 'R <inst -> PTN intt>' ],
-        PTN: [ 'R <inst -> PTN intt>' ],
-        HLT: [ 'R <inst -> PTN intt>' ],
-        LABEL: [ 'R <inst -> PTN intt>' ]
+        '$end': [ 'R 15' ],
+        ADD: [ 'R 15' ],
+        SUB: [ 'R 15' ],
+        MUL: [ 'R 15' ],
+        MOV: [ 'R 15' ],
+        LOD: [ 'R 15' ],
+        STR: [ 'R 15' ],
+        JMP: [ 'R 15' ],
+        BEQ: [ 'R 15' ],
+        BLT: [ 'R 15' ],
+        RDN: [ 'R 15' ],
+        PTN: [ 'R 15' ],
+        HLT: [ 'R 15' ],
+        LABEL: [ 'R 15' ]
       },
       goto: {}
     },
     '37': {
       items: [
-        'inst -> HLT intt .  / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '16  -  inst -> HLT intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
-        '<EOF>': [ 'R <inst -> HLT intt>' ],
-        ADD: [ 'R <inst -> HLT intt>' ],
-        SUB: [ 'R <inst -> HLT intt>' ],
-        MUL: [ 'R <inst -> HLT intt>' ],
-        MOV: [ 'R <inst -> HLT intt>' ],
-        LOD: [ 'R <inst -> HLT intt>' ],
-        STR: [ 'R <inst -> HLT intt>' ],
-        JMP: [ 'R <inst -> HLT intt>' ],
-        BEQ: [ 'R <inst -> HLT intt>' ],
-        BLT: [ 'R <inst -> HLT intt>' ],
-        RDN: [ 'R <inst -> HLT intt>' ],
-        PTN: [ 'R <inst -> HLT intt>' ],
-        HLT: [ 'R <inst -> HLT intt>' ],
-        LABEL: [ 'R <inst -> HLT intt>' ]
+        '$end': [ 'R 16' ],
+        ADD: [ 'R 16' ],
+        SUB: [ 'R 16' ],
+        MUL: [ 'R 16' ],
+        MOV: [ 'R 16' ],
+        LOD: [ 'R 16' ],
+        STR: [ 'R 16' ],
+        JMP: [ 'R 16' ],
+        BEQ: [ 'R 16' ],
+        BLT: [ 'R 16' ],
+        RDN: [ 'R 16' ],
+        PTN: [ 'R 16' ],
+        HLT: [ 'R 16' ],
+        LABEL: [ 'R 16' ]
       },
       goto: {}
     },
     '38': {
       items: [
-        'inst ->  . LOD intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . STR intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . JMP intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . BEQ intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . BLT intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . RDN intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . PTN intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . HLT intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'instlist ->  . label COLON inst instlist / ( <EOF> )',
-        'instlist ->  . inst instlist / ( <EOF> )',
-        'instlist ->  .  / ( <EOF> )',
-        'label ->  . LABEL / ( COLON )',
-        'instlist -> label COLON inst . instlist / ( <EOF> )',
-        'inst ->  . ADD intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . SUB intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . MUL intt intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst ->  . MOV intt intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '2  -  instlist ->  • label COLON inst instlist / ( $end )',
+        '2  -  instlist -> label COLON inst • instlist / ( $end )',
+        '3  -  instlist ->  • inst instlist / ( $end )',
+        '4  -  instlist ->  •  / ( $end )',
+        '5  -  inst ->  • ADD intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '6  -  inst ->  • SUB intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '7  -  inst ->  • MUL intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '8  -  inst ->  • MOV intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '9  -  inst ->  • LOD intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '10  -  inst ->  • STR intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '11  -  inst ->  • JMP intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '12  -  inst ->  • BEQ intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '13  -  inst ->  • BLT intt intt intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '14  -  inst ->  • RDN intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '15  -  inst ->  • PTN intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '16  -  inst ->  • HLT intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( COLON )'
       ],
       actions: {
-        '<EOF>': [ 'R <instlist -> >' ],
+        '$end': [ 'R 4' ],
         instlist: [ '48' ],
         label: [ '3' ],
         inst: [ '4' ],
@@ -1703,10 +1703,10 @@
     },
     '39': {
       items: [
-        'intt ->  . INT / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'intt ->  . label / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst -> ADD intt intt . intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '5  -  inst -> ADD intt intt • intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '18  -  intt ->  • INT / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '19  -  intt ->  • label / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
         label: [ '32' ],
@@ -1718,10 +1718,10 @@
     },
     '40': {
       items: [
-        'intt ->  . INT / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'intt ->  . label / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst -> SUB intt intt . intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '6  -  inst -> SUB intt intt • intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '18  -  intt ->  • INT / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '19  -  intt ->  • label / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
         label: [ '32' ],
@@ -1733,10 +1733,10 @@
     },
     '41': {
       items: [
-        'intt ->  . INT / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'intt ->  . label / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst -> MUL intt intt . intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '7  -  inst -> MUL intt intt • intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '18  -  intt ->  • INT / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '19  -  intt ->  • label / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
         label: [ '32' ],
@@ -1748,32 +1748,32 @@
     },
     '42': {
       items: [
-        'inst -> MOV intt intt .  / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '8  -  inst -> MOV intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
-        '<EOF>': [ 'R <inst -> MOV intt intt>' ],
-        ADD: [ 'R <inst -> MOV intt intt>' ],
-        SUB: [ 'R <inst -> MOV intt intt>' ],
-        MUL: [ 'R <inst -> MOV intt intt>' ],
-        MOV: [ 'R <inst -> MOV intt intt>' ],
-        LOD: [ 'R <inst -> MOV intt intt>' ],
-        STR: [ 'R <inst -> MOV intt intt>' ],
-        JMP: [ 'R <inst -> MOV intt intt>' ],
-        BEQ: [ 'R <inst -> MOV intt intt>' ],
-        BLT: [ 'R <inst -> MOV intt intt>' ],
-        RDN: [ 'R <inst -> MOV intt intt>' ],
-        PTN: [ 'R <inst -> MOV intt intt>' ],
-        HLT: [ 'R <inst -> MOV intt intt>' ],
-        LABEL: [ 'R <inst -> MOV intt intt>' ]
+        '$end': [ 'R 8' ],
+        ADD: [ 'R 8' ],
+        SUB: [ 'R 8' ],
+        MUL: [ 'R 8' ],
+        MOV: [ 'R 8' ],
+        LOD: [ 'R 8' ],
+        STR: [ 'R 8' ],
+        JMP: [ 'R 8' ],
+        BEQ: [ 'R 8' ],
+        BLT: [ 'R 8' ],
+        RDN: [ 'R 8' ],
+        PTN: [ 'R 8' ],
+        HLT: [ 'R 8' ],
+        LABEL: [ 'R 8' ]
       },
       goto: {}
     },
     '43': {
       items: [
-        'intt ->  . INT / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'intt ->  . label / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst -> LOD intt intt . intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '9  -  inst -> LOD intt intt • intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '18  -  intt ->  • INT / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '19  -  intt ->  • label / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
         label: [ '32' ],
@@ -1785,10 +1785,10 @@
     },
     '44': {
       items: [
-        'intt ->  . INT / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'intt ->  . label / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst -> STR intt intt . intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '10  -  inst -> STR intt intt • intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '18  -  intt ->  • INT / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '19  -  intt ->  • label / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
         label: [ '32' ],
@@ -1800,10 +1800,10 @@
     },
     '45': {
       items: [
-        'intt ->  . INT / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'intt ->  . label / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst -> JMP intt intt . intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '11  -  inst -> JMP intt intt • intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '18  -  intt ->  • INT / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '19  -  intt ->  • label / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
         label: [ '32' ],
@@ -1815,10 +1815,10 @@
     },
     '46': {
       items: [
-        'intt ->  . INT / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'intt ->  . label / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst -> BEQ intt intt . intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '12  -  inst -> BEQ intt intt • intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '18  -  intt ->  • INT / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '19  -  intt ->  • label / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
         label: [ '32' ],
@@ -1830,10 +1830,10 @@
     },
     '47': {
       items: [
-        'intt ->  . INT / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'intt ->  . label / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'label ->  . LABEL / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
-        'inst -> BLT intt intt . intt / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '13  -  inst -> BLT intt intt • intt / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '17  -  label ->  • LABEL / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '18  -  intt ->  • INT / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )',
+        '19  -  intt ->  • label / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
         label: [ '32' ],
@@ -1844,183 +1844,183 @@
       goto: { label: 32, intt: 56, LABEL: 34, INT: 35 }
     },
     '48': {
-      items: [ 'instlist -> label COLON inst instlist .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'R <instlist -> label COLON inst instlist>' ] },
+      items: [ '2  -  instlist -> label COLON inst instlist •  / ( $end )' ],
+      actions: { '$end': [ 'R 2' ] },
       goto: {}
     },
     '49': {
       items: [
-        'inst -> ADD intt intt intt .  / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '5  -  inst -> ADD intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
-        '<EOF>': [ 'R <inst -> ADD intt intt intt>' ],
-        ADD: [ 'R <inst -> ADD intt intt intt>' ],
-        SUB: [ 'R <inst -> ADD intt intt intt>' ],
-        MUL: [ 'R <inst -> ADD intt intt intt>' ],
-        MOV: [ 'R <inst -> ADD intt intt intt>' ],
-        LOD: [ 'R <inst -> ADD intt intt intt>' ],
-        STR: [ 'R <inst -> ADD intt intt intt>' ],
-        JMP: [ 'R <inst -> ADD intt intt intt>' ],
-        BEQ: [ 'R <inst -> ADD intt intt intt>' ],
-        BLT: [ 'R <inst -> ADD intt intt intt>' ],
-        RDN: [ 'R <inst -> ADD intt intt intt>' ],
-        PTN: [ 'R <inst -> ADD intt intt intt>' ],
-        HLT: [ 'R <inst -> ADD intt intt intt>' ],
-        LABEL: [ 'R <inst -> ADD intt intt intt>' ]
+        '$end': [ 'R 5' ],
+        ADD: [ 'R 5' ],
+        SUB: [ 'R 5' ],
+        MUL: [ 'R 5' ],
+        MOV: [ 'R 5' ],
+        LOD: [ 'R 5' ],
+        STR: [ 'R 5' ],
+        JMP: [ 'R 5' ],
+        BEQ: [ 'R 5' ],
+        BLT: [ 'R 5' ],
+        RDN: [ 'R 5' ],
+        PTN: [ 'R 5' ],
+        HLT: [ 'R 5' ],
+        LABEL: [ 'R 5' ]
       },
       goto: {}
     },
     '50': {
       items: [
-        'inst -> SUB intt intt intt .  / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '6  -  inst -> SUB intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
-        '<EOF>': [ 'R <inst -> SUB intt intt intt>' ],
-        ADD: [ 'R <inst -> SUB intt intt intt>' ],
-        SUB: [ 'R <inst -> SUB intt intt intt>' ],
-        MUL: [ 'R <inst -> SUB intt intt intt>' ],
-        MOV: [ 'R <inst -> SUB intt intt intt>' ],
-        LOD: [ 'R <inst -> SUB intt intt intt>' ],
-        STR: [ 'R <inst -> SUB intt intt intt>' ],
-        JMP: [ 'R <inst -> SUB intt intt intt>' ],
-        BEQ: [ 'R <inst -> SUB intt intt intt>' ],
-        BLT: [ 'R <inst -> SUB intt intt intt>' ],
-        RDN: [ 'R <inst -> SUB intt intt intt>' ],
-        PTN: [ 'R <inst -> SUB intt intt intt>' ],
-        HLT: [ 'R <inst -> SUB intt intt intt>' ],
-        LABEL: [ 'R <inst -> SUB intt intt intt>' ]
+        '$end': [ 'R 6' ],
+        ADD: [ 'R 6' ],
+        SUB: [ 'R 6' ],
+        MUL: [ 'R 6' ],
+        MOV: [ 'R 6' ],
+        LOD: [ 'R 6' ],
+        STR: [ 'R 6' ],
+        JMP: [ 'R 6' ],
+        BEQ: [ 'R 6' ],
+        BLT: [ 'R 6' ],
+        RDN: [ 'R 6' ],
+        PTN: [ 'R 6' ],
+        HLT: [ 'R 6' ],
+        LABEL: [ 'R 6' ]
       },
       goto: {}
     },
     '51': {
       items: [
-        'inst -> MUL intt intt intt .  / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '7  -  inst -> MUL intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
-        '<EOF>': [ 'R <inst -> MUL intt intt intt>' ],
-        ADD: [ 'R <inst -> MUL intt intt intt>' ],
-        SUB: [ 'R <inst -> MUL intt intt intt>' ],
-        MUL: [ 'R <inst -> MUL intt intt intt>' ],
-        MOV: [ 'R <inst -> MUL intt intt intt>' ],
-        LOD: [ 'R <inst -> MUL intt intt intt>' ],
-        STR: [ 'R <inst -> MUL intt intt intt>' ],
-        JMP: [ 'R <inst -> MUL intt intt intt>' ],
-        BEQ: [ 'R <inst -> MUL intt intt intt>' ],
-        BLT: [ 'R <inst -> MUL intt intt intt>' ],
-        RDN: [ 'R <inst -> MUL intt intt intt>' ],
-        PTN: [ 'R <inst -> MUL intt intt intt>' ],
-        HLT: [ 'R <inst -> MUL intt intt intt>' ],
-        LABEL: [ 'R <inst -> MUL intt intt intt>' ]
+        '$end': [ 'R 7' ],
+        ADD: [ 'R 7' ],
+        SUB: [ 'R 7' ],
+        MUL: [ 'R 7' ],
+        MOV: [ 'R 7' ],
+        LOD: [ 'R 7' ],
+        STR: [ 'R 7' ],
+        JMP: [ 'R 7' ],
+        BEQ: [ 'R 7' ],
+        BLT: [ 'R 7' ],
+        RDN: [ 'R 7' ],
+        PTN: [ 'R 7' ],
+        HLT: [ 'R 7' ],
+        LABEL: [ 'R 7' ]
       },
       goto: {}
     },
     '52': {
       items: [
-        'inst -> LOD intt intt intt .  / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '9  -  inst -> LOD intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
-        '<EOF>': [ 'R <inst -> LOD intt intt intt>' ],
-        ADD: [ 'R <inst -> LOD intt intt intt>' ],
-        SUB: [ 'R <inst -> LOD intt intt intt>' ],
-        MUL: [ 'R <inst -> LOD intt intt intt>' ],
-        MOV: [ 'R <inst -> LOD intt intt intt>' ],
-        LOD: [ 'R <inst -> LOD intt intt intt>' ],
-        STR: [ 'R <inst -> LOD intt intt intt>' ],
-        JMP: [ 'R <inst -> LOD intt intt intt>' ],
-        BEQ: [ 'R <inst -> LOD intt intt intt>' ],
-        BLT: [ 'R <inst -> LOD intt intt intt>' ],
-        RDN: [ 'R <inst -> LOD intt intt intt>' ],
-        PTN: [ 'R <inst -> LOD intt intt intt>' ],
-        HLT: [ 'R <inst -> LOD intt intt intt>' ],
-        LABEL: [ 'R <inst -> LOD intt intt intt>' ]
+        '$end': [ 'R 9' ],
+        ADD: [ 'R 9' ],
+        SUB: [ 'R 9' ],
+        MUL: [ 'R 9' ],
+        MOV: [ 'R 9' ],
+        LOD: [ 'R 9' ],
+        STR: [ 'R 9' ],
+        JMP: [ 'R 9' ],
+        BEQ: [ 'R 9' ],
+        BLT: [ 'R 9' ],
+        RDN: [ 'R 9' ],
+        PTN: [ 'R 9' ],
+        HLT: [ 'R 9' ],
+        LABEL: [ 'R 9' ]
       },
       goto: {}
     },
     '53': {
       items: [
-        'inst -> STR intt intt intt .  / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '10  -  inst -> STR intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
-        '<EOF>': [ 'R <inst -> STR intt intt intt>' ],
-        ADD: [ 'R <inst -> STR intt intt intt>' ],
-        SUB: [ 'R <inst -> STR intt intt intt>' ],
-        MUL: [ 'R <inst -> STR intt intt intt>' ],
-        MOV: [ 'R <inst -> STR intt intt intt>' ],
-        LOD: [ 'R <inst -> STR intt intt intt>' ],
-        STR: [ 'R <inst -> STR intt intt intt>' ],
-        JMP: [ 'R <inst -> STR intt intt intt>' ],
-        BEQ: [ 'R <inst -> STR intt intt intt>' ],
-        BLT: [ 'R <inst -> STR intt intt intt>' ],
-        RDN: [ 'R <inst -> STR intt intt intt>' ],
-        PTN: [ 'R <inst -> STR intt intt intt>' ],
-        HLT: [ 'R <inst -> STR intt intt intt>' ],
-        LABEL: [ 'R <inst -> STR intt intt intt>' ]
+        '$end': [ 'R 10' ],
+        ADD: [ 'R 10' ],
+        SUB: [ 'R 10' ],
+        MUL: [ 'R 10' ],
+        MOV: [ 'R 10' ],
+        LOD: [ 'R 10' ],
+        STR: [ 'R 10' ],
+        JMP: [ 'R 10' ],
+        BEQ: [ 'R 10' ],
+        BLT: [ 'R 10' ],
+        RDN: [ 'R 10' ],
+        PTN: [ 'R 10' ],
+        HLT: [ 'R 10' ],
+        LABEL: [ 'R 10' ]
       },
       goto: {}
     },
     '54': {
       items: [
-        'inst -> JMP intt intt intt .  / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '11  -  inst -> JMP intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
-        '<EOF>': [ 'R <inst -> JMP intt intt intt>' ],
-        ADD: [ 'R <inst -> JMP intt intt intt>' ],
-        SUB: [ 'R <inst -> JMP intt intt intt>' ],
-        MUL: [ 'R <inst -> JMP intt intt intt>' ],
-        MOV: [ 'R <inst -> JMP intt intt intt>' ],
-        LOD: [ 'R <inst -> JMP intt intt intt>' ],
-        STR: [ 'R <inst -> JMP intt intt intt>' ],
-        JMP: [ 'R <inst -> JMP intt intt intt>' ],
-        BEQ: [ 'R <inst -> JMP intt intt intt>' ],
-        BLT: [ 'R <inst -> JMP intt intt intt>' ],
-        RDN: [ 'R <inst -> JMP intt intt intt>' ],
-        PTN: [ 'R <inst -> JMP intt intt intt>' ],
-        HLT: [ 'R <inst -> JMP intt intt intt>' ],
-        LABEL: [ 'R <inst -> JMP intt intt intt>' ]
+        '$end': [ 'R 11' ],
+        ADD: [ 'R 11' ],
+        SUB: [ 'R 11' ],
+        MUL: [ 'R 11' ],
+        MOV: [ 'R 11' ],
+        LOD: [ 'R 11' ],
+        STR: [ 'R 11' ],
+        JMP: [ 'R 11' ],
+        BEQ: [ 'R 11' ],
+        BLT: [ 'R 11' ],
+        RDN: [ 'R 11' ],
+        PTN: [ 'R 11' ],
+        HLT: [ 'R 11' ],
+        LABEL: [ 'R 11' ]
       },
       goto: {}
     },
     '55': {
       items: [
-        'inst -> BEQ intt intt intt .  / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '12  -  inst -> BEQ intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
-        '<EOF>': [ 'R <inst -> BEQ intt intt intt>' ],
-        ADD: [ 'R <inst -> BEQ intt intt intt>' ],
-        SUB: [ 'R <inst -> BEQ intt intt intt>' ],
-        MUL: [ 'R <inst -> BEQ intt intt intt>' ],
-        MOV: [ 'R <inst -> BEQ intt intt intt>' ],
-        LOD: [ 'R <inst -> BEQ intt intt intt>' ],
-        STR: [ 'R <inst -> BEQ intt intt intt>' ],
-        JMP: [ 'R <inst -> BEQ intt intt intt>' ],
-        BEQ: [ 'R <inst -> BEQ intt intt intt>' ],
-        BLT: [ 'R <inst -> BEQ intt intt intt>' ],
-        RDN: [ 'R <inst -> BEQ intt intt intt>' ],
-        PTN: [ 'R <inst -> BEQ intt intt intt>' ],
-        HLT: [ 'R <inst -> BEQ intt intt intt>' ],
-        LABEL: [ 'R <inst -> BEQ intt intt intt>' ]
+        '$end': [ 'R 12' ],
+        ADD: [ 'R 12' ],
+        SUB: [ 'R 12' ],
+        MUL: [ 'R 12' ],
+        MOV: [ 'R 12' ],
+        LOD: [ 'R 12' ],
+        STR: [ 'R 12' ],
+        JMP: [ 'R 12' ],
+        BEQ: [ 'R 12' ],
+        BLT: [ 'R 12' ],
+        RDN: [ 'R 12' ],
+        PTN: [ 'R 12' ],
+        HLT: [ 'R 12' ],
+        LABEL: [ 'R 12' ]
       },
       goto: {}
     },
     '56': {
       items: [
-        'inst -> BLT intt intt intt .  / ( <EOF>, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+        '13  -  inst -> BLT intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
       ],
       actions: {
-        '<EOF>': [ 'R <inst -> BLT intt intt intt>' ],
-        ADD: [ 'R <inst -> BLT intt intt intt>' ],
-        SUB: [ 'R <inst -> BLT intt intt intt>' ],
-        MUL: [ 'R <inst -> BLT intt intt intt>' ],
-        MOV: [ 'R <inst -> BLT intt intt intt>' ],
-        LOD: [ 'R <inst -> BLT intt intt intt>' ],
-        STR: [ 'R <inst -> BLT intt intt intt>' ],
-        JMP: [ 'R <inst -> BLT intt intt intt>' ],
-        BEQ: [ 'R <inst -> BLT intt intt intt>' ],
-        BLT: [ 'R <inst -> BLT intt intt intt>' ],
-        RDN: [ 'R <inst -> BLT intt intt intt>' ],
-        PTN: [ 'R <inst -> BLT intt intt intt>' ],
-        HLT: [ 'R <inst -> BLT intt intt intt>' ],
-        LABEL: [ 'R <inst -> BLT intt intt intt>' ]
+        '$end': [ 'R 13' ],
+        ADD: [ 'R 13' ],
+        SUB: [ 'R 13' ],
+        MUL: [ 'R 13' ],
+        MOV: [ 'R 13' ],
+        LOD: [ 'R 13' ],
+        STR: [ 'R 13' ],
+        JMP: [ 'R 13' ],
+        BEQ: [ 'R 13' ],
+        BLT: [ 'R 13' ],
+        RDN: [ 'R 13' ],
+        PTN: [ 'R 13' ],
+        HLT: [ 'R 13' ],
+        LABEL: [ 'R 13' ]
       },
       goto: {}
     }

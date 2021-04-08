@@ -1,10 +1,8 @@
 
-Elements -> Elements Element ;
-Elements -> ;
+Elements -> Elements Seperator Atoms;
+Elements -> Atoms ;
 
-Element -> Atoms ;
-Element -> RoleSelector ;
-Element -> Command ;
+Seperator -> Command | RoleSelector ;
 
 Command -> BSLASH_IDENT ;
 Command -> BSLASH_IDENT CommandParams ;
@@ -25,25 +23,18 @@ ParamValue -> IDENT ;
 RoleSelector -> IDENT_COLON ;
 
 Atoms -> Atoms Atom ;
-Atoms -> Atom ;
+Atoms -> ;
 
 Atom -> Duration Leaf ;
 Atom -> Leaf ;
 
-Leaf -> Group ;
-Leaf -> Space ;
-Leaf -> Lit ;
+Leaf -> Space | Lit | Group ;
 
-Space -> COMMA ;
-Space -> SEMI_COLON ;
-Space -> UNDER_SCORE ;
-
-Lit -> DOT_IDENT ;
-Lit -> IDENT ;
-Lit -> IDENT_DOT ;
-Lit -> STRING ;
+Space -> COMMA | SEMI_COLON | UNDER_SCORE ;
+Lit -> DOT_IDENT | IDENT | IDENT_DOT | STRING ;
 Group -> OPEN_SQ Atoms CLOSE_SQ ;
 
 Duration -> Fraction ;
 Fraction -> NUMBER ;
 Fraction -> NUMBER SLASH NUMBER ;
+

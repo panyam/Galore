@@ -30,7 +30,7 @@ export class LRAction {
     else if (this.tag == LRActionType.SHIFT) {
       return "S" + this.gotoState!.id;
     } else if (this.tag == LRActionType.REDUCE) {
-      return "R <" + this.rule!.debugString + ">";
+      return "R " + this.rule!.id;
     } else {
       return "" + this.gotoState!.id;
     }
@@ -89,7 +89,8 @@ export class LRItemSet {
   }
 
   protected revalKey(): string {
-    return this.sortedValues.join("/");
+    this.values.sort();
+    return this.values.join("/");
   }
 
   has(itemId: number): boolean {
@@ -112,17 +113,15 @@ export class LRItemSet {
     return this.values.length;
   }
 
-  get sortedValues(): number[] {
-    this.values.sort();
-    return this.values;
-  }
-
   get debugString(): string {
     return this.debugValue.join("\n");
   }
 
   get debugValue(): any {
-    return this.sortedValues.map((v: number) => this.itemGraph.items.get(v).debugString);
+    const items = this.values.map((v: number) => this.itemGraph.items.get(v));
+    // sort them by rule
+    items.sort((i1, i2) => i1.compareTo(i2));
+    return items.map((i) => i.debugString);
   }
 }
 
@@ -153,7 +152,8 @@ export class LR1ItemSet extends LRItemSet {
    * Key also here includes the look ahead symbols.
    */
   protected revalKey(): string {
-    return this.sortedValues
+    this.values.sort();
+    return this.values
       .map((itemId) => {
         const la = this._lookaheads[itemId] || [];
         return itemId + "[" + la.map((s) => s.id).join(",") + "]";
@@ -169,8 +169,11 @@ export class LR1ItemSet extends LRItemSet {
   }
 
   get debugValue(): any {
-    return this.sortedValues.map((v: number) => {
-      const item = this.itemGraph.items.get(v);
+    const items = this.values.map((v: number) => this.itemGraph.items.get(v));
+    // sort them by rule
+    items.sort((i1, i2) => i1.compareTo(i2));
+    // then append the look aheads
+    return items.map((item) => {
       const las = this.getLookAheads(item)
         .map((s) => s.label)
         .join(", ");
@@ -572,7 +575,7 @@ export class LRItem {
     const pos = this.position;
     const pre = rule.rhs.syms.slice(0, pos).join(" ");
     const post = rule.rhs.syms.slice(pos).join(" ");
-    return `${rule.nt} -> ${pre} . ${post}`;
+    return `${rule.id}  -  ${rule.nt} -> ${pre} • ${post}`;
   }
 }
 
@@ -653,8 +656,9 @@ export class LR1ItemGraph extends LRItemGraph {
       const B = item.rule.rhs.syms[item.position];
       if (B.isTerminal) continue;
 
+      const rhs = item.rule.rhs;
       for (const lookahead of out.getLookAheads(item)) {
-        const suffix = item.rule.rhs.copy().append(lookahead);
+        const suffix = rhs.copy().append(lookahead);
         this.grammar.firstSets.forEachTermIn(suffix, item.position + 1, (term) => {
           if (term != null) {
             // For each rule [ B -> beta, term ] add it to

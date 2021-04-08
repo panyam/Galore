@@ -1,152 +1,152 @@
 {
-  "lr1":  {
+  "lr1": {
     '0': {
       items: [
-        'Start ->  . S / ( <EOF> )',
-        'S ->  . NP VP / ( <EOF>, prep )',
-        'S ->  . S PP / ( <EOF>, prep )',
-        'NP ->  . det n / ( v )'
+        '0  -  $accept ->  • S / ( $end )',
+        '1  -  S ->  • NP VP / ( $end, prep )',
+        '2  -  S ->  • S PP / ( $end, prep )',
+        '3  -  NP ->  • det n / ( v )'
       ],
       actions: { S: [ '1' ], NP: [ '2' ], det: [ 'S3' ] },
       goto: { S: 1, NP: 2, det: 3 }
     },
     '1': {
       items: [
-        'Start -> S .  / ( <EOF> )',
-        'S -> S . PP / ( <EOF>, prep )',
-        'PP ->  . prep NP / ( <EOF>, prep )'
+        '0  -  $accept -> S •  / ( $end )',
+        '2  -  S -> S • PP / ( $end, prep )',
+        '4  -  PP ->  • prep NP / ( $end, prep )'
       ],
-      actions: { '<EOF>': [ 'Acc' ], PP: [ '4' ], prep: [ 'S5' ] },
+      actions: { '$end': [ 'Acc' ], PP: [ '4' ], prep: [ 'S5' ] },
       goto: { PP: 4, prep: 5 }
     },
     '2': {
       items: [
-        'S -> NP . VP / ( <EOF>, prep )',
-        'VP ->  . v NP / ( <EOF>, prep )'
+        '1  -  S -> NP • VP / ( $end, prep )',
+        '5  -  VP ->  • v NP / ( $end, prep )'
       ],
       actions: { VP: [ '6' ], v: [ 'S7' ] },
       goto: { VP: 6, v: 7 }
     },
     '3': {
-      items: [ 'NP -> det . n / ( v )' ],
+      items: [ '3  -  NP -> det • n / ( v )' ],
       actions: { n: [ 'S8' ] },
       goto: { n: 8 }
     },
     '4': {
-      items: [ 'S -> S PP .  / ( <EOF>, prep )' ],
-      actions: { '<EOF>': [ 'R <S -> S PP>' ], prep: [ 'R <S -> S PP>' ] },
+      items: [ '2  -  S -> S PP •  / ( $end, prep )' ],
+      actions: { '$end': [ 'R 2' ], prep: [ 'R 2' ] },
       goto: {}
     },
     '5': {
       items: [
-        'PP -> prep . NP / ( <EOF>, prep )',
-        'NP ->  . det n / ( <EOF>, prep )'
+        '3  -  NP ->  • det n / ( $end, prep )',
+        '4  -  PP -> prep • NP / ( $end, prep )'
       ],
       actions: { NP: [ '9' ], det: [ 'S10' ] },
       goto: { NP: 9, det: 10 }
     },
     '6': {
-      items: [ 'S -> NP VP .  / ( <EOF>, prep )' ],
-      actions: { '<EOF>': [ 'R <S -> NP VP>' ], prep: [ 'R <S -> NP VP>' ] },
+      items: [ '1  -  S -> NP VP •  / ( $end, prep )' ],
+      actions: { '$end': [ 'R 1' ], prep: [ 'R 1' ] },
       goto: {}
     },
     '7': {
       items: [
-        'VP -> v . NP / ( <EOF>, prep )',
-        'NP ->  . det n / ( <EOF>, prep )'
+        '3  -  NP ->  • det n / ( $end, prep )',
+        '5  -  VP -> v • NP / ( $end, prep )'
       ],
       actions: { NP: [ '11' ], det: [ 'S10' ] },
       goto: { NP: 11, det: 10 }
     },
     '8': {
-      items: [ 'NP -> det n .  / ( v )' ],
-      actions: { v: [ 'R <NP -> det n>' ] },
+      items: [ '3  -  NP -> det n •  / ( v )' ],
+      actions: { v: [ 'R 3' ] },
       goto: {}
     },
     '9': {
-      items: [ 'PP -> prep NP .  / ( <EOF>, prep )' ],
-      actions: { '<EOF>': [ 'R <PP -> prep NP>' ], prep: [ 'R <PP -> prep NP>' ] },
+      items: [ '4  -  PP -> prep NP •  / ( $end, prep )' ],
+      actions: { '$end': [ 'R 4' ], prep: [ 'R 4' ] },
       goto: {}
     },
     '10': {
-      items: [ 'NP -> det . n / ( <EOF>, prep )' ],
+      items: [ '3  -  NP -> det • n / ( $end, prep )' ],
       actions: { n: [ 'S12' ] },
       goto: { n: 12 }
     },
     '11': {
-      items: [ 'VP -> v NP .  / ( <EOF>, prep )' ],
-      actions: { '<EOF>': [ 'R <VP -> v NP>' ], prep: [ 'R <VP -> v NP>' ] },
+      items: [ '5  -  VP -> v NP •  / ( $end, prep )' ],
+      actions: { '$end': [ 'R 5' ], prep: [ 'R 5' ] },
       goto: {}
     },
     '12': {
-      items: [ 'NP -> det n .  / ( <EOF>, prep )' ],
-      actions: { '<EOF>': [ 'R <NP -> det n>' ], prep: [ 'R <NP -> det n>' ] },
+      items: [ '3  -  NP -> det n •  / ( $end, prep )' ],
+      actions: { '$end': [ 'R 3' ], prep: [ 'R 3' ] },
       goto: {}
     }
   },
   "slr": {
     '0': {
       items: [
-        'Start ->  . S',
-        'S ->  . NP VP',
-        'S ->  . S PP',
-        'NP ->  . det n'
+        '0  -  $accept ->  • S',
+        '1  -  S ->  • NP VP',
+        '2  -  S ->  • S PP',
+        '3  -  NP ->  • det n'
       ],
       actions: { S: [ '1' ], NP: [ '2' ], det: [ 'S3' ] },
       goto: { S: 1, NP: 2, det: 3 }
     },
     '1': {
-      items: [ 'Start -> S . ', 'S -> S . PP', 'PP ->  . prep NP' ],
-      actions: { '<EOF>': [ 'Acc' ], PP: [ '4' ], prep: [ 'S5' ] },
+      items: [
+        '0  -  $accept -> S • ',
+        '2  -  S -> S • PP',
+        '4  -  PP ->  • prep NP'
+      ],
+      actions: { '$end': [ 'Acc' ], PP: [ '4' ], prep: [ 'S5' ] },
       goto: { PP: 4, prep: 5 }
     },
     '2': {
-      items: [ 'S -> NP . VP', 'VP ->  . v NP' ],
+      items: [ '1  -  S -> NP • VP', '5  -  VP ->  • v NP' ],
       actions: { VP: [ '6' ], v: [ 'S7' ] },
       goto: { VP: 6, v: 7 }
     },
     '3': {
-      items: [ 'NP -> det . n' ],
+      items: [ '3  -  NP -> det • n' ],
       actions: { n: [ 'S8' ] },
       goto: { n: 8 }
     },
     '4': {
-      items: [ 'S -> S PP . ' ],
-      actions: { '<EOF>': [ 'R <S -> S PP>' ], prep: [ 'R <S -> S PP>' ] },
+      items: [ '2  -  S -> S PP • ' ],
+      actions: { '$end': [ 'R 2' ], prep: [ 'R 2' ] },
       goto: {}
     },
     '5': {
-      items: [ 'PP -> prep . NP', 'NP ->  . det n' ],
+      items: [ '3  -  NP ->  • det n', '4  -  PP -> prep • NP' ],
       actions: { NP: [ '9' ], det: [ 'S3' ] },
       goto: { NP: 9, det: 3 }
     },
     '6': {
-      items: [ 'S -> NP VP . ' ],
-      actions: { '<EOF>': [ 'R <S -> NP VP>' ], prep: [ 'R <S -> NP VP>' ] },
+      items: [ '1  -  S -> NP VP • ' ],
+      actions: { '$end': [ 'R 1' ], prep: [ 'R 1' ] },
       goto: {}
     },
     '7': {
-      items: [ 'VP -> v . NP', 'NP ->  . det n' ],
+      items: [ '3  -  NP ->  • det n', '5  -  VP -> v • NP' ],
       actions: { NP: [ '10' ], det: [ 'S3' ] },
       goto: { NP: 10, det: 3 }
     },
     '8': {
-      items: [ 'NP -> det n . ' ],
-      actions: {
-        '<EOF>': [ 'R <NP -> det n>' ],
-        prep: [ 'R <NP -> det n>' ],
-        v: [ 'R <NP -> det n>' ]
-      },
+      items: [ '3  -  NP -> det n • ' ],
+      actions: { '$end': [ 'R 3' ], prep: [ 'R 3' ], v: [ 'R 3' ] },
       goto: {}
     },
     '9': {
-      items: [ 'PP -> prep NP . ' ],
-      actions: { '<EOF>': [ 'R <PP -> prep NP>' ], prep: [ 'R <PP -> prep NP>' ] },
+      items: [ '4  -  PP -> prep NP • ' ],
+      actions: { '$end': [ 'R 4' ], prep: [ 'R 4' ] },
       goto: {}
     },
     '10': {
-      items: [ 'VP -> v NP . ' ],
-      actions: { '<EOF>': [ 'R <VP -> v NP>' ], prep: [ 'R <VP -> v NP>' ] },
+      items: [ '5  -  VP -> v NP • ' ],
+      actions: { '$end': [ 'R 5' ], prep: [ 'R 5' ] },
       goto: {}
     }
   }

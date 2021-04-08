@@ -168,7 +168,7 @@ export class Grammar {
   protected _rulesForNT: Nullable<StringMap<Rule[]>> = null;
   protected _followSets: Nullable<FollowSets> = null;
 
-  static readonly AUG_SYM_ID = -2;
+  // static readonly AUG_SYM_ID = -2;
   // static readonly NULL_SYM_ID = -3;
   // static readonly EOF_SYM_ID = -1;
   readonly Null: Sym; // = new Sym(this, "", true, Grammar.NULL_SYM_ID);
@@ -188,7 +188,7 @@ export class Grammar {
   constructor(config?: any) {
     config = config || {};
     this.Null = this.newTerm("");
-    this.Eof = this.newTerm("<EOF>");
+    this.Eof = this.newTerm("$end");
   }
 
   rulesForNT(nt: Sym): Rule[] {
@@ -228,13 +228,20 @@ export class Grammar {
     return this._AugStartRule;
   }
 
-  augmentStartSymbol(label = "$"): this {
-    TSU.assert(this.getSym(label) == null);
+  augmentStartSymbol(label = "$accept"): this {
+    TSU.assert(this._AugStartRule == null, "Ensure this grammar has not yet been augmented.");
+    TSU.assert(this.startSymbol != null, "Start symbol not yet set");
+    const augSym = this.newNT(label);
+    this._AugStartRule = new Rule(augSym, new Str(this.startSymbol));
+    this.addRule(this._AugStartRule, 0);
+    /*
+    const sym = TSU.assert(this.getSym(label) == null);
     if (this.startSymbol) {
       const augSym = new Sym(this, label, false, Grammar.AUG_SYM_ID);
       this._AugStartRule = new Rule(augSym, new Str(this.startSymbol));
       this.addRule(this._AugStartRule);
     }
+    */
     return this;
   }
 
@@ -333,14 +340,19 @@ export class Grammar {
   /**
    * Add a rule directly.
    */
-  addRule(rule: Rule): Rule {
+  addRule(rule: Rule, index = -1): Rule {
     if (this.findRule(rule.nt, rule.rhs) >= 0) {
       throw new Error("Duplicate rule");
     }
     rule.id = this.allRules.length;
     if (rule.rhs.length == 0) this._hasNull = true;
-    this.allRules.push(rule);
-    this.rulesForNT(rule.nt).push(rule);
+    if (index < 0) {
+      this.allRules.push(rule);
+    } else {
+      this.allRules.splice(index, 0, rule);
+    }
+    this._rulesForNT = null;
+    // this.rulesForNT(rule.nt).push(rule);
     this.modified = true;
     return rule;
   }
@@ -391,14 +403,14 @@ export class Grammar {
    * and non terminal labels.
    */
   getSymById(id: number): Nullable<Sym> {
-    if (id == Grammar.AUG_SYM_ID) return this._AugStartRule?.nt || null;
+    // if (id == Grammar.AUG_SYM_ID) return this._AugStartRule?.nt || null;
     // else if (id == this.Eof.id) return this.Eof;
     // else if (id == this.Null.id) return this.Null;
     return this.symbolSet.get(id);
   }
 
   getSym(label: string): Nullable<Sym> {
-    if (this._AugStartRule && label == this._AugStartRule.nt.label) return this._AugStartRule.nt;
+    // if (this._AugStartRule && label == this._AugStartRule.nt.label) return this._AugStartRule.nt;
     return this.symbolSet.getByKey(label);
   }
 

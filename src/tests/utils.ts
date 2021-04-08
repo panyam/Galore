@@ -89,21 +89,6 @@ export function verifyLLParseTable(
   return true;
 }
 
-// Verified using http://jsmachines.sourceforge.net/machines/lr1.html
-export function verifyLRParseTable(
-  name: string,
-  g: Grammar,
-  maker: (g: Grammar) => [ParseTable, LRItemGraph],
-  actions: StringMap<StringMap<string[]>>,
-  debug = false,
-): boolean {
-  const [ptable, ig] = maker(g);
-  const ptabValue = ptable.debugValue as StringMap<StringMap<string[]>>;
-  if (debug) console.log(`${name} Actions: `, ptabValue);
-  expect(actions).toEqual(ptabValue);
-  return true;
-}
-
 export function logParserDebug(parser: Parser): void {
   const g = parser.grammar;
   const ptable = parser.parseTable;
@@ -129,7 +114,7 @@ export function logParserDebug(parser: Parser): void {
  * Helper to create a grammar, and its parser.
  */
 export function newParser(input: string, ptabType = "slr", debug = false): Parser {
-  const g = new EBNFParser(input).grammar.augmentStartSymbol("Start");
+  const g = new EBNFParser(input).grammar.augmentStartSymbol();
   const ptMaker = ptabType == "lr1" ? makeLRParseTable : makeSLRParseTable;
   const [ptable, ig] = ptMaker(g);
   if (debug) {

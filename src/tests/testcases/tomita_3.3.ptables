@@ -2,11 +2,11 @@
   "slr": {
     '0': {
       items: [
-        'Start ->  . S',
-        'S ->  . NP VP',
-        'NP ->  . det n',
-        'NP ->  . n',
-        'NP ->  . that S'
+        '0  -  $accept ->  • S',
+        '1  -  S ->  • NP VP',
+        '2  -  NP ->  • det n',
+        '3  -  NP ->  • n',
+        '4  -  NP ->  • that S'
       ],
       actions: {
         S: [ '1' ],
@@ -18,32 +18,32 @@
       goto: { S: 1, NP: 2, det: 3, n: 4, that: 5 }
     },
     '1': {
-      items: [ 'Start -> S . ' ],
-      actions: { '<EOF>': [ 'Acc' ] },
+      items: [ '0  -  $accept -> S • ' ],
+      actions: { '$end': [ 'Acc' ] },
       goto: {}
     },
     '2': {
-      items: [ 'S -> NP . VP', 'VP ->  . be adj' ],
+      items: [ '1  -  S -> NP • VP', '5  -  VP ->  • be adj' ],
       actions: { VP: [ '6' ], be: [ 'S7' ] },
       goto: { VP: 6, be: 7 }
     },
     '3': {
-      items: [ 'NP -> det . n' ],
+      items: [ '2  -  NP -> det • n' ],
       actions: { n: [ 'S8' ] },
       goto: { n: 8 }
     },
     '4': {
-      items: [ 'NP -> n . ' ],
-      actions: { be: [ 'R <NP -> n>' ] },
+      items: [ '3  -  NP -> n • ' ],
+      actions: { be: [ 'R 3' ] },
       goto: {}
     },
     '5': {
       items: [
-        'S ->  . NP VP',
-        'NP -> that . S',
-        'NP ->  . det n',
-        'NP ->  . n',
-        'NP ->  . that S'
+        '1  -  S ->  • NP VP',
+        '2  -  NP ->  • det n',
+        '3  -  NP ->  • n',
+        '4  -  NP ->  • that S',
+        '4  -  NP -> that • S'
       ],
       actions: {
         S: [ '9' ],
@@ -55,39 +55,39 @@
       goto: { S: 9, NP: 2, det: 3, n: 4, that: 5 }
     },
     '6': {
-      items: [ 'S -> NP VP . ' ],
-      actions: { '<EOF>': [ 'R <S -> NP VP>' ], be: [ 'R <S -> NP VP>' ] },
+      items: [ '1  -  S -> NP VP • ' ],
+      actions: { '$end': [ 'R 1' ], be: [ 'R 1' ] },
       goto: {}
     },
     '7': {
-      items: [ 'VP -> be . adj' ],
+      items: [ '5  -  VP -> be • adj' ],
       actions: { adj: [ 'S10' ] },
       goto: { adj: 10 }
     },
     '8': {
-      items: [ 'NP -> det n . ' ],
-      actions: { be: [ 'R <NP -> det n>' ] },
+      items: [ '2  -  NP -> det n • ' ],
+      actions: { be: [ 'R 2' ] },
       goto: {}
     },
     '9': {
-      items: [ 'NP -> that S . ' ],
-      actions: { be: [ 'R <NP -> that S>' ] },
+      items: [ '4  -  NP -> that S • ' ],
+      actions: { be: [ 'R 4' ] },
       goto: {}
     },
     '10': {
-      items: [ 'VP -> be adj . ' ],
-      actions: { '<EOF>': [ 'R <VP -> be adj>' ], be: [ 'R <VP -> be adj>' ] },
+      items: [ '5  -  VP -> be adj • ' ],
+      actions: { '$end': [ 'R 5' ], be: [ 'R 5' ] },
       goto: {}
     }
   },
   lr1: {
     '0': {
       items: [
-        'Start ->  . S / ( <EOF> )',
-        'S ->  . NP VP / ( <EOF> )',
-        'NP ->  . det n / ( be )',
-        'NP ->  . n / ( be )',
-        'NP ->  . that S / ( be )'
+        '0  -  $accept ->  • S / ( $end )',
+        '1  -  S ->  • NP VP / ( $end )',
+        '2  -  NP ->  • det n / ( be )',
+        '3  -  NP ->  • n / ( be )',
+        '4  -  NP ->  • that S / ( be )'
       ],
       actions: {
         S: [ '1' ],
@@ -99,32 +99,35 @@
       goto: { S: 1, NP: 2, det: 3, n: 4, that: 5 }
     },
     '1': {
-      items: [ 'Start -> S .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'Acc' ] },
+      items: [ '0  -  $accept -> S •  / ( $end )' ],
+      actions: { '$end': [ 'Acc' ] },
       goto: {}
     },
     '2': {
-      items: [ 'S -> NP . VP / ( <EOF> )', 'VP ->  . be adj / ( <EOF> )' ],
+      items: [
+        '1  -  S -> NP • VP / ( $end )',
+        '5  -  VP ->  • be adj / ( $end )'
+      ],
       actions: { VP: [ '6' ], be: [ 'S7' ] },
       goto: { VP: 6, be: 7 }
     },
     '3': {
-      items: [ 'NP -> det . n / ( be )' ],
+      items: [ '2  -  NP -> det • n / ( be )' ],
       actions: { n: [ 'S8' ] },
       goto: { n: 8 }
     },
     '4': {
-      items: [ 'NP -> n .  / ( be )' ],
-      actions: { be: [ 'R <NP -> n>' ] },
+      items: [ '3  -  NP -> n •  / ( be )' ],
+      actions: { be: [ 'R 3' ] },
       goto: {}
     },
     '5': {
       items: [
-        'S ->  . NP VP / ( be )',
-        'NP -> that . S / ( be )',
-        'NP ->  . det n / ( be )',
-        'NP ->  . n / ( be )',
-        'NP ->  . that S / ( be )'
+        '1  -  S ->  • NP VP / ( be )',
+        '2  -  NP ->  • det n / ( be )',
+        '3  -  NP ->  • n / ( be )',
+        '4  -  NP ->  • that S / ( be )',
+        '4  -  NP -> that • S / ( be )'
       ],
       actions: {
         S: [ '9' ],
@@ -136,48 +139,48 @@
       goto: { S: 9, NP: 10, det: 3, n: 4, that: 5 }
     },
     '6': {
-      items: [ 'S -> NP VP .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'R <S -> NP VP>' ] },
+      items: [ '1  -  S -> NP VP •  / ( $end )' ],
+      actions: { '$end': [ 'R 1' ] },
       goto: {}
     },
     '7': {
-      items: [ 'VP -> be . adj / ( <EOF> )' ],
+      items: [ '5  -  VP -> be • adj / ( $end )' ],
       actions: { adj: [ 'S11' ] },
       goto: { adj: 11 }
     },
     '8': {
-      items: [ 'NP -> det n .  / ( be )' ],
-      actions: { be: [ 'R <NP -> det n>' ] },
+      items: [ '2  -  NP -> det n •  / ( be )' ],
+      actions: { be: [ 'R 2' ] },
       goto: {}
     },
     '9': {
-      items: [ 'NP -> that S .  / ( be )' ],
-      actions: { be: [ 'R <NP -> that S>' ] },
+      items: [ '4  -  NP -> that S •  / ( be )' ],
+      actions: { be: [ 'R 4' ] },
       goto: {}
     },
     '10': {
-      items: [ 'S -> NP . VP / ( be )', 'VP ->  . be adj / ( be )' ],
+      items: [ '1  -  S -> NP • VP / ( be )', '5  -  VP ->  • be adj / ( be )' ],
       actions: { VP: [ '12' ], be: [ 'S13' ] },
       goto: { VP: 12, be: 13 }
     },
     '11': {
-      items: [ 'VP -> be adj .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'R <VP -> be adj>' ] },
+      items: [ '5  -  VP -> be adj •  / ( $end )' ],
+      actions: { '$end': [ 'R 5' ] },
       goto: {}
     },
     '12': {
-      items: [ 'S -> NP VP .  / ( be )' ],
-      actions: { be: [ 'R <S -> NP VP>' ] },
+      items: [ '1  -  S -> NP VP •  / ( be )' ],
+      actions: { be: [ 'R 1' ] },
       goto: {}
     },
     '13': {
-      items: [ 'VP -> be . adj / ( be )' ],
+      items: [ '5  -  VP -> be • adj / ( be )' ],
       actions: { adj: [ 'S14' ] },
       goto: { adj: 14 }
     },
     '14': {
-      items: [ 'VP -> be adj .  / ( be )' ],
-      actions: { be: [ 'R <VP -> be adj>' ] },
+      items: [ '5  -  VP -> be adj •  / ( be )' ],
+      actions: { be: [ 'R 5' ] },
       goto: {}
     }
   }

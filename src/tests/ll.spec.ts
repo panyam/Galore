@@ -22,7 +22,7 @@ describe("ParseTable Tests", () => {
     // expectFSEntries(g, fls, { S: ["e", g.Eof.label], S1: ["e", g.Eof.label], E: ["t"], });
     verifyLLParseTable("Tests1", g, {
       S: { i: ["S -> i E t S S1"], a: ["S -> a"] },
-      S1: { e: ["S1 -> e S"], "<EOF>": ["S1 -> "] },
+      S1: { e: ["S1 -> e S"], $end: ["S1 -> "] },
       E: { b: ["E -> b"] },
     });
   });
@@ -37,14 +37,14 @@ describe("ParseTable Tests", () => {
       E: { OPEN: ["E -> T E1"], id: ["E -> T E1"] },
       E1: {
         PLUS: ["E1 -> PLUS T E1"],
-        "<EOF>": ["E1 -> "],
+        $end: ["E1 -> "],
         CLOSE: ["E1 -> "],
       },
       T: { OPEN: ["T -> F T1"], id: ["T -> F T1"] },
       T1: {
         STAR: ["T1 -> STAR F T1"],
         PLUS: ["T1 -> "],
-        "<EOF>": ["T1 -> "],
+        $end: ["T1 -> "],
         CLOSE: ["T1 -> "],
       },
       F: { OPEN: ["F -> OPEN E CLOSE"], id: ["F -> id"] },

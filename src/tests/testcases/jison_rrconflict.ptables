@@ -1,165 +1,172 @@
 {
-  "lr1":  {
+  "lr1": {
     '0': {
       items: [
-        'Start ->  . S / ( <EOF> )',
-        'S ->  . a A c / ( <EOF> )',
-        'S ->  . a B d / ( <EOF> )',
-        'S ->  . b A d / ( <EOF> )',
-        'S ->  . b B c / ( <EOF> )'
+        '0  -  $accept ->  • S / ( $end )',
+        '1  -  S ->  • a A c / ( $end )',
+        '2  -  S ->  • a B d / ( $end )',
+        '3  -  S ->  • b A d / ( $end )',
+        '4  -  S ->  • b B c / ( $end )'
       ],
       actions: { S: [ '1' ], a: [ 'S2' ], b: [ 'S3' ] },
       goto: { S: 1, a: 2, b: 3 }
     },
     '1': {
-      items: [ 'Start -> S .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'Acc' ] },
+      items: [ '0  -  $accept -> S •  / ( $end )' ],
+      actions: { '$end': [ 'Acc' ] },
       goto: {}
     },
     '2': {
       items: [
-        'S -> a . A c / ( <EOF> )',
-        'S -> a . B d / ( <EOF> )',
-        'A ->  . z / ( c )',
-        'B ->  . z / ( d )'
+        '1  -  S -> a • A c / ( $end )',
+        '2  -  S -> a • B d / ( $end )',
+        '5  -  A ->  • z / ( c )',
+        '6  -  B ->  • z / ( d )'
       ],
       actions: { A: [ '4' ], B: [ '5' ], z: [ 'S6' ] },
       goto: { A: 4, B: 5, z: 6 }
     },
     '3': {
       items: [
-        'S -> b . A d / ( <EOF> )',
-        'S -> b . B c / ( <EOF> )',
-        'A ->  . z / ( d )',
-        'B ->  . z / ( c )'
+        '3  -  S -> b • A d / ( $end )',
+        '4  -  S -> b • B c / ( $end )',
+        '5  -  A ->  • z / ( d )',
+        '6  -  B ->  • z / ( c )'
       ],
       actions: { A: [ '7' ], B: [ '8' ], z: [ 'S9' ] },
       goto: { A: 7, B: 8, z: 9 }
     },
     '4': {
-      items: [ 'S -> a A . c / ( <EOF> )' ],
+      items: [ '1  -  S -> a A • c / ( $end )' ],
       actions: { c: [ 'S10' ] },
       goto: { c: 10 }
     },
     '5': {
-      items: [ 'S -> a B . d / ( <EOF> )' ],
+      items: [ '2  -  S -> a B • d / ( $end )' ],
       actions: { d: [ 'S11' ] },
       goto: { d: 11 }
     },
     '6': {
-      items: [ 'A -> z .  / ( c )', 'B -> z .  / ( d )' ],
-      actions: { c: [ 'R <A -> z>' ], d: [ 'R <B -> z>' ] },
+      items: [ '5  -  A -> z •  / ( c )', '6  -  B -> z •  / ( d )' ],
+      actions: { c: [ 'R 5' ], d: [ 'R 6' ] },
       goto: {}
     },
     '7': {
-      items: [ 'S -> b A . d / ( <EOF> )' ],
+      items: [ '3  -  S -> b A • d / ( $end )' ],
       actions: { d: [ 'S12' ] },
       goto: { d: 12 }
     },
     '8': {
-      items: [ 'S -> b B . c / ( <EOF> )' ],
+      items: [ '4  -  S -> b B • c / ( $end )' ],
       actions: { c: [ 'S13' ] },
       goto: { c: 13 }
     },
     '9': {
-      items: [ 'A -> z .  / ( d )', 'B -> z .  / ( c )' ],
-      actions: { c: [ 'R <B -> z>' ], d: [ 'R <A -> z>' ] },
+      items: [ '5  -  A -> z •  / ( d )', '6  -  B -> z •  / ( c )' ],
+      actions: { c: [ 'R 6' ], d: [ 'R 5' ] },
       goto: {}
     },
     '10': {
-      items: [ 'S -> a A c .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'R <S -> a A c>' ] },
+      items: [ '1  -  S -> a A c •  / ( $end )' ],
+      actions: { '$end': [ 'R 1' ] },
       goto: {}
     },
     '11': {
-      items: [ 'S -> a B d .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'R <S -> a B d>' ] },
+      items: [ '2  -  S -> a B d •  / ( $end )' ],
+      actions: { '$end': [ 'R 2' ] },
       goto: {}
     },
     '12': {
-      items: [ 'S -> b A d .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'R <S -> b A d>' ] },
+      items: [ '3  -  S -> b A d •  / ( $end )' ],
+      actions: { '$end': [ 'R 3' ] },
       goto: {}
     },
     '13': {
-      items: [ 'S -> b B c .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'R <S -> b B c>' ] },
+      items: [ '4  -  S -> b B c •  / ( $end )' ],
+      actions: { '$end': [ 'R 4' ] },
       goto: {}
     }
   },
   "slr": {
     '0': {
       items: [
-        'Start ->  . S',
-        'S ->  . a A c',
-        'S ->  . a B d',
-        'S ->  . b A d',
-        'S ->  . b B c'
+        '0  -  $accept ->  • S',
+        '1  -  S ->  • a A c',
+        '2  -  S ->  • a B d',
+        '3  -  S ->  • b A d',
+        '4  -  S ->  • b B c'
       ],
       actions: { S: [ '1' ], a: [ 'S2' ], b: [ 'S3' ] },
       goto: { S: 1, a: 2, b: 3 }
     },
     '1': {
-      items: [ 'Start -> S . ' ],
-      actions: { '<EOF>': [ 'Acc' ] },
+      items: [ '0  -  $accept -> S • ' ],
+      actions: { '$end': [ 'Acc' ] },
       goto: {}
     },
     '2': {
-      items: [ 'S -> a . A c', 'S -> a . B d', 'A ->  . z', 'B ->  . z' ],
+      items: [
+        '1  -  S -> a • A c',
+        '2  -  S -> a • B d',
+        '5  -  A ->  • z',
+        '6  -  B ->  • z'
+      ],
       actions: { A: [ '4' ], B: [ '5' ], z: [ 'S6' ] },
       goto: { A: 4, B: 5, z: 6 }
     },
     '3': {
-      items: [ 'S -> b . A d', 'S -> b . B c', 'A ->  . z', 'B ->  . z' ],
+      items: [
+        '3  -  S -> b • A d',
+        '4  -  S -> b • B c',
+        '5  -  A ->  • z',
+        '6  -  B ->  • z'
+      ],
       actions: { A: [ '7' ], B: [ '8' ], z: [ 'S6' ] },
       goto: { A: 7, B: 8, z: 6 }
     },
     '4': {
-      items: [ 'S -> a A . c' ],
+      items: [ '1  -  S -> a A • c' ],
       actions: { c: [ 'S9' ] },
       goto: { c: 9 }
     },
     '5': {
-      items: [ 'S -> a B . d' ],
+      items: [ '2  -  S -> a B • d' ],
       actions: { d: [ 'S10' ] },
       goto: { d: 10 }
     },
     '6': {
-      items: [ 'A -> z . ', 'B -> z . ' ],
-      actions: {
-        c: [ 'R <A -> z>', 'R <B -> z>' ],
-        d: [ 'R <A -> z>', 'R <B -> z>' ]
-      },
+      items: [ '5  -  A -> z • ', '6  -  B -> z • ' ],
+      actions: { c: [ 'R 5', 'R 6' ], d: [ 'R 5', 'R 6' ] },
       goto: {}
     },
     '7': {
-      items: [ 'S -> b A . d' ],
+      items: [ '3  -  S -> b A • d' ],
       actions: { d: [ 'S11' ] },
       goto: { d: 11 }
     },
     '8': {
-      items: [ 'S -> b B . c' ],
+      items: [ '4  -  S -> b B • c' ],
       actions: { c: [ 'S12' ] },
       goto: { c: 12 }
     },
     '9': {
-      items: [ 'S -> a A c . ' ],
-      actions: { '<EOF>': [ 'R <S -> a A c>' ] },
+      items: [ '1  -  S -> a A c • ' ],
+      actions: { '$end': [ 'R 1' ] },
       goto: {}
     },
     '10': {
-      items: [ 'S -> a B d . ' ],
-      actions: { '<EOF>': [ 'R <S -> a B d>' ] },
+      items: [ '2  -  S -> a B d • ' ],
+      actions: { '$end': [ 'R 2' ] },
       goto: {}
     },
     '11': {
-      items: [ 'S -> b A d . ' ],
-      actions: { '<EOF>': [ 'R <S -> b A d>' ] },
+      items: [ '3  -  S -> b A d • ' ],
+      actions: { '$end': [ 'R 3' ] },
       goto: {}
     },
     '12': {
-      items: [ 'S -> b B c . ' ],
-      actions: { '<EOF>': [ 'R <S -> b B c>' ] },
+      items: [ '4  -  S -> b B c • ' ],
+      actions: { '$end': [ 'R 4' ] },
       goto: {}
     }
   }

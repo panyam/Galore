@@ -1,81 +1,81 @@
 {
-  "lr1": {
+  "lr1":{
     '0': {
       items: [
-        'Start ->  . E / ( <EOF> )',
-        'E ->  . E PLUS T / ( <EOF>, PLUS )',
-        'E ->  . T / ( <EOF>, PLUS )',
-        'T ->  . ZERO / ( <EOF>, PLUS )'
+        '0  -  $accept ->  • E / ( $end )',
+        '1  -  E ->  • E PLUS T / ( $end, PLUS )',
+        '2  -  E ->  • T / ( $end, PLUS )',
+        '3  -  T ->  • ZERO / ( $end, PLUS )'
       ],
       actions: { E: [ '1' ], T: [ '2' ], ZERO: [ 'S3' ] },
       goto: { E: 1, T: 2, ZERO: 3 }
     },
     '1': {
       items: [
-        'Start -> E .  / ( <EOF> )',
-        'E -> E . PLUS T / ( <EOF>, PLUS )'
+        '0  -  $accept -> E •  / ( $end )',
+        '1  -  E -> E • PLUS T / ( $end, PLUS )'
       ],
-      actions: { '<EOF>': [ 'Acc' ], PLUS: [ 'S4' ] },
+      actions: { '$end': [ 'Acc' ], PLUS: [ 'S4' ] },
       goto: { PLUS: 4 }
     },
     '2': {
-      items: [ 'E -> T .  / ( <EOF>, PLUS )' ],
-      actions: { '<EOF>': [ 'R <E -> T>' ], PLUS: [ 'R <E -> T>' ] },
+      items: [ '2  -  E -> T •  / ( $end, PLUS )' ],
+      actions: { '$end': [ 'R 2' ], PLUS: [ 'R 2' ] },
       goto: {}
     },
     '3': {
-      items: [ 'T -> ZERO .  / ( <EOF>, PLUS )' ],
-      actions: { '<EOF>': [ 'R <T -> ZERO>' ], PLUS: [ 'R <T -> ZERO>' ] },
+      items: [ '3  -  T -> ZERO •  / ( $end, PLUS )' ],
+      actions: { '$end': [ 'R 3' ], PLUS: [ 'R 3' ] },
       goto: {}
     },
     '4': {
       items: [
-        'T ->  . ZERO / ( <EOF>, PLUS )',
-        'E -> E PLUS . T / ( <EOF>, PLUS )'
+        '1  -  E -> E PLUS • T / ( $end, PLUS )',
+        '3  -  T ->  • ZERO / ( $end, PLUS )'
       ],
       actions: { T: [ '5' ], ZERO: [ 'S3' ] },
       goto: { T: 5, ZERO: 3 }
     },
     '5': {
-      items: [ 'E -> E PLUS T .  / ( <EOF>, PLUS )' ],
-      actions: { '<EOF>': [ 'R <E -> E PLUS T>' ], PLUS: [ 'R <E -> E PLUS T>' ] },
+      items: [ '1  -  E -> E PLUS T •  / ( $end, PLUS )' ],
+      actions: { '$end': [ 'R 1' ], PLUS: [ 'R 1' ] },
       goto: {}
     }
   },
-  "slr":  {
+  "slr": {
     '0': {
       items: [
-        'Start ->  . E',
-        'E ->  . E PLUS T',
-        'E ->  . T',
-        'T ->  . ZERO'
+        '0  -  $accept ->  • E',
+        '1  -  E ->  • E PLUS T',
+        '2  -  E ->  • T',
+        '3  -  T ->  • ZERO'
       ],
       actions: { E: [ '1' ], T: [ '2' ], ZERO: [ 'S3' ] },
       goto: { E: 1, T: 2, ZERO: 3 }
     },
     '1': {
-      items: [ 'Start -> E . ', 'E -> E . PLUS T' ],
-      actions: { '<EOF>': [ 'Acc' ], PLUS: [ 'S4' ] },
+      items: [ '0  -  $accept -> E • ', '1  -  E -> E • PLUS T' ],
+      actions: { '$end': [ 'Acc' ], PLUS: [ 'S4' ] },
       goto: { PLUS: 4 }
     },
     '2': {
-      items: [ 'E -> T . ' ],
-      actions: { '<EOF>': [ 'R <E -> T>' ], PLUS: [ 'R <E -> T>' ] },
+      items: [ '2  -  E -> T • ' ],
+      actions: { '$end': [ 'R 2' ], PLUS: [ 'R 2' ] },
       goto: {}
     },
     '3': {
-      items: [ 'T -> ZERO . ' ],
-      actions: { '<EOF>': [ 'R <T -> ZERO>' ], PLUS: [ 'R <T -> ZERO>' ] },
+      items: [ '3  -  T -> ZERO • ' ],
+      actions: { '$end': [ 'R 3' ], PLUS: [ 'R 3' ] },
       goto: {}
     },
     '4': {
-      items: [ 'T ->  . ZERO', 'E -> E PLUS . T' ],
+      items: [ '1  -  E -> E PLUS • T', '3  -  T ->  • ZERO' ],
       actions: { T: [ '5' ], ZERO: [ 'S3' ] },
       goto: { T: 5, ZERO: 3 }
     },
     '5': {
-      items: [ 'E -> E PLUS T . ' ],
-      actions: { '<EOF>': [ 'R <E -> E PLUS T>' ], PLUS: [ 'R <E -> E PLUS T>' ] },
+      items: [ '1  -  E -> E PLUS T • ' ],
+      actions: { '$end': [ 'R 1' ], PLUS: [ 'R 1' ] },
       goto: {}
     }
   }

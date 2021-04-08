@@ -1,57 +1,140 @@
-import { EBNFParser } from "../ebnf";
-import { makeSLRParseTable } from "../ptables";
-import { verifyLRParseTable } from "./utils";
-
-const g1 = new EBNFParser(`
-  E -> E PLUS T | T ;
-  T -> T STAR F | F ;
-  F -> OPEN E CLOSE | id ;
-`).grammar.augmentStartSymbol("E1");
+import { newParser, mergedDebugValue } from "./utils";
 
 describe("LR ParseTable", () => {
   test("Test Basic", () => {
-    verifyLRParseTable("G1", g1, makeSLRParseTable, {
-      "0": { E: ["1"], T: ["2"], F: ["3"], OPEN: ["S4"], id: ["S5"] },
-      "1": { PLUS: ["S6"], "<EOF>": ["Acc"] },
+    const parser = newParser(
+      `
+        E -> E PLUS T | T ;
+        T -> T STAR F | F ;
+        F -> OPEN E CLOSE | id ;
+      `,
+      "slr",
+    );
+    const v = mergedDebugValue(parser.parseTable, parser.itemGraph);
+    expect(v).toEqual({
+      "0": {
+        items: [
+          "0  -  $accept ->  • E",
+          "1  -  E ->  • E PLUS T",
+          "2  -  E ->  • T",
+          "3  -  T ->  • T STAR F",
+          "4  -  T ->  • F",
+          "5  -  F ->  • OPEN E CLOSE",
+          "6  -  F ->  • id",
+        ],
+        actions: {
+          E: ["1"],
+          T: ["2"],
+          F: ["3"],
+          OPEN: ["S4"],
+          id: ["S5"],
+        },
+        goto: { E: 1, T: 2, F: 3, OPEN: 4, id: 5 },
+      },
+      "1": {
+        items: ["0  -  $accept -> E • ", "1  -  E -> E • PLUS T"],
+        actions: { $end: ["Acc"], PLUS: ["S6"] },
+        goto: { PLUS: 6 },
+      },
       "2": {
-        PLUS: ["R <E -> T>"],
-        STAR: ["S7"],
-        CLOSE: ["R <E -> T>"],
-        "<EOF>": ["R <E -> T>"],
+        items: ["2  -  E -> T • ", "3  -  T -> T • STAR F"],
+        actions: {
+          $end: ["R 2"],
+          PLUS: ["R 2"],
+          STAR: ["S7"],
+          CLOSE: ["R 2"],
+        },
+        goto: { STAR: 7 },
       },
       "3": {
-        PLUS: ["R <T -> F>"],
-        STAR: ["R <T -> F>"],
-        CLOSE: ["R <T -> F>"],
-        "<EOF>": ["R <T -> F>"],
+        items: ["4  -  T -> F • "],
+        actions: {
+          $end: ["R 4"],
+          PLUS: ["R 4"],
+          STAR: ["R 4"],
+          CLOSE: ["R 4"],
+        },
+        goto: {},
       },
-      "4": { E: ["8"], T: ["2"], F: ["3"], OPEN: ["S4"], id: ["S5"] },
+      "4": {
+        items: [
+          "1  -  E ->  • E PLUS T",
+          "2  -  E ->  • T",
+          "3  -  T ->  • T STAR F",
+          "4  -  T ->  • F",
+          "5  -  F ->  • OPEN E CLOSE",
+          "5  -  F -> OPEN • E CLOSE",
+          "6  -  F ->  • id",
+        ],
+        actions: {
+          E: ["8"],
+          T: ["2"],
+          F: ["3"],
+          OPEN: ["S4"],
+          id: ["S5"],
+        },
+        goto: { E: 8, T: 2, F: 3, OPEN: 4, id: 5 },
+      },
       "5": {
-        PLUS: ["R <F -> id>"],
-        STAR: ["R <F -> id>"],
-        CLOSE: ["R <F -> id>"],
-        "<EOF>": ["R <F -> id>"],
+        items: ["6  -  F -> id • "],
+        actions: {
+          $end: ["R 6"],
+          PLUS: ["R 6"],
+          STAR: ["R 6"],
+          CLOSE: ["R 6"],
+        },
+        goto: {},
       },
-      "6": { T: ["9"], F: ["3"], OPEN: ["S4"], id: ["S5"] },
-      "7": { F: ["10"], OPEN: ["S4"], id: ["S5"] },
-      "8": { PLUS: ["S6"], CLOSE: ["S11"] },
+      "6": {
+        items: [
+          "1  -  E -> E PLUS • T",
+          "3  -  T ->  • T STAR F",
+          "4  -  T ->  • F",
+          "5  -  F ->  • OPEN E CLOSE",
+          "6  -  F ->  • id",
+        ],
+        actions: { T: ["9"], F: ["3"], OPEN: ["S4"], id: ["S5"] },
+        goto: { T: 9, F: 3, OPEN: 4, id: 5 },
+      },
+      "7": {
+        items: ["3  -  T -> T STAR • F", "5  -  F ->  • OPEN E CLOSE", "6  -  F ->  • id"],
+        actions: { F: ["10"], OPEN: ["S4"], id: ["S5"] },
+        goto: { F: 10, OPEN: 4, id: 5 },
+      },
+      "8": {
+        items: ["1  -  E -> E • PLUS T", "5  -  F -> OPEN E • CLOSE"],
+        actions: { PLUS: ["S6"], CLOSE: ["S11"] },
+        goto: { PLUS: 6, CLOSE: 11 },
+      },
       "9": {
-        PLUS: ["R <E -> E PLUS T>"],
-        STAR: ["S7"],
-        CLOSE: ["R <E -> E PLUS T>"],
-        "<EOF>": ["R <E -> E PLUS T>"],
+        items: ["1  -  E -> E PLUS T • ", "3  -  T -> T • STAR F"],
+        actions: {
+          $end: ["R 1"],
+          PLUS: ["R 1"],
+          STAR: ["S7"],
+          CLOSE: ["R 1"],
+        },
+        goto: { STAR: 7 },
       },
       "10": {
-        PLUS: ["R <T -> T STAR F>"],
-        STAR: ["R <T -> T STAR F>"],
-        CLOSE: ["R <T -> T STAR F>"],
-        "<EOF>": ["R <T -> T STAR F>"],
+        items: ["3  -  T -> T STAR F • "],
+        actions: {
+          $end: ["R 3"],
+          PLUS: ["R 3"],
+          STAR: ["R 3"],
+          CLOSE: ["R 3"],
+        },
+        goto: {},
       },
       "11": {
-        PLUS: ["R <F -> OPEN E CLOSE>"],
-        STAR: ["R <F -> OPEN E CLOSE>"],
-        CLOSE: ["R <F -> OPEN E CLOSE>"],
-        "<EOF>": ["R <F -> OPEN E CLOSE>"],
+        items: ["5  -  F -> OPEN E CLOSE • "],
+        actions: {
+          $end: ["R 5"],
+          PLUS: ["R 5"],
+          STAR: ["R 5"],
+          CLOSE: ["R 5"],
+        },
+        goto: {},
       },
     });
   });

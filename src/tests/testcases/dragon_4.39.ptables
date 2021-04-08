@@ -2,12 +2,12 @@
   lr1: {
     '0': {
       items: [
-        'Start ->  . S / ( <EOF> )',
-        'S ->  . L EQ R / ( <EOF> )',
-        'S ->  . R / ( <EOF> )',
-        'L ->  . STAR R / ( <EOF>, EQ )',
-        'L ->  . id / ( <EOF>, EQ )',
-        'R ->  . L / ( <EOF> )'
+        '0  -  $accept ->  • S / ( $end )',
+        '1  -  S ->  • L EQ R / ( $end )',
+        '2  -  S ->  • R / ( $end )',
+        '3  -  L ->  • STAR R / ( $end, EQ )',
+        '4  -  L ->  • id / ( $end, EQ )',
+        '5  -  R ->  • L / ( $end )'
       ],
       actions: {
         S: [ '1' ],
@@ -19,95 +19,95 @@
       goto: { S: 1, L: 2, R: 3, STAR: 4, id: 5 }
     },
     '1': {
-      items: [ 'Start -> S .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'Acc' ] },
+      items: [ '0  -  $accept -> S •  / ( $end )' ],
+      actions: { '$end': [ 'Acc' ] },
       goto: {}
     },
     '2': {
-      items: [ 'S -> L . EQ R / ( <EOF> )', 'R -> L .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'R <R -> L>' ], EQ: [ 'S6' ] },
+      items: [ '1  -  S -> L • EQ R / ( $end )', '5  -  R -> L •  / ( $end )' ],
+      actions: { '$end': [ 'R 5' ], EQ: [ 'S6' ] },
       goto: { EQ: 6 }
     },
     '3': {
-      items: [ 'S -> R .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'R <S -> R>' ] },
+      items: [ '2  -  S -> R •  / ( $end )' ],
+      actions: { '$end': [ 'R 2' ] },
       goto: {}
     },
     '4': {
       items: [
-        'L -> STAR . R / ( <EOF>, EQ )',
-        'L ->  . STAR R / ( <EOF>, EQ )',
-        'L ->  . id / ( <EOF>, EQ )',
-        'R ->  . L / ( <EOF>, EQ )'
+        '3  -  L ->  • STAR R / ( $end, EQ )',
+        '3  -  L -> STAR • R / ( $end, EQ )',
+        '4  -  L ->  • id / ( $end, EQ )',
+        '5  -  R ->  • L / ( $end, EQ )'
       ],
       actions: { L: [ '7' ], R: [ '8' ], STAR: [ 'S4' ], id: [ 'S5' ] },
       goto: { L: 7, R: 8, STAR: 4, id: 5 }
     },
     '5': {
-      items: [ 'L -> id .  / ( <EOF>, EQ )' ],
-      actions: { '<EOF>': [ 'R <L -> id>' ], EQ: [ 'R <L -> id>' ] },
+      items: [ '4  -  L -> id •  / ( $end, EQ )' ],
+      actions: { '$end': [ 'R 4' ], EQ: [ 'R 4' ] },
       goto: {}
     },
     '6': {
       items: [
-        'S -> L EQ . R / ( <EOF> )',
-        'L ->  . STAR R / ( <EOF> )',
-        'L ->  . id / ( <EOF> )',
-        'R ->  . L / ( <EOF> )'
+        '1  -  S -> L EQ • R / ( $end )',
+        '3  -  L ->  • STAR R / ( $end )',
+        '4  -  L ->  • id / ( $end )',
+        '5  -  R ->  • L / ( $end )'
       ],
       actions: { L: [ '9' ], R: [ '10' ], STAR: [ 'S11' ], id: [ 'S12' ] },
       goto: { L: 9, R: 10, STAR: 11, id: 12 }
     },
     '7': {
-      items: [ 'R -> L .  / ( <EOF>, EQ )' ],
-      actions: { '<EOF>': [ 'R <R -> L>' ], EQ: [ 'R <R -> L>' ] },
+      items: [ '5  -  R -> L •  / ( $end, EQ )' ],
+      actions: { '$end': [ 'R 5' ], EQ: [ 'R 5' ] },
       goto: {}
     },
     '8': {
-      items: [ 'L -> STAR R .  / ( <EOF>, EQ )' ],
-      actions: { '<EOF>': [ 'R <L -> STAR R>' ], EQ: [ 'R <L -> STAR R>' ] },
+      items: [ '3  -  L -> STAR R •  / ( $end, EQ )' ],
+      actions: { '$end': [ 'R 3' ], EQ: [ 'R 3' ] },
       goto: {}
     },
     '9': {
-      items: [ 'R -> L .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'R <R -> L>' ] },
+      items: [ '5  -  R -> L •  / ( $end )' ],
+      actions: { '$end': [ 'R 5' ] },
       goto: {}
     },
     '10': {
-      items: [ 'S -> L EQ R .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'R <S -> L EQ R>' ] },
+      items: [ '1  -  S -> L EQ R •  / ( $end )' ],
+      actions: { '$end': [ 'R 1' ] },
       goto: {}
     },
     '11': {
       items: [
-        'L -> STAR . R / ( <EOF> )',
-        'L ->  . STAR R / ( <EOF> )',
-        'L ->  . id / ( <EOF> )',
-        'R ->  . L / ( <EOF> )'
+        '3  -  L ->  • STAR R / ( $end )',
+        '3  -  L -> STAR • R / ( $end )',
+        '4  -  L ->  • id / ( $end )',
+        '5  -  R ->  • L / ( $end )'
       ],
       actions: { L: [ '9' ], R: [ '13' ], STAR: [ 'S11' ], id: [ 'S12' ] },
       goto: { L: 9, R: 13, STAR: 11, id: 12 }
     },
     '12': {
-      items: [ 'L -> id .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'R <L -> id>' ] },
+      items: [ '4  -  L -> id •  / ( $end )' ],
+      actions: { '$end': [ 'R 4' ] },
       goto: {}
     },
     '13': {
-      items: [ 'L -> STAR R .  / ( <EOF> )' ],
-      actions: { '<EOF>': [ 'R <L -> STAR R>' ] },
+      items: [ '3  -  L -> STAR R •  / ( $end )' ],
+      actions: { '$end': [ 'R 3' ] },
       goto: {}
     }
   },
   slr: {
     '0': {
       items: [
-        'Start ->  . S',
-        'S ->  . L EQ R',
-        'S ->  . R',
-        'L ->  . STAR R',
-        'L ->  . id',
-        'R ->  . L'
+        '0  -  $accept ->  • S',
+        '1  -  S ->  • L EQ R',
+        '2  -  S ->  • R',
+        '3  -  L ->  • STAR R',
+        '4  -  L ->  • id',
+        '5  -  R ->  • L'
       ],
       actions: {
         S: [ '1' ],
@@ -119,48 +119,58 @@
       goto: { S: 1, L: 2, R: 3, STAR: 4, id: 5 }
     },
     '1': {
-      items: [ 'Start -> S . ' ],
-      actions: { '<EOF>': [ 'Acc' ] },
+      items: [ '0  -  $accept -> S • ' ],
+      actions: { '$end': [ 'Acc' ] },
       goto: {}
     },
     '2': {
-      items: [ 'S -> L . EQ R', 'R -> L . ' ],
-      actions: { '<EOF>': [ 'R <R -> L>' ], EQ: [ 'S6', 'R <R -> L>' ] },
+      items: [ '1  -  S -> L • EQ R', '5  -  R -> L • ' ],
+      actions: { '$end': [ 'R 5' ], EQ: [ 'S6', 'R 5' ] },
       goto: { EQ: 6 }
     },
     '3': {
-      items: [ 'S -> R . ' ],
-      actions: { '<EOF>': [ 'R <S -> R>' ] },
+      items: [ '2  -  S -> R • ' ],
+      actions: { '$end': [ 'R 2' ] },
       goto: {}
     },
     '4': {
-      items: [ 'L -> STAR . R', 'L ->  . STAR R', 'L ->  . id', 'R ->  . L' ],
+      items: [
+        '3  -  L ->  • STAR R',
+        '3  -  L -> STAR • R',
+        '4  -  L ->  • id',
+        '5  -  R ->  • L'
+      ],
       actions: { L: [ '7' ], R: [ '8' ], STAR: [ 'S4' ], id: [ 'S5' ] },
       goto: { L: 7, R: 8, STAR: 4, id: 5 }
     },
     '5': {
-      items: [ 'L -> id . ' ],
-      actions: { '<EOF>': [ 'R <L -> id>' ], EQ: [ 'R <L -> id>' ] },
+      items: [ '4  -  L -> id • ' ],
+      actions: { '$end': [ 'R 4' ], EQ: [ 'R 4' ] },
       goto: {}
     },
     '6': {
-      items: [ 'S -> L EQ . R', 'L ->  . STAR R', 'L ->  . id', 'R ->  . L' ],
+      items: [
+        '1  -  S -> L EQ • R',
+        '3  -  L ->  • STAR R',
+        '4  -  L ->  • id',
+        '5  -  R ->  • L'
+      ],
       actions: { L: [ '7' ], R: [ '9' ], STAR: [ 'S4' ], id: [ 'S5' ] },
       goto: { L: 7, R: 9, STAR: 4, id: 5 }
     },
     '7': {
-      items: [ 'R -> L . ' ],
-      actions: { '<EOF>': [ 'R <R -> L>' ], EQ: [ 'R <R -> L>' ] },
+      items: [ '5  -  R -> L • ' ],
+      actions: { '$end': [ 'R 5' ], EQ: [ 'R 5' ] },
       goto: {}
     },
     '8': {
-      items: [ 'L -> STAR R . ' ],
-      actions: { '<EOF>': [ 'R <L -> STAR R>' ], EQ: [ 'R <L -> STAR R>' ] },
+      items: [ '3  -  L -> STAR R • ' ],
+      actions: { '$end': [ 'R 3' ], EQ: [ 'R 3' ] },
       goto: {}
     },
     '9': {
-      items: [ 'S -> L EQ R . ' ],
-      actions: { '<EOF>': [ 'R <S -> L EQ R>' ] },
+      items: [ '1  -  S -> L EQ R • ' ],
+      actions: { '$end': [ 'R 1' ] },
       goto: {}
     }
   }

@@ -39,7 +39,7 @@ describe("EBNF Tests", () => {
     `).grammar;
 
     expectListsEqual(symLabels(g.nonTerminals), ["S", "A", "B", "C", "D"]);
-    expectListsEqual(symLabels(g.terminals), ["0", "1", '"d"', "", "<EOF>"]);
+    expectListsEqual(symLabels(g.terminals), ["0", "1", '"d"', "", "$end"]);
     expectRules(g, "S", g.seq("A", "B"), "C");
     expectRules(g, "A", g.seq("0", "B"), "C");
     expectRules(g, "B", "1", g.seq("A", "0"));
@@ -53,7 +53,7 @@ describe("EBNF Tests", () => {
     `,
     );
     expectListsEqual(symLabels(g.nonTerminals), ["Y"]);
-    expectListsEqual(symLabels(g.terminals), ["1", "2", "3", "X", "Z", "A", "B", "C", "D", "", "<EOF>"]);
+    expectListsEqual(symLabels(g.terminals), ["1", "2", "3", "X", "Z", "A", "B", "C", "D", "", "$end"]);
     expectRules(
       g,
       "Y",
@@ -80,7 +80,7 @@ describe("EBNF Tests", () => {
     expectListsEqual(symLabels(g.terminals), [
       "1",
       "",
-      "<EOF>",
+      "$end",
       "2",
       "3",
       '"+"',
@@ -109,7 +109,7 @@ describe("EBNF Tests", () => {
     `).grammar;
 
     expectListsEqual(symLabels(g.nonTerminals), ["X", "Y"]);
-    expectListsEqual(symLabels(g.terminals), ["", "<EOF>", "A", "B"]);
+    expectListsEqual(symLabels(g.terminals), ["", "$end", "A", "B"]);
     expectRules(g, "X", "A", "B", new Str());
   });
 });

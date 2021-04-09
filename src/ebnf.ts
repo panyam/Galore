@@ -5,9 +5,11 @@ import { Sym, Grammar, Str } from "./grammar";
 
 export enum TokenType {
   STRING = "STRING",
+  REGEX = "REGEX",
   NUMBER = "NUMBER",
   SPACES = "SPACES",
   IDENT = "IDENT",
+  PCT_IDENT = "PCT_IDENT",
   STAR = "STAR",
   PLUS = "PLUS",
   QMARK = "QMARK",
@@ -52,6 +54,7 @@ export function EBNFTokenizer(input: string | CharTape): SimpleTokenizer {
     .addMatcher(singleLineCommentMatcher, true)
     .addMatcher(startStopMatcher(TokenType.STRING, "'", "'")) // Single quoted String
     .addMatcher(startStopMatcher(TokenType.STRING, '"', '"')) // Double quoted String
+    .addMatcher(startStopMatcher(TokenType.REGEX, "/", "/")) //  Match regex between "/"s
     .addMatcher((tape, offset) => {
       if (!tape.matches("->")) return null;
       return new Token(TokenType.ARROW, { value: "->" });
@@ -101,8 +104,20 @@ export class EBNFParser {
 
   parseGrammar(): Grammar {
     const grammar = new Grammar();
-    while (this.tokenizer.peek() != null) {
-      this.parseDecl(grammar);
+    let peeked = this.tokenizer.peek();
+    while (peeked != null) {
+      if (peeked.tag == TokenType.IDENT) {
+        // declaration
+        this.parseDecl(grammar);
+      } else if (peeked.tag == TokenType.PCT_IDENT) {
+        // Some kind of directive
+        this.tokenizer.next();
+        console.log("Here: ", peeked);
+        TSU.assert(peeked.value == "skip", "Invalid directive: " + peeked.value);
+        const next = this.tokenizer.expectToken(TokenType.STRING, TokenType.REGEX);
+        // TODO - add next to skip list
+      }
+      peeked = this.tokenizer.peek();
     }
     return grammar;
   }
@@ -177,15 +192,15 @@ export class EBNFParser {
         curr = new Str(grammar.getSym(token.value) || grammar.newTerm(token.value));
       } else if (this.tokenizer.nextMatches(TokenType.STRING)) {
         const token = this.tokenizer.next() as Token;
-        const label = '"' + token.value + '"';
-        // TODO - ensure we can add literal into our
-        // Tokenizer so it will prioritize this over its rules
+        const label = "L:" + token.value;
         curr = new Str(grammar.getSym(label) || grammar.newTerm(label));
       } else if (this.tokenizer.nextMatches(TokenType.NUMBER)) {
         const token = this.tokenizer.next() as Token;
-        const label = token.value + "";
-        // TODO - ensure we can add literal into our
-        // Tokenizer so it will prioritize this over its rules
+        const label = "L:" + token.value;
+        curr = new Str(grammar.getSym(label) || grammar.newTerm(label));
+      } else if (this.tokenizer.nextMatches(TokenType.REGEX)) {
+        const token = this.tokenizer.next() as Token;
+        const label = "R:" + token.value;
         curr = new Str(grammar.getSym(label) || grammar.newTerm(label));
       } else {
         throw new UnexpectedTokenError(this.tokenizer.peek());
@@ -271,7 +286,15 @@ export function startStopMatcher(tokenType: TokenType, start: string, end: strin
 }
 
 export function identMatcher(tape: CharTape, offset: number): TSU.Nullable<Token> {
-  if (!isIdentChar(tape.currCh)) return null;
+  const isPct = tape.currCh == "%";
+  if (isPct) tape.nextCh();
+  if (!isIdentChar(tape.currCh)) {
+    if (isPct) {
+      return new Token(TokenType.PCT_IDENT, { value: "" });
+    } else {
+      return null;
+    }
+  }
   // Combination of everything else
   let lit = tape.nextCh();
   while (tape.hasMore) {
@@ -281,7 +304,7 @@ export function identMatcher(tape: CharTape, offset: number): TSU.Nullable<Token
     }
     lit += tape.nextCh();
   }
-  return new Token(TokenType.IDENT, { value: lit });
+  return new Token(isPct ? TokenType.PCT_IDENT : TokenType.IDENT, { value: lit });
 }
 
 export function spacesMatcher(tape: CharTape, offset: number): TSU.Nullable<Token> {

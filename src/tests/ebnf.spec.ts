@@ -39,12 +39,12 @@ describe("EBNF Tests", () => {
     `).grammar;
 
     expectListsEqual(symLabels(g.nonTerminals), ["S", "A", "B", "C", "D"]);
-    expectListsEqual(symLabels(g.terminals), ["0", "1", '"d"', "", "$end"]);
+    expectListsEqual(symLabels(g.terminals), ["L:0", "L:1", "L:d", "", "$end"]);
     expectRules(g, "S", g.seq("A", "B"), "C");
-    expectRules(g, "A", g.seq("0", "B"), "C");
-    expectRules(g, "B", "1", g.seq("A", "0"));
+    expectRules(g, "A", g.seq("L:0", "B"), "C");
+    expectRules(g, "B", "L:1", g.seq("A", "L:0"));
     expectRules(g, "C", g.seq("A", "C"), "C");
-    expectRules(g, "D", '"d"');
+    expectRules(g, "D", "L:d");
   });
   test("Test Simple", () => {
     const g = loadGrammar(
@@ -53,7 +53,7 @@ describe("EBNF Tests", () => {
     `,
     );
     expectListsEqual(symLabels(g.nonTerminals), ["Y"]);
-    expectListsEqual(symLabels(g.terminals), ["1", "2", "3", "X", "Z", "A", "B", "C", "D", "", "$end"]);
+    expectListsEqual(symLabels(g.terminals), ["L:1", "L:2", "L:3", "X", "Z", "A", "B", "C", "D", "", "$end"]);
     expectRules(
       g,
       "Y",
@@ -61,7 +61,7 @@ describe("EBNF Tests", () => {
         g.opt("A"),
         g.opt(g.seq("B", "C", "D")),
         g.atleast0(g.opt(g.anyof("X", "Y", "Z"))),
-        g.atleast1(g.opt(g.seq("1", "2", "3"))),
+        g.atleast1(g.opt(g.seq("L:1", "L:2", "L:3"))),
       ),
     );
   });
@@ -78,28 +78,28 @@ describe("EBNF Tests", () => {
 
     expectListsEqual(symLabels(g.nonTerminals), ["Expr", "Term", "Factor", "X"]);
     expectListsEqual(symLabels(g.terminals), [
-      "1",
+      "L:1",
       "",
       "$end",
-      "2",
-      "3",
-      '"+"',
+      "L:2",
+      "L:3",
+      "L:+",
       "Z",
-      '"-"',
+      "L:-",
       "A",
       "B",
       "C",
       "D",
       "DIV",
       "MULT",
-      '"("',
-      '")"',
+      "L:(",
+      "L:)",
       "NUM",
     ]);
-    expectRules(g, "Expr", g.seq("Term", g.anyof('"+"', '"-"'), "Expr"));
+    expectRules(g, "Expr", g.seq("Term", g.anyof("L:+", "L:-"), "Expr"));
     expectRules(g, "Term", g.seq("Factor", g.anyof("DIV", "MULT"), "Term"));
-    expectRules(g, "X", g.seq("A", "B", "C", "D", "Z", "1", "2", "3"));
-    expectRules(g, "Factor", "NUM", g.seq('"("', "Expr", '")"'));
+    expectRules(g, "X", g.seq("A", "B", "C", "D", "Z", "L:1", "L:2", "L:3"));
+    expectRules(g, "Factor", "NUM", g.seq("L:(", "Expr", "L:)"));
   });
 
   test("Test3", () => {

@@ -9,16 +9,12 @@ Command -> BSLASH_IDENT CommandParams ;
 CommandParams  -> OPEN_PAREN  CLOSE_PAREN ;
 CommandParams -> OPEN_PAREN ParamList CLOSE_PAREN ;
 
-ParamList -> Param ;
 ParamList -> ParamList COMMA Param ;
+ParamList -> Param ;
 Param -> ParamKey ;
 Param -> ParamKey EQUALS ParamValue ;
-ParamKey  -> STRING ;
-ParamKey  -> Fraction ;
-ParamKey  -> IDENT ;
-ParamValue -> STRING ;
-ParamValue -> Fraction ;
-ParamValue -> IDENT ;
+ParamKey  -> STRING | Fraction | IDENT ;
+ParamValue -> STRING | Fraction | IDENT ;
 
 RoleSelector -> IDENT_COLON ;
 

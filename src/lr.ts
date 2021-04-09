@@ -144,7 +144,7 @@ export class LR1ItemSet extends LRItemSet {
     for (const s of this._lookaheads[item.id]) if (s == sym) return false;
     this._key = null;
     this._lookaheads[item.id].push(sym);
-    this._lookaheads[item.id].sort();
+    this._lookaheads[item.id].sort((s1, s2) => s1.id - s2.id);
     return true;
   }
 
@@ -176,6 +176,7 @@ export class LR1ItemSet extends LRItemSet {
     return items.map((item) => {
       const las = this.getLookAheads(item)
         .map((s) => s.label)
+        .sort((s1, s2) => s1.localeCompare(s2))
         .join(", ");
       return `${item.debugString} / ( ${las} )`;
     });
@@ -628,7 +629,7 @@ export class LR1ItemGraph extends LRItemGraph {
    */
   startSet(): LRItemSet {
     const startItem = this.startItem();
-    const newset = this.newItemSet(startItem) as LR1ItemSet;
+    const newset = this.newItemSet(startItem);
     newset.addLookAhead(startItem, this.grammar.Eof);
     return this.closure(newset);
   }
@@ -637,7 +638,7 @@ export class LR1ItemGraph extends LRItemGraph {
    * Overridden to create LR1 item sets so we can associate lookahead
    * symbols for each item in the set.
    */
-  protected newItemSet(...items: LRItem[]): LRItemSet {
+  protected newItemSet(...items: LRItem[]): LR1ItemSet {
     return new LR1ItemSet(this, ...items.map((item) => item.id));
   }
 
@@ -653,10 +654,10 @@ export class LR1ItemGraph extends LRItemGraph {
       // Evaluate the closure
       // Cannot do anything past the end
       if (item.position >= item.rule.rhs.length) continue;
-      const B = item.rule.rhs.syms[item.position];
+      const rhs = item.rule.rhs;
+      const B = rhs.syms[item.position];
       if (B.isTerminal) continue;
 
-      const rhs = item.rule.rhs;
       for (const lookahead of out.getLookAheads(item)) {
         const suffix = rhs.copy().append(lookahead);
         this.grammar.firstSets.forEachTermIn(suffix, item.position + 1, (term) => {

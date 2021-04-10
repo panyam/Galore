@@ -40,7 +40,7 @@ describe("Tokenizer Tests", () => {
   test("Basic", () => {
     const t = new SimpleTokenizer("Hello World");
     t.addLiteral("Hello", 55);
-    const tok = t.next();
+    const tok = t.nextToken();
     expect(tok?.isOneOf(55)).toBe(true);
     expect(tok?.isOneOf(66)).toBe(false);
     expect(tok?.tag).toBe(55);

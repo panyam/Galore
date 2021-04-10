@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { TokenMatcher, CharTape, Token, SimpleTokenizer } from "./tokenizer";
+import { TokenMatcher, CharTape, Token, TokenBuffer, SimpleTokenizer } from "./tokenizer";
 import { UnexpectedTokenError } from "./errors";
 import { Sym, Grammar, Str } from "./grammar";
 
@@ -90,7 +90,7 @@ export function EBNFTokenizer(input: string | CharTape): SimpleTokenizer {
  */
 export class EBNFParser {
   readonly grammar: Grammar;
-  private tokenizer: SimpleTokenizer;
+  private tokenizer: TokenBuffer;
   private allowLeftRecursion = false;
   constructor(input: string, config: any = {}) {
     this.grammar = this.parse(input);
@@ -98,7 +98,8 @@ export class EBNFParser {
   }
 
   parse(input: string): Grammar {
-    this.tokenizer = EBNFTokenizer(input);
+    const et = EBNFTokenizer(input);
+    this.tokenizer = new TokenBuffer(et.nextToken.bind(et));
     return this.parseGrammar();
   }
 

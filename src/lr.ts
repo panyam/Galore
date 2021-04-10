@@ -1,6 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import { Sym, Grammar, Rule } from "./grammar";
-import { Tokenizer, PTNode, Parser as ParserBase } from "./parser";
+import { PTNode, Parser as ParserBase } from "./parser";
+import { TokenBuffer, NextTokenFunc } from "./tokenizer";
 import { UnexpectedTokenError } from "./errors";
 import { IDSet } from "./sets";
 
@@ -519,7 +520,7 @@ export class Parser extends ParserBase {
   /**
    * Pick an action among several actions based on several factors (eg curr parse stack, tokenizer etc).
    */
-  resolveActions(actions: LRAction[], stack: ParseStack, tokenizer: Tokenizer): LRAction {
+  resolveActions(actions: LRAction[], stack: ParseStack, tokenizer: TokenBuffer): LRAction {
     if (actions.length > 1) {
       throw new Error("Multiple actions found.");
     }

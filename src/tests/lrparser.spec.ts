@@ -2,7 +2,7 @@ const util = require("util");
 import * as TSU from "@panyam/tsutils";
 import { PTNode } from "../parser";
 import { Token } from "../tokenizer";
-import { MockTokenizer } from "./mocks";
+import { mockTokenizer } from "./mocks";
 import { newParser } from "./utils";
 
 function tok(tag: any, value: any): Token {
@@ -11,7 +11,7 @@ function tok(tag: any, value: any): Token {
 
 function testParsing(ptabType: string, grammar: string, tokens: Token[], debug = false): TSU.Nullable<PTNode> {
   const parser = newParser(grammar, ptabType, debug);
-  parser.setTokenizer(new MockTokenizer(...tokens));
+  parser.setTokenizer(mockTokenizer(...tokens));
   const result = parser.parse();
   if (debug) {
     console.log(util.inspect(result?.debugValue || null, { showHidden: false, depth: null }));

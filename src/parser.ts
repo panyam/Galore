@@ -1,16 +1,8 @@
 import * as TSU from "@panyam/tsutils";
-import { Token } from "./tokenizer";
+import { Token, NextTokenFunc, TokenBuffer } from "./tokenizer";
 import { Sym, Grammar } from "./grammar";
 
 type Nullable<T> = TSU.Nullable<T>;
-
-/**
- * A tokenizer interface used by our parser.
- */
-export interface Tokenizer {
-  peek(): Nullable<Token>;
-  next(): Nullable<Token>;
-}
 
 export class PTNode {
   readonly sym: Sym;
@@ -50,13 +42,13 @@ export class PTNode {
 
 export abstract class Parser {
   grammar: Grammar;
-  tokenizer: Tokenizer;
+  tokenizer: TokenBuffer;
   constructor(grammar: Grammar) {
     this.grammar = grammar;
   }
 
-  setTokenizer(tokenizer: Tokenizer): this {
-    this.tokenizer = tokenizer;
+  setTokenizer(tokenizer: NextTokenFunc): this {
+    this.tokenizer = new TokenBuffer(tokenizer);
     return this;
   }
 

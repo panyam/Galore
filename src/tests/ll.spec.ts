@@ -5,7 +5,7 @@ import { PTNode } from "../parser";
 import { Token } from "../tokenizer";
 import { verifyLLParseTable } from "./utils";
 import Samples from "./samples";
-import { MockTokenizer } from "./mocks";
+import { mockTokenizer } from "./mocks";
 
 describe("ParseTable Tests", () => {
   test("Tests 1", () => {
@@ -60,13 +60,7 @@ describe("Parser Tests", () => {
   test("Tests 1", () => {
     const g = new EBNFParser(Samples.expr2).grammar;
 
-    const tokenizer = new MockTokenizer(
-      tok("id", "A"),
-      tok("PLUS", "+"),
-      tok("id", "B"),
-      tok("STAR", "*"),
-      tok("id", "C"),
-    );
+    const tokenizer = mockTokenizer(tok("id", "A"), tok("PLUS", "+"), tok("id", "B"), tok("STAR", "*"), tok("id", "C"));
     const parser = new Parser(g).setTokenizer(tokenizer);
     const result = parser.parse();
     expect(result?.debugValue).toEqual([

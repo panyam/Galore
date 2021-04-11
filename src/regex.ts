@@ -53,7 +53,7 @@ class Lexer {
   }
 }
 
-enum ExprType {
+export enum ExprType {
   CHAR,
   CHAR_CLASS,
   UNION,
@@ -64,7 +64,7 @@ enum ExprType {
   ASSERTION,
 }
 
-class Regex {
+export class Regex {
   root: Expr;
   constructor(regex: string) {
     this.root = Regex.parse(regex);
@@ -76,11 +76,17 @@ class Regex {
   static parse(regex: string, curr = 0, end = -1): Expr {
     if (end < 0) end = regex.length - 1;
     let out: Expr[] = [];
+    function reduceLeft(): Expr {
+      const r = out.length == 1 ? out[0] : new Cat(...out);
+      out = [];
+      return r;
+    }
     while (curr <= end) {
       const currCh = regex[curr];
       // see if we have groups so they get highest preference
       if (currCh == "<") {
-        let gtPos = curr + 1;
+        curr++;
+        let gtPos = curr;
         while (gtPos <= end && regex[gtPos] != ">") gtPos++;
         if (gtPos >= end) throw new Error("Expected '>' found EOI");
         const name = regex.substring(curr, gtPos);
@@ -104,9 +110,11 @@ class Regex {
         curr = clPos + 1;
       } else if (currCh == "^") {
         // parse everything to the right
-        const rest = Regex.parse(regex, curr + 1, end);
-        const assertion = new Assertion(rest, Char.StartOfLine(), false);
-        out.push(assertion);
+        if (curr + 1 < end) {
+          const rest = Regex.parse(regex, curr + 1, end);
+          const assertion = new Assertion(rest, Char.StartOfLine(), false);
+          out.push(assertion);
+        }
         curr = end + 1;
       } else if (currCh == "$") {
         // parse everything to the right
@@ -115,12 +123,14 @@ class Regex {
         out = [assertion];
         curr++;
       } else if (currCh == "|") {
-        // reduce everything "until now" and THEN apply
-        const prev = new Cat(...out);
-
-        // parse everything to the right
-        const rest = Regex.parse(regex, curr + 1, end);
-        return new Union(prev, rest);
+        if (curr + 1 <= end) {
+          // reduce everything "until now" and THEN apply
+          const prev = reduceLeft();
+          // parse everything to the right
+          const rest = Regex.parse(regex, curr + 1, end);
+          return new Union(prev, rest);
+        }
+        curr = end + 1;
       } else if (currCh == "(") {
         // we have a grouping
         let clPos = curr + 1;
@@ -149,15 +159,16 @@ class Regex {
           curr = clPos + 1;
           if (after) {
             // reduce everything "until now" and THEN apply
-            const prev = new Cat();
-            prev.children = out;
+            const prev = reduceLeft();
             const assertion = new Assertion(prev, cond, after);
             out = [assertion];
           } else {
             // parse everything to the right
-            const rest = Regex.parse(regex, curr, end);
-            const assertion = new Assertion(rest, cond, after);
-            out.push(assertion);
+            if (curr + 1 <= end) {
+              const rest = Regex.parse(regex, curr, end);
+              const assertion = new Assertion(rest, cond, after);
+              out.push(assertion);
+            }
             curr = end + 1; // no more input left
           }
         }
@@ -195,6 +206,7 @@ class Regex {
         curr += nchars;
       }
     }
+    TSU.assert(out.length > 0);
     if (out.length == 1) return out[0];
     return new Cat(...out);
   }
@@ -203,7 +215,7 @@ class Regex {
 /**
  * A regex expression node.
  */
-abstract class Expr {
+export abstract class Expr {
   tag: ExprType;
   parent: TSU.Nullable<Expr> = null;
 
@@ -212,7 +224,7 @@ abstract class Expr {
   }
 }
 
-class Assertion extends Expr {
+export class Assertion extends Expr {
   readonly tag: ExprType = ExprType.ASSERTION;
   // Expression to match
   expr: Expr;
@@ -243,7 +255,7 @@ class Assertion extends Expr {
   }
 }
 
-class Quant extends Expr {
+export class Quant extends Expr {
   readonly tag: ExprType = ExprType.QUANT;
   constructor(public expr: Expr, public minCount = 1, public maxCount = 1, public greedy = false) {
     super();
@@ -260,7 +272,7 @@ class Quant extends Expr {
   }
 }
 
-class Cat extends Expr {
+export class Cat extends Expr {
   readonly tag: ExprType = ExprType.CAT;
   children: Expr[];
   constructor(...children: Expr[]) {
@@ -273,7 +285,7 @@ class Cat extends Expr {
   }
 }
 
-class Union extends Expr {
+export class Union extends Expr {
   readonly tag: ExprType = ExprType.UNION;
   constructor(public left: Expr, public right: Expr) {
     super();
@@ -284,7 +296,7 @@ class Union extends Expr {
   }
 }
 
-class Neg extends Expr {
+export class Neg extends Expr {
   readonly tag: ExprType = ExprType.NEG;
   constructor(public expr: Expr) {
     super();
@@ -300,7 +312,7 @@ class Neg extends Expr {
   }
 }
 
-class Char extends Expr {
+export class Char extends Expr {
   readonly tag: ExprType = ExprType.CHAR;
   // start == 0 and end == 0 => ANY
   // start == end => Single char
@@ -342,34 +354,87 @@ class Char extends Expr {
     return this.end < 0;
   }
 
+  compareTo(another: Char): number {
+    if (this.start == another.start) return this.end - another.end;
+    return this.start - another.start;
+  }
+
   get debugValue(): any {
     if (this.start == 0 && this.end == 0) return ".";
     if (this.isStartOfLine) return "^";
     if (this.isEndOfLine) return "$";
-    return this.start == this.end ? this.start : `${this.start}-${this.end}`;
+    return this.start == this.end
+      ? String.fromCharCode(this.start)
+      : `${String.fromCharCode(this.start)}-${String.fromCharCode(this.end)}`;
   }
 }
 
 /**
  * Character ranges
  */
-class CharClass extends Expr {
+export class CharClass extends Expr {
   readonly tag: ExprType = ExprType.CHAR_CLASS;
-  ranges: [number, number][] = [];
+  chars: Char[];
+  constructor(...chars: Char[]) {
+    super();
+    this.chars = chars;
+    this.mergeRanges();
+  }
+
+  /**
+   * Adds a new Char into this class.
+   * Doing so "merges" renges in this class so we dont have overlaps.
+   */
+  add(ch: Char): this {
+    this.chars.push(ch);
+    return this.mergeRanges();
+  }
+
+  protected mergeRanges(): this {
+    // sort ranges
+    this.chars.sort((c1, c2) => c1.compareTo(c2));
+    // merge ranges
+    const ch2 = [] as Char[];
+    for (const ch of this.chars) {
+      const last = ch2[ch2.length - 1] || null;
+      if (last == null || last.end >= ch.start) {
+        ch2.push(ch);
+      } else {
+        last.end = Math.max(last.end, ch.end);
+      }
+    }
+    this.chars = ch2;
+    return this;
+  }
+
   static parse(value: string, invert = false): CharClass {
-    throw new Error("TBD");
-    return new CharClass();
+    const out: Char[] = [];
+    // first see which characters are in this (until the end)
+    for (let i = 0; i < value.length; ) {
+      const [currch, nchars] = Char.from(value, i);
+      i += nchars;
+      if (i < value.length && value[i] == "-") {
+        i++;
+        if (i < value.length) {
+          const [endch, nchars] = Char.from(value, i);
+          currch.end = endch.start;
+          i += nchars;
+        }
+      }
+      out.push(currch);
+    }
+    return new CharClass(...out);
   }
 
   get debugValue(): any {
-    return this.ranges.map((s, e) => `${s}-${e}`).join(", ");
+    return this.chars.map((ch) => ch.debugValue);
   }
 }
 
 /**
  * Named expression referring to another regex by name.
  */
-class NamedExpr extends Expr {
+export class NamedExpr extends Expr {
   readonly tag: ExprType = ExprType.REF;
   constructor(public name: string) {
     super();

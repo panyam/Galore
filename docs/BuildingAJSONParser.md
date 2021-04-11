@@ -70,4 +70,4 @@ UnicodeEscapeSequence -> /u<HexDigit><HexDigit><HexDigit><HexDigit>/ ;
 
 Note that we can pass in some literal tokens as is in the grammar specification.  The resultant parser will also create a tokenizer capable of returning these literals as tokens.
 
-We can also specify regexes tokens in our specification so that the tokenizer
+We can also specify regexes tokens in our specification so a tokenizer is also generated 

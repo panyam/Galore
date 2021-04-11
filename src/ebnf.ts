@@ -92,24 +92,86 @@ export class EBNFParser {
   readonly grammar: Grammar;
   private tokenizer: TokenBuffer;
   private allowLeftRecursion = false;
+
+  /*
+   * The newSymbol callback provided to the contructor is a way for the client to
+   * be given a chance to create a symbol given a new label that is encountered.
+   * The client can either return a null to let this parser define the Symbol
+   * or return a Symbol which will be associated with the given label going
+   * forward.
+   *
+   * The newSymbol callback will ONLY be called once for each new label
+   * encountered by the parser.   If the client returns a duplicte symbol
+   * then parsing fails.
+   */
+  private newSymbolCallback: TSU.Nullable<(label: string, assumedTerminal: boolean) => Sym | void>;
+  private symbolsByLabel: TSU.StringMap<Sym>;
+
   constructor(input: string, config: any = {}) {
-    this.grammar = this.parse(input);
+    this.symbolsByLabel = {};
+    this.grammar = new Grammar();
     this.allowLeftRecursion = config.allowLeftRecursion || false;
+    this.newSymbolCallback = config.newSymbol || null;
+    this.parse(input);
   }
 
-  parse(input: string): Grammar {
+  /**
+   * As the parser creates encounters a new literal or an identifier (hinting at
+   * either a terminal or a non terminal), it needs to know which symbol to associate
+   * with this lit/ident going forward.
+   *
+   * All symbols created for the grammar, since they are either created
+   * by this parser or by the client (invokved by this parser), are stored
+   * locally to be returned in this method.
+   */
+  symbolForLabel(label: string): TSU.Nullable<Sym> {
+    return this.symbolsByLabel[label] || null;
+  }
+
+  /**
+   * Registers a symbol for a given label.
+   */
+  registerSymbol(label: string, sym: Sym): void {
+    TSU.assert(!(label in this.symbolsByLabel), `${label} is already registered`);
+    this.symbolsByLabel[label] = sym;
+  }
+
+  /**
+   * Ensures that a symbol exists for a given label (as found in the parser spec)
+   * to be used through out the grammar.
+   */
+  ensureSymbol(label: string, assumedTerminal: boolean): Sym {
+    let currSym = this.symbolForLabel(label);
+
+    if (currSym != null) return currSym;
+    else if (this.newSymbolCallback) {
+      // then give the user a chance to create a symbol for this
+      currSym = this.newSymbolCallback(label, assumedTerminal) || null;
+    }
+    if (currSym == null) {
+      if (assumedTerminal) {
+        currSym = this.grammar.newTerm(label);
+      } else {
+        currSym = this.grammar.newNT(label);
+      }
+    }
+    // then register it so it is used going forward
+    this.registerSymbol(label, currSym);
+    return currSym;
+  }
+
+  parse(input: string): void {
     const et = EBNFTokenizer(input);
     this.tokenizer = new TokenBuffer(et.nextToken.bind(et));
-    return this.parseGrammar();
+    this.parseGrammar();
   }
 
-  parseGrammar(): Grammar {
-    const grammar = new Grammar();
+  parseGrammar(): void {
     let peeked = this.tokenizer.peek();
     while (peeked != null) {
       if (peeked.tag == TokenType.IDENT) {
         // declaration
-        this.parseDecl(grammar);
+        this.parseDecl();
       } else if (peeked.tag == TokenType.PCT_IDENT) {
         // Some kind of directive
         this.tokenizer.next();
@@ -120,24 +182,21 @@ export class EBNFParser {
       }
       peeked = this.tokenizer.peek();
     }
-    return grammar;
   }
 
-  parseDecl(grammar: Grammar): void {
+  parseDecl(): void {
     const ident = this.tokenizer.expectToken(TokenType.IDENT);
     if (this.tokenizer.consumeIf(TokenType.ARROW)) {
-      let nt = grammar.getSym(ident.value);
-      if (nt == null) {
-        nt = grammar.newNT(ident.value);
-      } else if (nt.isTerminal) {
+      const nt = this.ensureSymbol(ident.value, false);
+      if (nt.isTerminal) {
         // it is a terminal so mark it as a non-term now that we
         // know there is a declaration for it.
         nt.isTerminal = false;
       } else if (nt.isAuxiliary) {
         throw new Error("NT is already auxiliary and cannot be reused.");
       }
-      for (const rule of this.parseProductions(grammar, nt)) {
-        grammar.add(nt, rule);
+      for (const rule of this.parseProductions(this.grammar, nt)) {
+        this.grammar.add(nt, rule);
       }
       this.tokenizer.expectToken(TokenType.SEMI_COLON);
     }
@@ -188,21 +247,17 @@ export class EBNFParser {
           curr = grammar.opt(grammar.anyof(...rules));
         }
         this.tokenizer.expectToken(TokenType.CLOSE_SQ);
-      } else if (this.tokenizer.nextMatches(TokenType.IDENT)) {
+      } else if (this.tokenizer.nextMatches(TokenType.IDENT, TokenType.STRING, TokenType.NUMBER, TokenType.REGEX)) {
         const token = this.tokenizer.next() as Token;
-        curr = new Str(grammar.getSym(token.value) || grammar.newTerm(token.value));
-      } else if (this.tokenizer.nextMatches(TokenType.STRING)) {
-        const token = this.tokenizer.next() as Token;
-        const label = "L:" + token.value;
-        curr = new Str(grammar.getSym(label) || grammar.newTerm(label));
-      } else if (this.tokenizer.nextMatches(TokenType.NUMBER)) {
-        const token = this.tokenizer.next() as Token;
-        const label = "L:" + token.value;
-        curr = new Str(grammar.getSym(label) || grammar.newTerm(label));
-      } else if (this.tokenizer.nextMatches(TokenType.REGEX)) {
-        const token = this.tokenizer.next() as Token;
-        const label = "R:" + token.value;
-        curr = new Str(grammar.getSym(label) || grammar.newTerm(label));
+        let label = token.value;
+        if (token.tag == TokenType.STRING || token.tag == TokenType.NUMBER) {
+          label = "L:" + token.value;
+        } else if (token.tag == TokenType.REGEX) {
+          label = "R:" + token.value;
+        }
+        // See if this symbol is already registered
+        const currSym = this.ensureSymbol(label, true);
+        curr = new Str(currSym);
       } else {
         throw new UnexpectedTokenError(this.tokenizer.peek());
       }

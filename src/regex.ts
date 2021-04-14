@@ -1,5 +1,16 @@
 import * as TSU from "@panyam/tsutils";
 
+export enum ExprType {
+  CHAR,
+  CHAR_CLASS,
+  UNION,
+  CAT,
+  NEG,
+  REF,
+  QUANT,
+  ASSERTION,
+}
+
 /**
  * A regex machine allows a collection of regexes to be parsed, maintained
  * and referenced.  The builders parses regex strings and creates normalized
@@ -51,17 +62,6 @@ class Lexer {
   protected compile(expr: Expr): void {
     //
   }
-}
-
-export enum ExprType {
-  CHAR,
-  CHAR_CLASS,
-  UNION,
-  CAT,
-  NEG,
-  REF,
-  QUANT,
-  ASSERTION,
 }
 
 export class Regex {
@@ -277,7 +277,21 @@ export class Cat extends Expr {
   children: Expr[];
   constructor(...children: Expr[]) {
     super();
-    this.children = children;
+    this.children = [];
+    for (const child of children) {
+      this.add(child);
+    }
+  }
+
+  add(child: Expr): this {
+    if (child.tag != ExprType.UNION) {
+      this.children.push(child);
+    } else {
+      for (const opt of (child as Cat).children) {
+        this.add(opt);
+      }
+    }
+    return this;
   }
 
   get debugValue(): any {
@@ -287,12 +301,28 @@ export class Cat extends Expr {
 
 export class Union extends Expr {
   readonly tag: ExprType = ExprType.UNION;
-  constructor(public left: Expr, public right: Expr) {
+  readonly options: Expr[];
+  constructor(...options: Expr[]) {
     super();
+    this.options = [];
+    for (const option of options) {
+      this.add(option);
+    }
+  }
+
+  add(option: Expr): this {
+    if (option.tag != ExprType.UNION) {
+      this.options.push(option);
+    } else {
+      for (const opt of (option as Union).options) {
+        this.add(opt);
+      }
+    }
+    return this;
   }
 
   get debugValue(): any {
-    return ["Union", this.left.debugValue, this.right.debugValue];
+    return ["Union", this.options.map((o) => o.debugValue)];
   }
 }
 
@@ -318,7 +348,7 @@ export class Char extends Expr {
   // start == end => Single char
   // start < end => Char range
   // Start == -1 =>
-  constructor(public start = 0, public end = 0) {
+  constructor(public start = 0, public end = 0, public neg = false) {
     super();
   }
 

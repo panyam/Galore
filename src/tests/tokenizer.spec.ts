@@ -1,4 +1,5 @@
-import { CharTape, SimpleTokenizer } from "../tokenizer";
+import { SimpleTokenizer } from "../tokenizer";
+import { CharTape } from "../tape";
 
 describe("Tape Tests", () => {
   test("Basic", () => {

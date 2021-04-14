@@ -31,14 +31,14 @@ describe("Regex Tests", () => {
   });
 
   test("Test Union", () => {
-    testRegex("a|b|c|d|e", ["Union", "a", ["Union", "b", ["Union", "c", ["Union", "d", "e"]]]]);
+    testRegex("a|b|c|d|e", ["Union", ["a", "b", "c", "d", "e"]]);
   });
 
   test("Test Named Groups", () => {
-    testRegex("a|b|<Hello>|e", ["Union", "a", ["Union", "b", ["Union", "<Hello>", "e"]]]);
+    testRegex("a|b|<Hello>|e", ["Union", ["a", "b", "<Hello>", "e"]]);
   });
 
   test("Test Grouping", () => {
-    testRegex("a|b|(c|d)|e", ["Union", "a", ["Union", "b", ["Union", ["Union", "c", "d"], "e"]]]);
+    testRegex("a|b|(c|d)|e", ["Union", ["a", "b", "c", "d", "e"]]);
   });
 });

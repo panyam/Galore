@@ -23,36 +23,70 @@ export enum ExprType {
  * These regexes can then be passed to a tokenizer so that it can use them
  * to match an input stream to create tokens.
  */
-class Lexer {
-  // Stores named rules
-  literals: [string, any, Expr][] = [];
-  regexes: [string, any, Expr][] = [];
-  rulesByName = {} as any;
 
-  addLiteral(lit: string, tokType: any): number {
-    const index = this.literals.findIndex((k) => k[0] == lit);
-    if (index < 0) {
-      this.literals.push([lit, tokType, parse(lit)]);
-      return this.literals.length - 1;
-    } else {
-      if (this.literals[index][1] != tokType) {
-        throw new Error(`Literal '${lit}' already registered as ${tokType}`);
-      }
-      return index;
-    }
-  }
+/**
+ * A rule defines a match to be performed and recognized by the lexer.
+ */
+class Rule {
+  /**
+   * The pattern to match for the rule.
+   */
+  pattern: string;
 
   /**
-   * Adds a new regex to our builder.
+   * Priority for a rule.
+   * As the NFA runs through the rules it could be matching
+   * several rules in parallel.  However as soon as a rule
+   * that is of a higher priority has matched all other rules
+   * (still running) with a lower priority are halted.
+   *
+   * We can use this to match literals over a regex even though
+   * a regex can have a longer match.
    */
-  addRegex(regex: string, tokType: any): number {
-    let index = this.regexes.findIndex((k) => k[0] == regex);
-    if (index < 0) {
-      index = this.regexes.length;
-      this.regexes.push([regex, tokType, parse(regex)]);
-    } else if (this.regexes[index][1] != tokType) {
-      throw new Error(`Regex '${regex}' already registered as ${tokType}`);
+  priority = 10;
+
+  /**
+   * The token type associted to this rule when a match occurs.
+   */
+  tokenType: any;
+
+  /**
+   * The parsed regex for this rule.
+   */
+  expr: Expr;
+
+  /**
+   * Rules can have names to be referred by other
+   * rules.
+   */
+  name = "";
+
+  /**
+   * Only rules that are "primary" rules will be targetted
+   * for matching in the final NFA.  We can create non
+   * primary rules as a way for short cuts.  Eg:
+   *
+   * WHITESPACE = [ \t\n]+
+   *
+   * can be a rule that is only used "inside" other rules via <WHITESPACE>
+   */
+  isPrimary = true;
+}
+
+class Lexer {
+  // Stores named rules
+  // Rules are a "regex", whether literal or not
+  allRules: Rule[] = [];
+  rulesByName = new Map<string, number>();
+
+  addRule(rule: Rule): number {
+    let index = this.allRules.findIndex((r) => r.pattern == rule.pattern);
+    if (index >= 0) {
+      throw new Error(`Regex '${rule.pattern}' already registered as ${rule.tokenType}`);
     }
+    index = this.allRules.length;
+    rule.expr = parse(rule.pattern);
+    this.allRules.push(rule);
     return index;
   }
 
@@ -60,31 +94,22 @@ class Lexer {
    * Compiles the regex and stores the specific
    */
   protected compileAll(): Prog {
-    // Keep regexes and their priority - literals have higher priority
-    const exprs: [Expr, number][] = [];
-    this.literals.forEach((lit) => {
-      exprs.push([lit[2], 20]);
-    });
-    this.regexes.forEach((r) => {
-      exprs.push([r[2], 20]);
-    });
-
     // Split across each of our expressions
     const out = new Prog();
     const split = out.add(OpCode.Split);
-    exprs.forEach(([expr, priority], i) => {
+    this.allRules.forEach((rule, i) => {
       split.add(out.instrs.length);
       out.add(OpCode.Save, 0);
-      this.compile(expr, out);
+      this.compile(rule.expr, out);
       out.add(OpCode.Save, 1);
-      out.add(OpCode.Match, i, priority);
+      out.add(OpCode.Match, rule.priority, i);
     });
     // Add the error case to match -1 if nothing else matches
     // should technically never come here if atleast one rule matches
     out.add(OpCode.Save, 0);
     this.compile(new Any(), out);
     out.add(OpCode.Save, 1);
-    out.add(OpCode.Match, -1, 0);
+    out.add(OpCode.Match, 0, -1);
     return out;
   }
 
@@ -241,7 +266,7 @@ export class Assertion extends Expr {
   }
 
   get debugValue(): any {
-    return [this.after ? "ASSERT_AFTER" : "ASSERT_BEFORE", this.cond.debugValue, this.expr.debugValue];
+    return [this.expr.debugValue, this.after ? "IF_BEFORE" : "IF_AFTER", this.cond.debugValue];
   }
 }
 
@@ -255,8 +280,9 @@ export class Quant extends Expr {
     let quant = "*";
     if (this.minCount == 1 && this.maxCount == TSU.Constants.MAX_INT) quant = "+";
     else if (this.minCount == 0 && this.maxCount == TSU.Constants.MAX_INT) quant = "*";
-    else if (this.minCount == 0 && 1) quant = "?";
-    else quant = `{${this.minCount},${this.maxCount == TSU.Constants.MAX_INT ? "" : this.maxCount}}`;
+    else if (this.minCount == 0 && this.maxCount == 1) quant = "?";
+    else if (this.minCount != 1 || this.maxCount != 1)
+      quant = `{${this.minCount},${this.maxCount == TSU.Constants.MAX_INT ? "" : this.maxCount}}`;
     return [this.lazy ? "QuantLazy" : "Quant", [this.expr.debugValue, quant]];
   }
 }
@@ -436,7 +462,7 @@ export class CharClass extends Expr {
     const ch2 = [] as Char[];
     for (const ch of this.chars) {
       const last = ch2[ch2.length - 1] || null;
-      if (last == null || last.end >= ch.start) {
+      if (last == null || last.end < ch.start) {
         ch2.push(ch);
       } else {
         last.end = Math.max(last.end, ch.end);
@@ -546,7 +572,7 @@ export function parse(regex: string, curr = 0, end = -1): Expr {
       }
       curr = end + 1;
     } else if (currCh == "(") {
-      // we have a grouping
+      // we have a grouping or an assertion
       let clPos = curr + 1;
       let depth = 0;
       while (clPos <= end && (regex[clPos] != ")" || depth > 0)) {
@@ -557,8 +583,9 @@ export function parse(regex: string, curr = 0, end = -1): Expr {
       }
       if (clPos > end) throw new Error("Expected ')' found EOI");
 
-      if (regex[curr + 1] != "?") {
-        out.push(parse(regex, curr + 1, clPos - 1));
+      curr++;
+      if (regex[curr] != "?") {
+        out.push(parse(regex, curr, clPos - 1));
         curr = clPos + 1;
       } else {
         curr++; // skip the "?"

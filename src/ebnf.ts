@@ -1,5 +1,6 @@
 import * as TSU from "@panyam/tsutils";
-import { TokenMatcher, CharTape, Token, TokenBuffer, SimpleTokenizer } from "./tokenizer";
+import { TokenMatcher, Token, TokenBuffer, SimpleTokenizer } from "./tokenizer";
+import { CharTape } from "./tape";
 import { UnexpectedTokenError } from "./errors";
 import { Sym, Grammar, Str } from "./grammar";
 

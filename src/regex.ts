@@ -273,7 +273,7 @@ export class Cat extends Expr {
   }
 
   add(child: Expr): this {
-    if (child.tag != ExprType.UNION) {
+    if (child.tag != ExprType.CAT) {
       this.children.push(child);
     } else {
       for (const opt of (child as Cat).children) {
@@ -389,8 +389,6 @@ export class Char extends Expr {
         default:
           return [Char.of(ch), 2];
       }
-      throw new Error("TBD");
-      return [new Char(), 1];
     } else {
       // single char
       const ch = value.charCodeAt(index);
@@ -521,7 +519,7 @@ export function parse(regex: string, curr = 0, end = -1): Expr {
         if (regex[clPos] == "\\") clPos++;
         clPos++;
       }
-      if (clPos >= end) throw new Error("Expected ']' found EOI");
+      if (clPos > end) throw new Error("Expected ']' found EOI");
       out.push(CharClass.parse(regex.substring(curr + 1, clPos)));
       curr = clPos + 1;
     } else if (currCh == "^") {
@@ -557,7 +555,7 @@ export function parse(regex: string, curr = 0, end = -1): Expr {
         if (regex[clPos] == "\\") clPos++;
         clPos++;
       }
-      if (clPos >= end) throw new Error("Expected ')' found EOI");
+      if (clPos > end) throw new Error("Expected ')' found EOI");
 
       if (regex[curr + 1] != "?") {
         out.push(parse(regex, curr + 1, clPos - 1));

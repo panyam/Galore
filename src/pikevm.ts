@@ -1,9 +1,12 @@
 import * as TSU from "@panyam/tsutils";
-import { Expr, ExprType, Cat, Union, Quant, Char, CharClass } from "./regex";
 import { CharTape } from "./tape";
 
-enum OpCode {
+export enum OpCode {
   Match,
+  Noop,
+  Any,
+  StartOfInput,
+  EndOfInput,
   Char,
   CharClass,
   Save,
@@ -16,7 +19,7 @@ enum OpCode {
   RegRelease,
 }
 
-class Prog {
+export class Prog {
   instrs: Instr[] = [];
 
   get length(): number {
@@ -33,111 +36,6 @@ class Prog {
   debugValue(): any {
     return this.instrs.map((instr, index) => `L${index}: ${instr.debugValue}`);
   }
-}
-
-export function compileMulti(exprs: Expr[]): Prog {
-  // Split across each of our expressions
-  const out = new Prog();
-  const split = out.add(OpCode.Split);
-  exprs.forEach((expr, i) => {
-    split.add(out.instrs.length);
-    out.add(OpCode.Save, 0);
-    compile(expr, out);
-    out.add(OpCode.Save, 1);
-    out.add(OpCode.Match, i);
-  });
-  // Add the error case to match -1 if nothing else matches
-  // should technically never come here if atleast one rule matches
-  out.add(OpCode.Save, 0);
-  compile(Char.Any(), out);
-  out.add(OpCode.Save, 1);
-  out.add(OpCode.Match, -1);
-  return out;
-}
-
-/**
- * Compile a given expression into a set of instructions.
- */
-export function compile(expr: Expr, prog: Prog): number {
-  const start = prog.length;
-  if (expr.tag == ExprType.CHAR) {
-    const char = expr as Char;
-    prog.add(OpCode.Char, char.start, char.end);
-  } else if (expr.tag == ExprType.CHAR_CLASS) {
-    const instr = prog.add(OpCode.CharClass);
-    for (const char of (expr as CharClass).chars) {
-      instr.add(char.start, char.end);
-    }
-  } else if (expr.tag == ExprType.CAT) {
-    const cat = expr as Cat;
-    for (const child of cat.children) {
-      compile(child, prog);
-    }
-  } else if (expr.tag == ExprType.UNION) {
-    const union = expr as Union;
-    const split = prog.add(OpCode.Split);
-    const jumps: Instr[] = [];
-
-    for (let i = 0; i < union.options.length; i++) {
-      split.add(prog.length);
-      compile(union.options[i], prog);
-      if (i < union.options.length - 1) {
-        jumps.push(prog.add(OpCode.Jump));
-      }
-    }
-    for (const jmp of jumps) {
-      jmp.add(prog.length);
-    }
-  } else if (expr.tag == ExprType.QUANT) {
-    const quant = expr as Quant;
-
-    // optionals allowed so create a split
-    const split = quant.minCount <= 0 ? prog.add(OpCode.Split) : null;
-
-    // For Expr{A,B} do something like:
-    // L0: AcquireReg     # acquire new register at L0 and set value to 0
-    // L1: CodeFor expr   # Emit code for expr
-    // L2: ...
-    // L5: ... Code for Expr ends here
-    // L6: IncReg L0    # Increment value of register at L0
-    //
-    // # If value of register at L0 is < A jump to L1
-    // L7: JumpIfLt L0, A, L1
-    //
-    // # If value of register at L0 is >= B jump to LX (after split)
-    // L8: JumpIfGt L0, B - 1, L10
-    //
-    // # Repeat as we are between A and B
-    // # Ofcourse swap L1 and L10 if match is not greedy
-    // L9: Split L1, L10
-    //
-    // L10: ReleaseReg L0 # Release register - no longer used
-    //
-    // In the above if A == 0 then insert a Split L11 before L0 above
-    const l0 = prog.add(OpCode.RegAcquire).offset;
-    const l1 = prog.length;
-    compile(quant.expr, prog);
-
-    // Increment match count
-    prog.add(OpCode.RegInc, l0);
-
-    // Next two jumps perform if (A <= val <= B) ...
-    prog.add(OpCode.JumpIfLt, l0, quant.minCount, l1);
-    const jumpIfGt = prog.add(OpCode.JumpIfGt, l0, quant.maxCount - 1 /* Add L10 here */);
-
-    // Have the option of repeat if we are here
-    const split2 = prog.add(OpCode.Split);
-
-    // Release the register for reuse
-    const lEnd = prog.add(OpCode.RegRelease, l0).offset;
-    jumpIfGt.add(lEnd);
-    split2.add(lEnd);
-
-    if (split != null) split.add(prog.length);
-  } else {
-    throw new Error("Expr Type yet supported: " + expr.tag);
-  }
-  return prog.length - start;
 }
 
 /**
@@ -203,8 +101,9 @@ class Thread {
   }
 }
 
-class Instr {
+export class Instr {
   offset = 0;
+  comment: string;
   args: number[] = [];
   constructor(public readonly opcode: OpCode) {}
 
@@ -218,13 +117,23 @@ class Instr {
       case OpCode.Match:
         return `Match ${this.args[0]}`;
       case OpCode.Char:
-        return `Char ${new Char(this.args[0], this.args[1]).debugValue}`;
+        const start = this.args[0];
+        const end = this.args[1];
+        const s =
+          start == end ? String.fromCharCode(start) : `${String.fromCharCode(start)}-${String.fromCharCode(end)}`;
+        return `Char ${s}`;
       case OpCode.CharClass:
         let out = "CharClass ";
         for (let i = 0; i < this.args.length; i += 2) {
           out += this.args[i] + "-" + this.args[i + 1];
         }
         return out;
+      case OpCode.Any:
+        return ".";
+      case OpCode.StartOfInput:
+        return "^";
+      case OpCode.EndOfInput:
+        return "$";
       case OpCode.Save:
         return `Save ${this.args[0]}`;
       case OpCode.Split:
@@ -351,27 +260,48 @@ export class VM {
         const instr = instrs[thread.offset];
         const opcode = instr.opcode;
         const args = instr.args;
-        if (opcode == OpCode.Char || opcode == OpCode.CharClass) {
+        // Do char match based actions
+        let advanceTape = false;
+        if (tape.hasMore) {
           // See if we can do a match
-          if (tape.hasMore) {
-            if (opcode == OpCode.Char) {
-              if (ch >= args[0] && ch <= args[1]) {
-                // matched so add transition
-                this.addThread(thread.jumpBy(1), this.nextThreads, tape.index + 1);
-              } else {
-                // TODO - Optimize with binary searches
-                for (let a = 0; a < args.length; a += 2) {
-                  if (ch >= args[a] && ch <= args[a + 1]) {
-                    this.addThread(thread.jumpBy(1), this.nextThreads, tape.index + 1);
-                    break;
-                  }
-                }
+          if (opcode == OpCode.Any) {
+            advanceTape = true;
+          } else if (opcode == OpCode.Char) {
+            if (ch >= args[0] && ch <= args[1]) {
+              // matched so add transition
+              advanceTape = true;
+            }
+          } else if (opcode == OpCode.CharClass) {
+            // TODO - Optimize with binary searches
+            for (let a = 0; a < args.length; a += 2) {
+              if (ch >= args[a] && ch <= args[a + 1]) {
+                advanceTape = true;
+                break;
               }
             }
-          } else {
-            // TODO - match end of input
+          } else if (opcode == OpCode.StartOfInput) {
+            // only proceed further if prev was a newline or start
+            const prevCh = tape.input[tape.index - 1] || null;
+            if (tape.index == 0 || prevCh == "\r" || prevCh == "\n" || prevCh == "\u2028" || prevCh == "\u2029") {
+              // have a match so can go forwrd but dont advance tape on
+              // the same generation
+              this.addThread(thread.jumpBy(1), this.currThreads, tape.index);
+            }
           }
-        } else if (opcode == OpCode.Match) {
+        }
+        // On end of input we dont advance tape but thread moves on
+        // if at end of line boundary
+        if (opcode == OpCode.EndOfInput) {
+          // check if next is end of input
+          const currCh = tape.currCh || null;
+          if (currCh == "\r" || currCh == "\n" || currCh == "\u2028" || currCh == "\u2029" || !tape.hasMore) {
+            this.addThread(thread.jumpBy(1), this.currThreads, tape.index);
+          }
+        }
+        if (advanceTape) {
+          this.addThread(thread.jumpBy(1), this.nextThreads, tape.index + 1);
+        }
+        if (opcode == OpCode.Match) {
           // we have a match on this thread so return it
           currMatch = [args[0], args[1], args[2]];
           matchedInGen = true;

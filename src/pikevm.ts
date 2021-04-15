@@ -33,7 +33,7 @@ export class Prog {
     return out;
   }
 
-  debugValue(): any {
+  get debugValue(): any {
     return this.instrs.map((instr, index) => `L${index}: ${instr.debugValue}`);
   }
 }
@@ -112,20 +112,23 @@ export class Instr {
     return this;
   }
 
-  debugValue(): any {
+  get debugValue(): any {
     switch (this.opcode) {
       case OpCode.Match:
-        return `Match ${this.args[0]}`;
+        return `Match ${this.args[0]} ${this.args[1]}`;
       case OpCode.Char:
-        const start = this.args[0];
-        const end = this.args[1];
-        const s =
-          start == end ? String.fromCharCode(start) : `${String.fromCharCode(start)}-${String.fromCharCode(end)}`;
+        const start = (+"" + this.args[0]).toString(16);
+        const end = (+"" + this.args[1]).toString(16);
+        const s = start == end ? start : `${start}-${end}`;
         return `Char ${s}`;
       case OpCode.CharClass:
         let out = "CharClass ";
         for (let i = 0; i < this.args.length; i += 2) {
-          out += this.args[i] + "-" + this.args[i + 1];
+          const start = (+"" + this.args[i]).toString(16);
+          const end = (+"" + this.args[i + 1]).toString(16);
+          const s = start == end ? start : `${start}-${end}`;
+          if (i > 0) out += " ";
+          out += s;
         }
         return out;
       case OpCode.Any:
@@ -137,7 +140,7 @@ export class Instr {
       case OpCode.Save:
         return `Save ${this.args[0]}`;
       case OpCode.Split:
-        return `Save ${this.args.join(", ")}`;
+        return `Split ${this.args.join(", ")}`;
       case OpCode.Jump:
         return `Jump ${this.args[0]}`;
       case OpCode.JumpIfLt:

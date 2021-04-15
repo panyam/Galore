@@ -27,96 +27,101 @@ export enum ExprType {
 /**
  * A rule defines a match to be performed and recognized by the lexer.
  */
-class Rule {
+export class Rule {
   /**
-   * The pattern to match for the rule.
-   */
-  pattern: string;
-
-  /**
-   * Priority for a rule.
-   * As the NFA runs through the rules it could be matching
-   * several rules in parallel.  However as soon as a rule
-   * that is of a higher priority has matched all other rules
-   * (still running) with a lower priority are halted.
-   *
-   * We can use this to match literals over a regex even though
-   * a regex can have a longer match.
-   */
-  priority = 10;
-
-  /**
-   * The token type associted to this rule when a match occurs.
-   */
-  tokenType: any;
-
-  /**
-   * The parsed regex for this rule.
+   * The generated parsed expression for this rule.
    */
   expr: Expr;
 
   /**
-   * Rules can have names to be referred by other
-   * rules.
-   */
-  name = "";
-
-  /**
-   * Only rules that are "primary" rules will be targetted
-   * for matching in the final NFA.  We can create non
-   * primary rules as a way for short cuts.  Eg:
-   *
-   * WHITESPACE = [ \t\n]+
-   *
-   * can be a rule that is only used "inside" other rules via <WHITESPACE>
    */
   isPrimary = true;
+
+  /**
+   * Constructor
+   *
+   * @param pattern   - The pattern to match for the rule.
+   * @param tokenType - The token type to associate this rule with.
+   *                    If tokenType is null then this will be treated
+   *                    as a non-primary rule.  Only rules that are
+   *                    "primary" rules will be targetted for matching
+   *                    in the final NFA.  We can create non primary
+   *                    rules as a way for short cuts.  Eg:
+   *
+   *                        WHITESPACE = [ \t\n]+
+   *
+   *                    can be a rule that is only used "inside" other
+   *                    rules via <WHITESPACE>
+   * @param priority  - Priority for a rule.  As the NFA runs through
+   *                    the rules it could be matching several rules in
+   *                    parallel.  However as soon as a rule that is of a
+   *                    higher priority has matched all other rules
+   *                    (still running) with a lower priority are halted.
+   *                    We can use this to match literals over a regex
+   *                    even though a regex can have a longer match.
+   * @param name      - Name of the rule to be referred by others.
+   */
+  constructor(
+    public readonly pattern: string,
+    public readonly tokenType: any | null,
+    public readonly name = "",
+    public readonly priority = 10,
+  ) {}
 }
 
-class Lexer {
+export class Lexer {
   // Stores named rules
   // Rules are a "regex", whether literal or not
   allRules: Rule[] = [];
-  rulesByName = new Map<string, number>();
+  rulesByName = new Map<string, Rule>();
 
-  addRule(rule: Rule): number {
-    let index = this.allRules.findIndex((r) => r.pattern == rule.pattern);
-    if (index >= 0) {
-      throw new Error(`Regex '${rule.pattern}' already registered as ${rule.tokenType}`);
+  add(...rules: Rule[]): this {
+    for (const rule of rules) {
+      let index = this.allRules.findIndex((r) => r.pattern == rule.pattern);
+      if (index >= 0) {
+        throw new Error(`Regex '${rule.pattern}' already registered as ${rule.tokenType}`);
+      }
+      index = this.allRules.length;
+      if (rule.name.trim().length > 0) {
+        this.rulesByName.set(rule.name, rule);
+      }
+      rule.expr = parse(rule.pattern);
+      this.allRules.push(rule);
     }
-    index = this.allRules.length;
-    rule.expr = parse(rule.pattern);
-    this.allRules.push(rule);
-    return index;
+    return this;
   }
 
   /**
    * Compiles the regex and stores the specific
    */
-  protected compileAll(): Prog {
+  compile(): Prog {
     // Split across each of our expressions
     const out = new Prog();
     const split = out.add(OpCode.Split);
     this.allRules.forEach((rule, i) => {
-      split.add(out.instrs.length);
-      out.add(OpCode.Save, 0);
-      this.compile(rule.expr, out);
-      out.add(OpCode.Save, 1);
-      out.add(OpCode.Match, rule.priority, i);
+      if (rule.tokenType != null) {
+        split.add(out.instrs.length);
+        out.add(OpCode.Save, 0);
+        this.compileExpr(rule.expr, out);
+        out.add(OpCode.Save, 1);
+        out.add(OpCode.Match, rule.priority, i);
+      }
     });
+    /*
     // Add the error case to match -1 if nothing else matches
     // should technically never come here if atleast one rule matches
     out.add(OpCode.Save, 0);
-    this.compile(new Any(), out);
+    this.compileExpr(new Any(), out);
     out.add(OpCode.Save, 1);
     out.add(OpCode.Match, 0, -1);
+    */
     return out;
   }
 
   /**
    * Compile a given expression into a set of instructions.
    */
-  compile(expr: Expr, prog: Prog): number {
+  compileExpr(expr: Expr, prog: Prog): number {
     const start = prog.length;
     if (expr.tag == ExprType.CHAR) {
       const char = expr as Char;
@@ -138,15 +143,23 @@ class Lexer {
       this.compileUnion(expr as Union, prog);
     } else if (expr.tag == ExprType.QUANT) {
       this.compileQuant(expr as Quant, prog);
+    } else if (expr.tag == ExprType.REF) {
+      const ne = expr as NamedExpr;
+      const name = ne.name.trim();
+      const rule = this.rulesByName.get(name) || null;
+      if (rule == null) {
+        throw new Error(`Cannot find expression: ${name}`);
+      }
+      this.compileExpr(rule.expr, prog);
     } else {
-      throw new Error("Expr Type yet supported: " + expr.tag);
+      throw new Error("Expr Type not yet supported: " + expr.tag);
     }
     return prog.length - start;
   }
 
   compileCat(cat: Cat, prog: Prog): void {
     for (const child of cat.children) {
-      this.compile(child, prog);
+      this.compileExpr(child, prog);
     }
   }
 
@@ -156,7 +169,7 @@ class Lexer {
 
     for (let i = 0; i < union.options.length; i++) {
       split.add(prog.length);
-      this.compile(union.options[i], prog);
+      this.compileExpr(union.options[i], prog);
       if (i < union.options.length - 1) {
         jumps.push(prog.add(OpCode.Jump));
       }
@@ -182,8 +195,8 @@ class Lexer {
    * # If value of register at L0 is >= B jump to LX (after split)
    * L8: JumpIfGt L0, B - 1, L10
    *
-   * # Repeat as we are between A and B
-   * # Ofcourse swap L1 and L10 if match is not greedy
+   * # Else split and repeat as we are between A and B
+   * # Ofcourse swap L1 and L?? if match is not greedy
    * L9: Split L1, L10
    *
    * L10: ReleaseReg L0 # Release register - no longer used
@@ -195,18 +208,23 @@ class Lexer {
     const split = quant.minCount <= 0 ? prog.add(OpCode.Split) : null;
 
     const l0 = prog.add(OpCode.RegAcquire).offset;
-    const l1 = prog.length;
-    this.compile(quant.expr, prog);
+    const l1 = l0 + 1;
+    this.compileExpr(quant.expr, prog);
 
     // Increment match count
     prog.add(OpCode.RegInc, l0);
 
     // Next two jumps perform if (A <= val <= B) ...
-    prog.add(OpCode.JumpIfLt, l0, quant.minCount, l1);
+    // Jump back to start of code until val < A
+    if (quant.minCount > 0) {
+      prog.add(OpCode.JumpIfLt, l0, quant.minCount, l1);
+    }
+
+    // If over max then stop
     const jumpIfGt = prog.add(OpCode.JumpIfGt, l0, quant.maxCount - 1 /* Add L10 here */);
 
     // Have the option of repeat if we are here
-    const split2 = prog.add(OpCode.Split);
+    const split2 = prog.add(OpCode.Split, l1);
 
     // Release the register for reuse
     const lEnd = prog.add(OpCode.RegRelease, l0).offset;
@@ -528,7 +546,7 @@ export function parse(regex: string, curr = 0, end = -1): Expr {
       curr++;
       let gtPos = curr;
       while (gtPos <= end && regex[gtPos] != ">") gtPos++;
-      if (gtPos >= end) throw new Error("Expected '>' found EOI");
+      if (gtPos > end) throw new Error("Expected '>' found EOI");
       const name = regex.substring(curr, gtPos);
       if (name.trim() == "") {
         throw new Error("Expected name");

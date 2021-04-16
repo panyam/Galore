@@ -1,5 +1,9 @@
 import { Tape } from "../tape";
 
+export class Match {
+  constructor(public priority = 10, public matchIndex = -1, public start = -1, public end = -1) {}
+}
+
 export class Prog {
   instrs: Instr[] = [];
 
@@ -67,8 +71,8 @@ export class VM {
     }
   }
 
-  match(tape: Tape): [number, number, number] {
-    return [-1, -1, -1];
+  match(tape: Tape): Match | null {
+    return null;
   }
 
   instrDebugValue(instr: Instr): any {

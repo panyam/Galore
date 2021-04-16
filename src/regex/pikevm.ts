@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import { Tape } from "../tape";
 import { Rule, RegexType, Quant, Regex, Cat, Char, CharClass, Ref, Assertion, Union } from "./core";
-import { Prog, Instr, VM as VMBase } from "./vm";
+import { Prog, Instr, Match, VM as VMBase } from "./vm";
 
 export enum OpCode {
   Match,
@@ -243,6 +243,7 @@ export class Thread {
    * Saved positions into the input stream for the purpose of
    * partial and custom matches.
    */
+  priority = 0;
   positions: number[] = [];
   registers: TSU.NumMap<number> = {};
 
@@ -394,8 +395,8 @@ export class VM extends VMBase {
    * Runs the given instructions and returns a triple:
    * [matchId, matchStart, matchEnd]
    */
-  match(tape: Tape): [number, number, number] {
-    let currMatch: [number, number, number] = [-1, -1, -1];
+  match(tape: Tape): Match | null {
+    let currMatch: Match | null = null;
     this.currThreads = [];
     this.nextThreads = [];
     this.addThread(new Thread(0), this.currThreads, tape.index);
@@ -403,8 +404,11 @@ export class VM extends VMBase {
     const delta = this.forward ? 1 : -1;
     const hasMore = () => (this.forward ? tape.hasMore : tape.index > 0);
     const prevCh = () => tape.input[tape.index - delta];
+    let largestMatchEnd = -1;
+    let lastMatchIndex = -1;
     const startPos = tape.index;
-    for (const ch = tape.currChCode; this.currThreads.length > 0; tape.advance(delta)) {
+    for (; this.currThreads.length > 0; tape.advance(delta)) {
+      const ch = tape.currChCode
       let matchedInGen = false;
       for (let i = 0; i < this.currThreads.length && !matchedInGen; i++) {
         const thread = this.currThreads[i];
@@ -419,26 +423,26 @@ export class VM extends VMBase {
             const [forward, consume, negate, end] = instr.args;
             const vm = new VM(this.prog, instr.offset + 1, end, forward == 1);
             const savedPos = tape.index;
-            const [matchId, matchStart, matchEnd] = vm.match(tape);
-            if (matchId < 0) {
+            const match = vm.match(tape);
+            if (match == null) {
               // failed thread dies here
             } else {
               // restore stream pointer if this is only a lookahead (or lookback)
               if (consume) {
                 // create the next thread at matchEnd + 1 but on the next generation
                 // as there WAS a change to the stream pointer
-                this.addThread(thread.jumpTo(matchEnd + 1), this.nextThreads, tape.index);
+                this.addThread(thread.jumpTo(match.end + 1), this.nextThreads, tape.index);
               } else {
                 tape.index = savedPos;
                 // create the next thread at matchEnd + 1 but on this generation
                 // since there was no change to the stream pointer
-                this.addThread(thread.jumpTo(matchEnd + 1), this.currThreads, tape.index);
+                this.addThread(thread.jumpTo(match.end + 1), this.currThreads, tape.index);
               }
             }
             break;
           case OpCode.End:
             // Return back to calling VM - very similar to a match
-            return [-2, startPos, tape.index];
+            return new Match(-1, startPos, tape.index);
             break;
           case OpCode.Any:
             if (hasMore()) advanceTape = true;
@@ -476,19 +480,34 @@ export class VM extends VMBase {
               this.addThread(thread.jumpBy(1), this.currThreads, tape.index);
             }
             break;
-          case OpCode.End:
+          case OpCode.Match:
             // we have a match on this thread so return it
-            currMatch = [args[0], args[1], args[2]];
+            // Update the match if we are a higher prioirty or longer match
+            // than what was already found (if any)
+            const currPriority = instr.args[0];
+            const currEnd = instr.args[1];
+            if (currMatch == null) currMatch = new Match();
+            if (currPriority > currMatch.priority || currEnd > currMatch.end) {
+              currMatch.start = startPos;
+              currMatch.end = tape.index;
+              currMatch.priority = currPriority;
+              currMatch.matchIndex = currEnd;
+              // highestPriority = currPriority;
+            }
+            // Should we mark it here or count how many new matches are found but
+            // are not "longest" matches?
             matchedInGen = true;
             break;
         }
         if (advanceTape) {
-          this.addThread(thread.jumpBy(1), this.nextThreads, tape.index + 1);
+          this.addThread(thread.jumpBy(1), this.nextThreads, tape.index + delta);
         }
       }
       if (!tape.hasMore) break;
       this.nextGen();
     }
+    // ensure tape is rewound to end of last match
+    if (currMatch != null) tape.index = currMatch.end;
     return currMatch;
   }
 

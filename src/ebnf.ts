@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { TokenMatcher, Token, TokenBuffer, SimpleTokenizer } from "./tokenizer";
-import { CharTape } from "./tape";
+import { Tape } from "./tape";
 import { UnexpectedTokenError } from "./errors";
 import { Sym, Grammar, Str } from "./grammar";
 
@@ -48,7 +48,7 @@ export enum NodeType {
 /**
  * Tokenizer with matchers specific to EBNF
  */
-export function EBNFTokenizer(input: string | CharTape): SimpleTokenizer {
+export function EBNFTokenizer(input: string | Tape): SimpleTokenizer {
   return new SimpleTokenizer(input)
     .addMatcher(spacesMatcher, true)
     .addMatcher(startStopMatcher(TokenType.COMMENT, "/*", "*/"), true) // Comments
@@ -324,7 +324,7 @@ export function isIdentChar(ch: string): boolean {
   return true;
 }
 
-export function numberMatcher(tape: CharTape, offset: number): TSU.Nullable<Token> {
+export function numberMatcher(tape: Tape, offset: number): TSU.Nullable<Token> {
   if (!isDigit(tape.currCh)) return null;
   let out = "";
   while (tape.hasMore && isDigit(tape.currCh)) {
@@ -342,7 +342,7 @@ export function startStopMatcher(tokenType: TokenType, start: string, end: strin
   };
 }
 
-export function identMatcher(tape: CharTape, offset: number): TSU.Nullable<Token> {
+export function identMatcher(tape: Tape, offset: number): TSU.Nullable<Token> {
   const isPct = tape.currCh == "%";
   if (isPct) tape.nextCh();
   if (!isIdentChar(tape.currCh)) {
@@ -364,7 +364,7 @@ export function identMatcher(tape: CharTape, offset: number): TSU.Nullable<Token
   return new Token(isPct ? TokenType.PCT_IDENT : TokenType.IDENT, { value: lit });
 }
 
-export function spacesMatcher(tape: CharTape, offset: number): TSU.Nullable<Token> {
+export function spacesMatcher(tape: Tape, offset: number): TSU.Nullable<Token> {
   let out = "";
   while (tape.hasMore && isSpace(tape.currCh)) {
     out += tape.nextCh();
@@ -373,7 +373,7 @@ export function spacesMatcher(tape: CharTape, offset: number): TSU.Nullable<Toke
   return new Token(TokenType.SPACES, { value: out });
 }
 
-export function singleLineCommentMatcher(tape: CharTape, offset: number): TSU.Nullable<Token> {
+export function singleLineCommentMatcher(tape: Tape, offset: number): TSU.Nullable<Token> {
   if (!tape.matches("//")) return null;
   while (tape.hasMore && tape.currCh != "\n") {
     tape.nextCh();

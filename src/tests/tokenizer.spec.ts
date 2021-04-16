@@ -1,9 +1,9 @@
 import { SimpleTokenizer } from "../tokenizer";
-import { CharTape } from "../tape";
+import { Tape } from "../tape";
 
 describe("Tape Tests", () => {
   test("Basic", () => {
-    const t1 = new CharTape("Hello World");
+    const t1 = new Tape("Hello World");
     expect(t1.currCh).toBe("H");
     expect(t1.index).toBe(0);
     expect(t1.nextCh()).toBe("H");
@@ -14,7 +14,7 @@ describe("Tape Tests", () => {
   });
 
   test("Advance Tests", () => {
-    const t1 = new CharTape("Hello World");
+    const t1 = new Tape("Hello World");
     expect(() => t1.advanceAfter("HHello")).toThrowError();
     expect(t1.index).toBe(0);
     expect(t1.advanceAfter("Hello")).toBe(5);
@@ -24,7 +24,7 @@ describe("Tape Tests", () => {
   });
 
   test("Match Tests", () => {
-    const t1 = new CharTape("Hello World I feel Alive");
+    const t1 = new Tape("Hello World I feel Alive");
     expect(t1.matches("hello")).toBe(false);
     expect(t1.index).toBe(0);
     expect(t1.matches("Hello")).toBe(true);

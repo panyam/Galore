@@ -3,7 +3,7 @@
  * forwarding and prefix checking that is fed into the different tokenizers
  * used by the scannerless parsers.
  */
-export class CharTape {
+export class Tape {
   lineLengths: number[] = [];
   index = 0;
   input: string;
@@ -18,6 +18,11 @@ export class CharTape {
 
   substring(startIndex: number, endIndex: number): string {
     return this.input.substring(startIndex, endIndex);
+  }
+
+  advance(delta = 1): this {
+    this.index += delta;
+    return this;
   }
 
   /**

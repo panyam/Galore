@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { ParseError, UnexpectedTokenError } from "./errors";
-import { CharTape } from "./tape";
+import { Tape } from "./tape";
 
 type TokenType = number | string;
 
@@ -34,7 +34,7 @@ export class Token {
 }
 
 export type NextTokenFunc = () => TSU.Nullable<Token>;
-export type TokenMatcher = (_: CharTape, pos: number) => TSU.Nullable<Token>;
+export type TokenMatcher = (_: Tape, pos: number) => TSU.Nullable<Token>;
 
 /**
  * A wrapper on a tokenizer for providing features like k-lookahead, token
@@ -126,14 +126,14 @@ export class TokenBuffer {
  */
 export class SimpleTokenizer {
   private peekedToken: TSU.Nullable<Token> = null;
-  tape: CharTape;
+  tape: Tape;
   // TODO  - convert literals into a trie
   literals: [string, TokenType][] = [];
   matchers: [TokenMatcher, boolean][] = [];
 
-  constructor(tape: string | CharTape) {
+  constructor(tape: string | Tape) {
     if (typeof tape === "string") {
-      tape = new CharTape(tape);
+      tape = new Tape(tape);
     }
     this.tape = tape;
   }

@@ -1,18 +1,12 @@
 const util = require("util");
 import * as TSU from "@panyam/tsutils";
-import { Lexer } from "../lexer";
 import { Rule } from "../core";
 import { parse } from "../parser";
 import { Prog } from "../vm";
-import { InstrDebugValue } from "../pikevm";
+import { InstrDebugValue, Compiler } from "../pikevm";
 
-function testRegexCompile(lexer: Lexer, expected: Prog | null, debug = false, enforce = true): Prog {
-  const prog = lexer.compile();
+function testRegexCompile(prog: Prog, expected: Prog | null, debug = false, enforce = true): Prog {
   if (debug || expected == null) {
-    console.log(
-      "Regex: ",
-      lexer.allRules.map((r) => r.pattern),
-    );
     console.log(
       "Found Value: \n",
       util.inspect(prog.reprString, {
@@ -35,10 +29,16 @@ function testRegexCompile(lexer: Lexer, expected: Prog | null, debug = false, en
   return prog;
 }
 
+function compile(exprResolver: null | ((name: string) => Rule), ...rules: Rule[]): Prog {
+  const out = new Compiler(exprResolver);
+  rules.forEach((rule) => (rule.expr = parse(rule.pattern)));
+  return out.compile(rules);
+}
+
 describe("Regex Compile Tests", () => {
   test("Test Chars", () => {
     testRegexCompile(
-      new Lexer().add(new Rule("abcde", 0)),
+      compile(null, new Rule("abcde", 0)),
       Prog.with((p) => {
         p.add(8, 1);
         p.add(7, 0);
@@ -55,7 +55,7 @@ describe("Regex Compile Tests", () => {
 
   test("Test Escape Chars", () => {
     testRegexCompile(
-      new Lexer().add(new Rule("\\n\\r\\t\\f\\b\\\\\\\"\\'\\x32\\y", 0)),
+      compile(null, new Rule("\\n\\r\\t\\f\\b\\\\\\\"\\'\\x32\\y", 0)),
       Prog.with((p) => {
         p.add(8, 1);
         p.add(7, 0);
@@ -77,7 +77,7 @@ describe("Regex Compile Tests", () => {
 
   test("Test Union", () => {
     testRegexCompile(
-      new Lexer().add(new Rule("a|b|c|d|e", 0)),
+      compile(null, new Rule("a|b|c|d|e", 0)),
       Prog.with((p) => {
         p.add(8, 1);
         p.add(7, 0);
@@ -99,7 +99,7 @@ describe("Regex Compile Tests", () => {
 
   test("Test Quants - a*", () => {
     testRegexCompile(
-      new Lexer().add(new Rule("a*", 0)),
+      compile(null, new Rule("a*", 0)),
       Prog.with((p) => {
         p.add(8, 1);
         p.add(7, 0);
@@ -118,7 +118,7 @@ describe("Regex Compile Tests", () => {
 
   test("Test Quants - a+", () => {
     testRegexCompile(
-      new Lexer().add(new Rule("a+", 0)),
+      compile(null, new Rule("a+", 0)),
       Prog.with((p) => {
         p.add(8, 1);
         p.add(7, 0);
@@ -137,7 +137,7 @@ describe("Regex Compile Tests", () => {
 
   test("Test Quants - a?", () => {
     testRegexCompile(
-      new Lexer().add(new Rule("a?", 0)),
+      compile(null, new Rule("a?", 0)),
       Prog.with((p) => {
         p.add(8, 1);
         p.add(7, 0);
@@ -156,7 +156,7 @@ describe("Regex Compile Tests", () => {
 
   test("Test Quants - (ab){10,20}", () => {
     testRegexCompile(
-      new Lexer().add(new Rule("(ab){10,20}", 0)),
+      compile(null, new Rule("(ab){10,20}", 0)),
       Prog.with((p) => {
         p.add(8, 1);
         p.add(7, 0);
@@ -176,7 +176,7 @@ describe("Regex Compile Tests", () => {
 
   test("Test Char Classes", () => {
     testRegexCompile(
-      new Lexer().add(new Rule("[a-c]", 0)),
+      compile(null, new Rule("[a-c]", 0)),
       Prog.with((p) => {
         p.add(8, 1);
         p.add(7, 0);
@@ -186,7 +186,7 @@ describe("Regex Compile Tests", () => {
       }),
     );
     testRegexCompile(
-      new Lexer().add(new Rule("[a-cb-j]", 0)),
+      compile(null, new Rule("[a-cb-j]", 0)),
       Prog.with((p) => {
         p.add(8, 1);
         p.add(7, 0);
@@ -196,7 +196,7 @@ describe("Regex Compile Tests", () => {
       }),
     );
     testRegexCompile(
-      new Lexer().add(new Rule("[a-cm-q]", 0)),
+      compile(null, new Rule("[a-cm-q]", 0)),
       Prog.with((p) => {
         p.add(8, 1);
         p.add(7, 0);
@@ -209,7 +209,7 @@ describe("Regex Compile Tests", () => {
 
   test("Test Special Char Classes", () => {
     testRegexCompile(
-      new Lexer().add(new Rule(".", 0)),
+      compile(null, new Rule(".", 0)),
       Prog.with((p) => {
         p.add(8, 1);
         p.add(7, 0);
@@ -219,7 +219,7 @@ describe("Regex Compile Tests", () => {
       }),
     );
     testRegexCompile(
-      new Lexer().add(new Rule("^.$", 0)),
+      compile(null, new Rule("^.$", 0)),
       Prog.with((p) => {
         p.add(8, 1);
         p.add(7, 0);
@@ -237,9 +237,10 @@ describe("Regex Compile Tests", () => {
   });
 
   test("Test Named Groups", () => {
-    const lexer = new Lexer().add(new Rule("abcde", null, "Hello")).add(new Rule("<Hello  >", 10));
+    const r1 = new Rule("abcde", null, "Hello");
+    const prog = compile((name) => r1, r1, new Rule("<Hello  >", 10));
     testRegexCompile(
-      lexer,
+      prog,
       Prog.with((p) => {
         p.add(8, 1);
         p.add(7, 0);
@@ -256,7 +257,7 @@ describe("Regex Compile Tests", () => {
 
   test("Test Lookahead Assertions", () => {
     testRegexCompile(
-      new Lexer().add(new Rule("abc(?=hello)", 0)),
+      compile(null, new Rule("abc(?=hello)", 0)),
       Prog.with((p) => {
         p.add(8, 1);
         p.add(7, 0);
@@ -277,7 +278,7 @@ describe("Regex Compile Tests", () => {
   });
 
   test("Test Negative Lookahead Assertions", () => {
-    const lexer = new Lexer().add(new Rule("abc(?!hello)", 0));
+    const lexer = compile(null, new Rule("abc(?!hello)", 0));
     testRegexCompile(
       lexer,
       Prog.with((p) => {
@@ -300,7 +301,7 @@ describe("Regex Compile Tests", () => {
   });
 
   test("Test Negatie Lookahead Assertions", () => {
-    const lexer = new Lexer().add(new Rule("abc(?!hello)", 0));
+    const lexer = compile(null, new Rule("abc(?!hello)", 0));
     testRegexCompile(
       lexer,
       Prog.with((p) => {
@@ -323,7 +324,7 @@ describe("Regex Compile Tests", () => {
   });
 
   test("Test Negative Lookback Assertions", () => {
-    const lexer = new Lexer().add(new Rule("(?<!h*ell+o)abc", 0));
+    const lexer = compile(null, new Rule("(?<!h*ell+o)abc", 0));
     testRegexCompile(
       lexer,
       Prog.with((p) => {
@@ -358,9 +359,9 @@ describe("Regex Compile Tests", () => {
   });
 
   test("Test LookBack Assertions", () => {
-    const lexer = new Lexer().add(new Rule("(?<=h*ell+o)abc", 0));
+    const prog = compile(null, new Rule("(?<=h*ell+o)abc", 0));
     testRegexCompile(
-      lexer,
+      prog,
       Prog.with((p) => {
         p.add(8, 1);
         p.add(7, 0);

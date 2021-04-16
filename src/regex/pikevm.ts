@@ -75,9 +75,9 @@ export function InstrDebugValue(instr: Instr): string {
 }
 
 export class Compiler {
-  constructor(public readonly exprResolver: (name: string) => Rule) {}
+  constructor(public exprResolver: null | ((name: string) => Rule)) {}
 
-  compileRules(rules: Rule[]): Prog {
+  compile(rules: Rule[]): Prog {
     // Split across each of our expressions
     const out = new Prog();
     const split = out.add(OpCode.Split);
@@ -85,7 +85,7 @@ export class Compiler {
       if (rule.tokenType != null) {
         split.add(out.instrs.length);
         out.add(OpCode.Save, 0);
-        this.compile(rule.expr, out);
+        this.compileExpr(rule.expr, out);
         out.add(OpCode.Save, 1);
         out.add(OpCode.Match, rule.priority, i);
       }
@@ -104,7 +104,7 @@ export class Compiler {
   /**
    * Compile a given expression into a set of instructions.
    */
-  compile(expr: Regex, prog: Prog): number {
+  compileExpr(expr: Regex, prog: Prog): number {
     const start = prog.length;
     if (expr.tag == RegexType.CHAR) {
       const char = expr as Char;
@@ -138,17 +138,17 @@ export class Compiler {
 
   compileCat(cat: Cat, prog: Prog): void {
     for (const child of cat.children) {
-      this.compile(child, prog);
+      this.compileExpr(child, prog);
     }
   }
 
   compileRef(ne: Ref, prog: Prog): void {
     const name = ne.name.trim();
-    const rule = this.exprResolver(name);
+    const rule = this.exprResolver ? this.exprResolver(name) : null;
     if (rule == null) {
       throw new Error(`Cannot find expression: ${name}`);
     }
-    this.compile(rule.expr, prog);
+    this.compileExpr(rule.expr, prog);
   }
 
   compileUnion(union: Union, prog: Prog): void {
@@ -157,7 +157,7 @@ export class Compiler {
 
     for (let i = 0; i < union.options.length; i++) {
       split.add(prog.length);
-      this.compile(union.options[i], prog);
+      this.compileExpr(union.options[i], prog);
       if (i < union.options.length - 1) {
         jumps.push(prog.add(OpCode.Jump));
       }
@@ -197,7 +197,7 @@ export class Compiler {
 
     const l0 = prog.add(OpCode.RegAcquire).offset;
     const l1 = l0 + 1;
-    this.compile(quant.expr, prog);
+    this.compileExpr(quant.expr, prog);
 
     // Increment match count
     prog.add(OpCode.RegInc, l0);
@@ -227,9 +227,9 @@ export class Compiler {
    */
   compileAssertion(assertion: Assertion, prog: Prog): void {
     // how should this work?
-    this.compile(assertion.expr, prog);
+    this.compileExpr(assertion.expr, prog);
     const begin = prog.add(OpCode.Begin, assertion.isLookAhead ? 1 : 0, 0, assertion.negate ? 1 : 0); // forward, dont consume and negate if needed
-    this.compile(assertion.isLookAhead ? assertion.cond : assertion.cond.reverse(), prog);
+    this.compileExpr(assertion.isLookAhead ? assertion.cond : assertion.cond.reverse(), prog);
     const end = prog.add(OpCode.End, begin.offset);
     begin.add(end.offset);
   }
@@ -238,7 +238,7 @@ export class Compiler {
 /**
  * A thread that is performing an execution of the regex VM.
  */
-class Thread {
+export class Thread {
   /**
    * Saved positions into the input stream for the purpose of
    * partial and custom matches.
@@ -325,11 +325,8 @@ export class VM extends VMBase {
     public readonly end = -1,
     public readonly forward = true,
   ) {
-    super();
+    super(prog, start, end, forward);
     this.genForOffset = [];
-    if (end < 0) {
-      end = prog.length - 1;
-    }
     for (let i = start; i <= end; i++) this.genForOffset.push(-1);
   }
 
@@ -397,7 +394,7 @@ export class VM extends VMBase {
    * Runs the given instructions and returns a triple:
    * [matchId, matchStart, matchEnd]
    */
-  run(tape: Tape): [number, number, number] {
+  match(tape: Tape): [number, number, number] {
     let currMatch: [number, number, number] = [-1, -1, -1];
     this.currThreads = [];
     this.nextThreads = [];
@@ -422,7 +419,7 @@ export class VM extends VMBase {
             const [forward, consume, negate, end] = instr.args;
             const vm = new VM(this.prog, instr.offset + 1, end, forward == 1);
             const savedPos = tape.index;
-            const [matchId, matchStart, matchEnd] = vm.run(tape);
+            const [matchId, matchStart, matchEnd] = vm.match(tape);
             if (matchId < 0) {
               // failed thread dies here
             } else {

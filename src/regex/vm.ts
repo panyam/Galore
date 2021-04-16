@@ -1,3 +1,5 @@
+import { Tape } from "../tape";
+
 export class Prog {
   instrs: Instr[] = [];
 
@@ -54,6 +56,21 @@ export class Instr {
 }
 
 export class VM {
+  constructor(
+    public readonly prog: Prog,
+    public readonly start = 0,
+    public readonly end = -1,
+    public readonly forward = true,
+  ) {
+    if (end < 0) {
+      end = prog.length - 1;
+    }
+  }
+
+  match(tape: Tape): [number, number, number] {
+    return [-1, -1, -1];
+  }
+
   instrDebugValue(instr: Instr): any {
     return `${instr.opcode} ${instr.args.join(" ")}`;
   }

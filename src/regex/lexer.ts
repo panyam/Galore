@@ -2,6 +2,7 @@ import { Rule } from "./core";
 import { parse } from "./parser";
 import { Prog } from "./vm";
 import { Compiler, VM } from "./pikevm";
+import { Tape } from "../tape";
 
 export class Lexer {
   // Stores named rules
@@ -32,8 +33,12 @@ export class Lexer {
   }
 
   compile(): Prog {
-    const prog = this.compiler.compileRules(this.allRules);
+    const prog = this.compiler.compile(this.allRules);
     this.vm = new VM(prog);
     return prog;
+  }
+
+  next(tape: Tape): [number, number, number] {
+    return this.vm.match(tape);
   }
 }

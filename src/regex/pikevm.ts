@@ -80,13 +80,12 @@ export class Compiler {
   compile(rules: Rule[]): Prog {
     // Split across each of our expressions
     const out = new Prog();
-    const split = out.add(OpCode.Split);
+    // only add the split instruction if we have more than one rule
+    const split: Instr = rules.length <= 1 ? new Instr(OpCode.Split) : out.add(OpCode.Split);
     rules.forEach((rule, i) => {
       if (rule.tokenType != null) {
         split.add(out.instrs.length);
-        out.add(OpCode.Save, 0);
         this.compileExpr(rule.expr, out);
-        out.add(OpCode.Save, 1);
         out.add(OpCode.Match, rule.priority, i);
       }
     });
@@ -192,34 +191,72 @@ export class Compiler {
    * In the above if A == 0 then insert a Split L11 before L0 above
    */
   compileQuant(quant: Quant, prog: Prog): void {
-    // optionals allowed so create a split
-    const split = quant.minCount <= 0 ? prog.add(OpCode.Split) : null;
+    // optimize the special cases of *, ? and +
+    if (quant.minCount == 0 && quant.maxCount == TSU.Constants.MAX_INT) {
+      // *
+      const split = prog.add(OpCode.Split);
+      const l1 = split.offset;
+      const l2 = prog.length;
+      this.compileExpr(quant.expr, prog);
+      prog.add(OpCode.Jump, l1);
+      const l3 = prog.length;
+      if (quant.greedy) {
+        split.add(l2, l3);
+      } else {
+        split.add(l3, l2);
+      }
+    } else if (quant.minCount == 1 && quant.maxCount == TSU.Constants.MAX_INT) {
+      // +
+      const l1 = prog.length;
+      this.compileExpr(quant.expr, prog);
+      const split = prog.add(OpCode.Split);
+      const l3 = prog.length;
+      if (quant.greedy) {
+        split.add(l1, l3);
+      } else {
+        split.add(l3, l1);
+      }
+    } else if (quant.minCount == 0 && quant.maxCount == 1) {
+      // ?
+      const split = prog.add(OpCode.Split);
+      const l1 = prog.length;
+      this.compileExpr(quant.expr, prog);
+      const l2 = prog.length;
+      if (quant.greedy) {
+        split.add(l2, l1);
+      } else {
+        split.add(l1, l2);
+      }
+    } else {
+      // general case
+      const split = quant.minCount <= 0 ? prog.add(OpCode.Split) : null;
 
-    const l0 = prog.add(OpCode.RegAcquire).offset;
-    const l1 = l0 + 1;
-    this.compileExpr(quant.expr, prog);
+      const l0 = prog.add(OpCode.RegAcquire).offset;
+      const l1 = l0 + 1;
+      this.compileExpr(quant.expr, prog);
 
-    // Increment match count
-    prog.add(OpCode.RegInc, l0);
+      // Increment match count
+      prog.add(OpCode.RegInc, l0);
 
-    // Next two jumps perform if (A <= val <= B) ...
-    // Jump back to start of code until val < A
-    if (quant.minCount > 0) {
-      prog.add(OpCode.JumpIfLt, l0, quant.minCount, l1);
+      // Next two jumps perform if (A <= val <= B) ...
+      // Jump back to start of code until val < A
+      if (quant.minCount > 0) {
+        prog.add(OpCode.JumpIfLt, l0, quant.minCount, l1);
+      }
+
+      // If over max then stop
+      const jumpIfGt = prog.add(OpCode.JumpIfGt, l0, quant.maxCount - 1 /* Add L10 here */);
+
+      // Have the option of repeat if we are here
+      const split2 = prog.add(OpCode.Split, l1);
+
+      // Release the register for reuse
+      const lEnd = prog.add(OpCode.RegRelease, l0).offset;
+      jumpIfGt.add(lEnd);
+      split2.add(prog.length);
+
+      if (split != null) split.add(l0, prog.length);
     }
-
-    // If over max then stop
-    const jumpIfGt = prog.add(OpCode.JumpIfGt, l0, quant.maxCount - 1 /* Add L10 here */);
-
-    // Have the option of repeat if we are here
-    const split2 = prog.add(OpCode.Split, l1);
-
-    // Release the register for reuse
-    const lEnd = prog.add(OpCode.RegRelease, l0).offset;
-    jumpIfGt.add(lEnd);
-    split2.add(lEnd);
-
-    if (split != null) split.add(prog.length);
   }
 
   /**
@@ -258,6 +295,7 @@ export class Thread {
 
   jumpTo(newOffset: number): Thread {
     const out = new Thread(newOffset);
+    out.priority = this.priority;
     out.positions = this.positions;
     out.registers = this.registers;
     return out;
@@ -333,8 +371,9 @@ export class VM extends VMBase {
 
   addThread(thread: Thread, list: Thread[], index: number): void {
     const threads = [thread];
-    for (let i = 0; i < threads.length; i++) {
-      thread = threads[i];
+    let sp = 0;
+    while (sp >= 0) {
+      thread = threads[sp--];
       if (this.genForOffset[thread.offset - this.start] == this.gen) {
         // duplicate
         continue;
@@ -343,27 +382,15 @@ export class VM extends VMBase {
       const instr = this.prog.instrs[thread.offset];
       let newThread: Thread;
       switch (instr.opcode) {
-        case OpCode.RegInc:
-          thread.regIncr(instr.args[0]);
-          threads.push(thread.jumpBy(1));
-          break;
-        case OpCode.RegRelease:
-          thread.regRelease(instr.args[0]);
-          threads.push(thread.jumpBy(1));
-          break;
-        case OpCode.RegAcquire:
-          thread.regAcquire(instr.offset);
-          threads.push(thread.jumpBy(1));
-          break;
         case OpCode.Jump:
-          threads.push(thread.jumpTo(instr.args[0]));
+          threads[++sp] = thread.jumpTo(instr.args[0]);
           break;
         case OpCode.JumpIfLt:
           {
             const [regOffset, checkValue, goto] = [instr.args[0], instr.args[1], instr.args[2]];
             const regValue = thread.regValue(regOffset);
             newThread = regValue < checkValue ? thread.jumpTo(goto) : thread.jumpBy(1);
-            threads.push(newThread);
+            threads[++sp] = newThread;
           }
           break;
         case OpCode.JumpIfGt:
@@ -371,18 +398,20 @@ export class VM extends VMBase {
             const [regOffset, checkValue, goto] = [instr.args[0], instr.args[1], instr.args[2]];
             const regValue = thread.regValue(regOffset);
             newThread = regValue > checkValue ? thread.jumpTo(goto) : thread.jumpBy(1);
-            threads.push(newThread);
+            threads[++sp] = newThread;
           }
           break;
         case OpCode.Split:
-          for (const newOff of instr.args) {
-            threads.push(thread.jumpTo(newOff));
+          // add in reverse order so backtracking happens correctly
+          for (let j = instr.args.length - 1; j >= 0; j--) {
+            const newOff = instr.args[j];
+            threads[++sp] = thread.jumpTo(newOff);
           }
           break;
         case OpCode.Save:
           newThread = thread.forkTo(thread.offset + 1);
           newThread.positions[instr.args[0]] = index;
-          threads.push(newThread);
+          threads[++sp] = newThread;
           break;
         default:
           list.push(thread);
@@ -399,6 +428,7 @@ export class VM extends VMBase {
     let currMatch: Match | null = null;
     this.currThreads = [];
     this.nextThreads = [];
+    this.gen++;
     this.addThread(new Thread(0), this.currThreads, tape.index);
     const instrs = this.prog.instrs;
     const delta = this.forward ? 1 : -1;
@@ -408,9 +438,9 @@ export class VM extends VMBase {
     let lastMatchIndex = -1;
     const startPos = tape.index;
     for (; this.currThreads.length > 0; tape.advance(delta)) {
-      const ch = tape.currChCode
-      let matchedInGen = false;
-      for (let i = 0; i < this.currThreads.length && !matchedInGen; i++) {
+      this.gen++;
+      const ch = tape.currChCode;
+      for (let i = 0; i < this.currThreads.length; i++) {
         const thread = this.currThreads[i];
         const instr = instrs[thread.offset];
         const opcode = instr.opcode;
@@ -443,6 +473,18 @@ export class VM extends VMBase {
           case OpCode.End:
             // Return back to calling VM - very similar to a match
             return new Match(-1, startPos, tape.index);
+            break;
+          case OpCode.RegInc:
+            thread.regIncr(instr.args[0]);
+            this.addThread(thread.jumpBy(1), this.currThreads, tape.index);
+            break;
+          case OpCode.RegRelease:
+            thread.regRelease(instr.args[0]);
+            this.addThread(thread.jumpBy(1), this.currThreads, tape.index);
+            break;
+          case OpCode.RegAcquire:
+            thread.regAcquire(instr.offset);
+            this.addThread(thread.jumpBy(1), this.currThreads, tape.index);
             break;
           case OpCode.Any:
             if (hasMore()) advanceTape = true;
@@ -485,18 +527,15 @@ export class VM extends VMBase {
             // Update the match if we are a higher prioirty or longer match
             // than what was already found (if any)
             const currPriority = instr.args[0];
-            const currEnd = instr.args[1];
+            const matchIndex = instr.args[1];
             if (currMatch == null) currMatch = new Match();
-            if (currPriority > currMatch.priority || currEnd > currMatch.end) {
+            if (currPriority > currMatch.priority || tape.index > currMatch.end) {
               currMatch.start = startPos;
               currMatch.end = tape.index;
               currMatch.priority = currPriority;
-              currMatch.matchIndex = currEnd;
+              currMatch.matchIndex = matchIndex;
               // highestPriority = currPriority;
             }
-            // Should we mark it here or count how many new matches are found but
-            // are not "longest" matches?
-            matchedInGen = true;
             break;
         }
         if (advanceTape) {
@@ -514,6 +553,5 @@ export class VM extends VMBase {
   nextGen(): void {
     this.currThreads = this.nextThreads;
     this.nextThreads = [];
-    this.gen++;
   }
 }

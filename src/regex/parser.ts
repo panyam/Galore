@@ -121,7 +121,7 @@ export function parse(regex: string, curr = 0, end = -1): Regex {
       let last: Quant;
       TSU.assert(out.length > 0, "Quantifier cannot appear before an expression");
       if (out[out.length - 1].tag != RegexType.QUANT) {
-        last = new Quant(out[out.length - 1], 1, 1, false);
+        last = new Quant(out[out.length - 1], 1, 1, true);
         out[out.length - 1] = last;
       } else {
         last = out[out.length - 1] as Quant;
@@ -155,9 +155,9 @@ export function parse(regex: string, curr = 0, end = -1): Regex {
       }
       curr++;
       // check if there is an extra lazy quantifier
-      if (curr <= end && regex[curr] == "?" && !last.lazy) {
+      if (curr <= end && regex[curr] == "?" && last.greedy) {
         curr++;
-        last.lazy = true;
+        last.greedy = false;
       }
     } else {
       // plain old alphabets

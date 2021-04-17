@@ -113,12 +113,12 @@ export class Assertion extends Regex {
 
 export class Quant extends Regex {
   readonly tag: RegexType = RegexType.QUANT;
-  constructor(public expr: Regex, public minCount = 1, public maxCount = 1, public lazy = false) {
+  constructor(public expr: Regex, public minCount = 1, public maxCount = 1, public greedy = true) {
     super();
   }
 
   reverse(): Quant {
-    return new Quant(this.expr.reverse(), this.minCount, this.maxCount, this.lazy);
+    return new Quant(this.expr.reverse(), this.minCount, this.maxCount, this.greedy);
   }
 
   get debugValue(): any {
@@ -128,7 +128,7 @@ export class Quant extends Regex {
     else if (this.minCount == 0 && this.maxCount == 1) quant = "?";
     else if (this.minCount != 1 || this.maxCount != 1)
       quant = `{${this.minCount},${this.maxCount == TSU.Constants.MAX_INT ? "" : this.maxCount}}`;
-    return [this.lazy ? "QuantLazy" : "Quant", [this.expr.debugValue, quant]];
+    return [this.greedy ? "Quant" : "QuantLazy", [this.expr.debugValue, quant]];
   }
 }
 

@@ -30,21 +30,72 @@ function testRegexCompile(prog: Prog, expected: Prog | null, debug = false, enfo
   return prog;
 }
 
-function compile(exprResolver: null | ((name: string) => Rule), ...rules: Rule[]): Prog {
+function compile(exprResolver: null | ((name: string) => Rule), ...patterns: (Rule | string)[]): Prog {
   const out = new Compiler(exprResolver);
-  rules.forEach((rule) => (rule.expr = parse(rule.pattern)));
+  const rules = patterns.map((pattern, index) => {
+    const rule = typeof pattern === "string" ? new Rule(pattern, index) : pattern;
+    rule.expr = parse(rule.pattern);
+    return rule;
+  });
   return out.compile(rules);
+}
+
+function testInput(prog: Prog, input: string, expectedTokens: string[], debug = false): void {
+  const tape = new Tape(input);
+  const vm = new VM(prog);
+  if (debug || expectedTokens.length == 0) {
+    console.log(
+      "Prog: \n",
+      `${prog.debugValue(InstrDebugValue).join("\n")}`,
+      "\n",
+      "\n",
+      "Input: ",
+      input,
+      "\n",
+      "Expected Tokens: ",
+      expectedTokens,
+    );
+  }
+  const found = [] as string[];
+  let next = vm.match(tape);
+  while (next != null && next.end > next.start) {
+    found.push(tape.substring(next.start, next.end));
+    next = vm.match(tape);
+  }
+  if (debug || expectedTokens.length == 0) {
+    console.log("Found Tokens: ", found);
+  }
+  expect(found).toEqual(expectedTokens);
 }
 
 describe("Regex Compile Tests", () => {
   test("Test Chars", () => {
-    const prog = compile(null, new Rule("abcde", 0));
-    const tape = new Tape("abcdeabcde");
-    const vm = new VM(prog);
-    let next = vm.match(tape);
-    while (next != null) {
-      console.log("Match: ", next, `Token: '${tape.substring(next.start, next.end)}'`);
-      next = vm.match(tape);
-    }
+    const prog = compile(null, "abcde");
+    testInput(prog, "abcdeabcde", ["abcde", "abcde"]);
+  });
+
+  test("Test Chars Classes", () => {
+    const prog = compile(null, "[a-e]");
+    testInput(prog, "abcdeabcde", ["a", "b", "c", "d", "e", "a", "b", "c", "d", "e"]);
+  });
+
+  test("Test a*", () => {
+    const prog = compile(null, "a*");
+    testInput(prog, "aaaaa", ["aaaaa"]);
+  });
+
+  test("Test a{3}", () => {
+    const prog = compile(null, "a{3}");
+    testInput(prog, "aaaaaa", ["aaa", "aaa"]);
+  });
+
+  test("Test (a|b)*", () => {
+    const prog = compile(null, "(a|b)*");
+    testInput(prog, "abbbaaaba", ["abbbaaaba"]);
+  });
+
+  test("Test (a|b){0, 10}?", () => {
+    const prog = compile(null, "(a|b){0,2}?");
+    testInput(prog, "abbbaaaba", ["ab", "bb", "aa", "ab", "a"]);
   });
 });

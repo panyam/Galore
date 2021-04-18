@@ -18,7 +18,7 @@ export enum RegexType {
  * A regex expression node.
  */
 export abstract class Regex {
-  tag: RegexType;
+  readonly tag: RegexType;
   parent: TSU.Nullable<Regex> = null;
 
   get debugValue(): any {
@@ -427,5 +427,6 @@ export class Rule {
     public readonly tokenType: any | null,
     public readonly name = "",
     public readonly priority = 10,
+    public readonly isGreedy = true,
   ) {}
 }

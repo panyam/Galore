@@ -11,7 +11,8 @@ export enum RegexType {
   // NEG,
   REF,
   QUANT,
-  ASSERTION,
+  LOOK_AHEAD,
+  LOOK_BACK,
 }
 
 /**
@@ -20,17 +21,34 @@ export enum RegexType {
 export abstract class Regex {
   readonly tag: RegexType;
   parent: TSU.Nullable<Regex> = null;
+  protected reString = null as string | null;
 
   get debugValue(): any {
     return "";
   }
 
+  // Returns an expression that can match the reverse of strings
+  // accepted by this expression
   abstract reverse(): Regex;
+
+  get toString(): string {
+    if (this.reString == null) {
+      this.reString = this.evalREString();
+    }
+    return this.reString;
+  }
+
+  // Returns a minimally bracketted and syntactically valid string
+  // representation of this expression.
+  protected abstract evalREString(): string;
 }
 
 export class Any extends Regex {
   readonly tag: RegexType = RegexType.ANY;
   get debugValue(): string {
+    return ".";
+  }
+  protected evalREString(): string {
     return ".";
   }
   reverse(): this {
@@ -46,6 +64,9 @@ export class StartOfInput extends Regex {
   reverse(): this {
     return this;
   }
+  protected evalREString(): string {
+    return "^";
+  }
 }
 
 export class EndOfInput extends Regex {
@@ -53,61 +74,59 @@ export class EndOfInput extends Regex {
   get debugValue(): string {
     return "$";
   }
+  protected evalREString(): string {
+    return "$";
+  }
   reverse(): this {
     return this;
   }
 }
 
-export class Assertion extends Regex {
-  readonly tag: RegexType = RegexType.ASSERTION;
+export class LookAhead extends Regex {
+  readonly tag: RegexType = RegexType.LOOK_AHEAD;
   /**
-   * Creates an assertion.
+   * Creates a lookahead assertion.
    *
-   * @param expr  - The expression to match.
    * @param cond  - The Condition to check.
-   * @param isLookAhead - Whether check is a lookahead or not.
    */
-  constructor(
-    public readonly expr: Regex,
-    public readonly cond: Regex,
-    public readonly isLookAhead = true,
-    public readonly negate = false,
-  ) {
+  constructor(public readonly cond: Regex, public readonly negate = false) {
     super();
-    // Ensure that Assertions are not nested
-    TSU.assert(!Assertion.isNested(cond), "Assertions cannot be nested");
   }
 
-  static isNested(cond: Regex): boolean {
-    if (cond.tag == RegexType.ASSERTION) return true;
-    else if (cond.tag == RegexType.CAT) {
-      for (const child of (cond as Cat).children) {
-        if (Assertion.isNested(child)) return true;
-      }
-    } else if (cond.tag == RegexType.UNION) {
-      for (const child of (cond as Union).options) {
-        if (Assertion.isNested(child)) return true;
-      }
-    } else if (cond.tag == RegexType.QUANT) {
-      return Assertion.isNested((cond as Quant).expr);
-      /*
-    } else if (cond.tag == RegexType.NEG) {
-      return Assertion.isNested((cond as Neg).expr);
-     */
-    }
-    return false;
+  protected evalREString(): string {
+    return `(?${this.negate ? "!" : "="}${this.cond.toString})`;
   }
 
   get debugValue(): any {
-    return [
-      this.expr.debugValue,
-      this.isLookAhead ? (this.negate ? "IF_NOT_BEFORE" : "IF_BEFORE") : this.negate ? "IF_NOT_AFTER" : "IF_AFTER",
-      this.cond.debugValue,
-    ];
+    return ["LookAhead" + (this.negate ? "!" : ""), this.cond.debugValue];
   }
 
-  reverse(): Assertion {
-    return new Assertion(this.expr.reverse(), this.cond.reverse(), !this.isLookAhead);
+  reverse(): Regex {
+    return new LookBack(this.cond.reverse(), this.negate);
+  }
+}
+
+export class LookBack extends Regex {
+  readonly tag: RegexType = RegexType.LOOK_BACK;
+  /**
+   * Creates an assertion.
+   *
+   * @param cond  - The Condition to check.
+   */
+  constructor(public readonly cond: Regex, public readonly negate = false) {
+    super();
+  }
+
+  protected evalREString(): string {
+    return `(?<${this.negate ? "!" : "="}${this.cond.toString})`;
+  }
+
+  get debugValue(): any {
+    return ["LookBack" + (this.negate ? "!" : ""), this.cond.debugValue];
+  }
+
+  reverse(): Regex {
+    return new LookAhead(this.cond.reverse(), this.negate);
   }
 }
 
@@ -119,6 +138,16 @@ export class Quant extends Regex {
 
   reverse(): Quant {
     return new Quant(this.expr.reverse(), this.minCount, this.maxCount, this.greedy);
+  }
+
+  protected evalREString(): string {
+    let quant = "*";
+    if (this.minCount == 1 && this.maxCount == TSU.Constants.MAX_INT) quant = "+";
+    else if (this.minCount == 0 && this.maxCount == TSU.Constants.MAX_INT) quant = "*";
+    else if (this.minCount == 0 && this.maxCount == 1) quant = "?";
+    else if (this.minCount != 1 || this.maxCount != 1)
+      quant = `{${this.minCount},${this.maxCount == TSU.Constants.MAX_INT ? "" : this.maxCount}}`;
+    return `${this.expr.toString}${quant}`;
   }
 
   get debugValue(): any {
@@ -141,6 +170,11 @@ export class Cat extends Regex {
     for (const child of children) {
       this.add(child);
     }
+  }
+
+  protected evalREString(): string {
+    const out = this.children.map((c) => c.toString).join("");
+    return this.children.length > 1 ? "(" + out + ")" : out;
   }
 
   reverse(): Cat {
@@ -174,6 +208,11 @@ export class Union extends Regex {
     for (const option of options) {
       this.add(option);
     }
+  }
+
+  protected evalREString(): string {
+    const out = this.options.map((c) => c.toString).join("|");
+    return this.options.length > 1 ? "(" + out + ")" : out;
   }
 
   reverse(): Union {
@@ -299,6 +338,12 @@ export class Char extends Regex {
       ? String.fromCharCode(this.start)
       : `${String.fromCharCode(this.start)}-${String.fromCharCode(this.end)}`;
   }
+
+  protected evalREString(): string {
+    return this.start == this.end
+      ? String.fromCharCode(this.start)
+      : `${String.fromCharCode(this.start)}-${String.fromCharCode(this.end)}`;
+  }
 }
 
 /**
@@ -362,6 +407,11 @@ export class CharClass extends Regex {
     return new CharClass(...out);
   }
 
+  protected evalREString(): string {
+    const out = this.chars.map((ch) => ch.debugValue).join("");
+    return out.length > 1 ? "[" + out + "]" : out;
+  }
+
   get debugValue(): any {
     return this.chars.map((ch) => ch.debugValue);
   }
@@ -378,6 +428,10 @@ export class Ref extends Regex {
 
   reverse(): Ref {
     return new Ref(this.name, !this.reversed);
+  }
+
+  protected evalREString(): string {
+    return "<" + this.name + ">";
   }
 
   get debugValue(): any {
@@ -425,8 +479,8 @@ export class Rule {
   constructor(
     public readonly pattern: string,
     public readonly tokenType: any | null,
-    public readonly name = "",
     public readonly priority = 10,
     public readonly isGreedy = true,
+    public readonly name = "",
   ) {}
 }

@@ -83,24 +83,16 @@ describe("Regex Tests", () => {
 
   test("Test Special Char Classes", () => {
     testRegex(".", ".");
-    testRegex("^.$", [[["Cat", ["."]], "IF_BEFORE", "$"], "IF_AFTER", "^"]);
+    testRegex("^.$", ["Cat", [["LookBack", "^"], ".", ["LookAhead", "$"]]]);
   });
 
-  test("Test Lookahead Assertions", () => {
-    testRegex("abc(?=hello)", [["Cat", ["a", "b", "c"]], "IF_BEFORE", ["Cat", ["h", "e", "l", "l", "o"]]]);
-    testRegex("hello(?!world)", [
-      ["Cat", ["h", "e", "l", "l", "o"]],
-      "IF_NOT_BEFORE",
-      ["Cat", ["w", "o", "r", "l", "d"]],
-    ]);
+  test("Test LookAheads", () => {
+    testRegex("abc(?=hello)", ["Cat", ["a", "b", "c", ["LookAhead", ["Cat", ["h", "e", "l", "l", "o"]]]]]);
+    testRegex("hello(?!world)", ["Cat", ["h", "e", "l", "l", "o", ["LookAhead!", ["Cat", ["w", "o", "r", "l", "d"]]]]]);
   });
 
-  test("Test LookBack Assertions", () => {
-    testRegex("(?<=hello)world", [["Cat", ["w", "o", "r", "l", "d"]], "IF_AFTER", ["Cat", ["h", "e", "l", "l", "o"]]]);
-    testRegex("(?<!hello)world", [
-      ["Cat", ["w", "o", "r", "l", "d"]],
-      "IF_NOT_AFTER",
-      ["Cat", ["h", "e", "l", "l", "o"]],
-    ]);
+  test("Test LookBacks", () => {
+    testRegex("(?<=hello)world", ["Cat", [["LookBack", ["Cat", ["h", "e", "l", "l", "o"]]], "w", "o", "r", "l", "d"]]);
+    testRegex("(?<!hello)world", ["Cat", [["LookBack!", ["Cat", ["h", "e", "l", "l", "o"]]], "w", "o", "r", "l", "d"]]);
   });
 });

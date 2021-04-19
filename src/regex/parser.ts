@@ -10,7 +10,8 @@ import {
   Char,
   CharClass,
   Ref,
-  Assertion,
+  LookAhead,
+  LookBack,
   Union,
 } from "./core";
 
@@ -53,18 +54,10 @@ export function parse(regex: string, curr = 0, end = -1): Regex {
       out.push(CharClass.parse(regex.substring(curr + 1, clPos)));
       curr = clPos + 1;
     } else if (currCh == "^") {
-      // parse everything to the right
-      if (curr + 1 < end) {
-        const rest = parse(regex, curr + 1, end);
-        const assertion = new Assertion(rest, new StartOfInput(), false);
-        out.push(assertion);
-      }
-      curr = end + 1;
+      out.push(new LookBack(new StartOfInput()));
+      curr++;
     } else if (currCh == "$") {
-      // parse everything to the right
-      const prev = new Cat(...out);
-      const assertion = new Assertion(prev, new EndOfInput(), true);
-      out = [assertion];
+      out.push(new LookAhead(new EndOfInput()));
       curr++;
     } else if (currCh == "|") {
       if (curr + 1 <= end) {
@@ -100,21 +93,13 @@ export function parse(regex: string, curr = 0, end = -1): Regex {
         }
         const neg = regex[curr++] == "!";
         const cond = parse(regex, curr, clPos - 1);
-        curr = clPos + 1;
         if (after) {
           // reduce everything "until now" and THEN apply
-          const prev = reduceLeft();
-          const assertion = new Assertion(prev, cond, after, neg);
-          out = [assertion];
+          out.push(new LookAhead(cond, neg));
         } else {
-          // parse everything to the right
-          if (curr + 1 <= end) {
-            const rest = parse(regex, curr, end);
-            const assertion = new Assertion(rest, cond, after, neg);
-            out.push(assertion);
-          }
-          curr = end + 1; // no more input left
+          out.push(new LookBack(cond, neg));
         }
+        curr = clPos + 1;
       }
     } else if (regex[curr] == "*" || regex[curr] == "?" || regex[curr] == "+" || regex[curr] == "{") {
       // Quantifiers

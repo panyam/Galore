@@ -32,7 +32,10 @@ export class Prog {
 
   debugValue(instrDebugValue?: (instr: Instr) => string): any {
     if (instrDebugValue) {
-      return this.instrs.map((instr, index) => `L${index}: ${instrDebugValue(instr)}`);
+      return this.instrs.map((instr, index) => {
+        if (instr.comment.trim().length > 0) return `L${index}: ${instrDebugValue(instr)}     # ${instr.comment}`;
+        else return `L${index}: ${instrDebugValue(instr)}`;
+      });
     } else {
       return this.instrs.map((instr, index) => `L${index}: ${instr.debugValue}`);
     }
@@ -41,7 +44,7 @@ export class Prog {
 
 export class Instr {
   offset = 0;
-  comment: string;
+  comment = "";
   args: number[] = [];
   constructor(public readonly opcode: any) {}
 
@@ -55,7 +58,8 @@ export class Instr {
   }
 
   get debugValue(): any {
-    return `${this.opcode} ${this.args.join(" ")}`;
+    if (this.comment.trim().length > 0) return `${this.opcode} ${this.args.join(" ")}     # ${this.comment}`;
+    else return `${this.opcode} ${this.args.join(" ")}`;
   }
 }
 

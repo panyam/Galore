@@ -25,7 +25,14 @@ function testRegexCompile(prog: Prog, expected: Prog | null, debug = false, enfo
     );
     console.log(`Found Debug Value: \n${prog.debugValue(InstrDebugValue).join("\n")}`);
   }
-  if (enforce) expect(prog).toEqual(expected);
+  if (enforce) {
+    // test 2 programs are equal
+    expect(prog.length).toEqual(expected?.length);
+    prog.instrs.forEach((instr, index) => {
+      expect(instr.opcode).toEqual(expected?.instrs[index].opcode);
+      expect(instr.args).toEqual(expected?.instrs[index].args);
+    });
+  }
   return prog;
 }
 
@@ -174,12 +181,12 @@ describe("Regex Compile Tests", () => {
     testRegexCompile(
       compile(null, new Rule("^.$", 0)),
       Prog.with((p) => {
-        p.add(2);
-        p.add(16, 1, 0, 3);
-        p.add(4);
-        p.add(17, 1);
-        p.add(16, 0, 0, 6);
+        p.add(16, 0, 0, 2);
         p.add(3);
+        p.add(17, 0);
+        p.add(2);
+        p.add(16, 1, 0, 6);
+        p.add(4);
         p.add(17, 4);
         p.add(0, 10, 0);
       }),
@@ -187,7 +194,7 @@ describe("Regex Compile Tests", () => {
   });
 
   test("Test Named Groups", () => {
-    const r1 = new Rule("abcde", null, "Hello");
+    const r1 = new Rule("abcde", null, 0, true, "Hello");
     const prog = compile((name) => r1, r1, new Rule("<Hello  >", 10));
     testRegexCompile(
       prog,
@@ -203,7 +210,7 @@ describe("Regex Compile Tests", () => {
     );
   });
 
-  test("Test Lookahead Assertions", () => {
+  test("Test Lookahead", () => {
     testRegexCompile(
       compile(null, new Rule("abc(?=hello)", 0)),
       Prog.with((p) => {
@@ -222,7 +229,7 @@ describe("Regex Compile Tests", () => {
     );
   });
 
-  test("Test Negative Lookahead Assertions", () => {
+  test("Test Negative Lookahead", () => {
     const prog = compile(null, new Rule("abc(?!hello)", 0));
     testRegexCompile(
       prog,
@@ -242,7 +249,7 @@ describe("Regex Compile Tests", () => {
     );
   });
 
-  test("Test Negatie Lookahead Assertions", () => {
+  test("Test Negative Lookahead", () => {
     const prog = compile(null, new Rule("abc(?!hello)", 0));
     testRegexCompile(
       prog,
@@ -262,47 +269,47 @@ describe("Regex Compile Tests", () => {
     );
   });
 
-  test("Test Negative Lookback Assertions", () => {
+  test("Test Negative Lookback", () => {
     const prog = compile(null, new Rule("(?<!h*ell+o)abc", 0));
     testRegexCompile(
       prog,
       Prog.with((p) => {
+        p.add(16, 0, 1, 9);
+        p.add(5, 111, 111);
+        p.add(5, 108, 108);
+        p.add(8, 2, 4);
+        p.add(5, 108, 108);
+        p.add(5, 101, 101);
+        p.add(8, 7, 9);
+        p.add(5, 104, 104);
+        p.add(9, 6);
+        p.add(17, 0);
         p.add(5, 97, 97);
         p.add(5, 98, 98);
         p.add(5, 99, 99);
-        p.add(16, 0, 1, 12);
-        p.add(5, 111, 111);
-        p.add(5, 108, 108);
-        p.add(8, 5, 7);
-        p.add(5, 108, 108);
-        p.add(5, 101, 101);
-        p.add(8, 10, 12);
-        p.add(5, 104, 104);
-        p.add(9, 9);
-        p.add(17, 3);
         p.add(0, 10, 0);
       }),
     );
   });
 
-  test("Test LookBack Assertions", () => {
+  test("Test LookBack", () => {
     const prog = compile(null, new Rule("(?<=h*ell+o)abc", 0));
     testRegexCompile(
       prog,
       Prog.with((p) => {
+        p.add(16, 0, 0, 9);
+        p.add(5, 111, 111);
+        p.add(5, 108, 108);
+        p.add(8, 2, 4);
+        p.add(5, 108, 108);
+        p.add(5, 101, 101);
+        p.add(8, 7, 9);
+        p.add(5, 104, 104);
+        p.add(9, 6);
+        p.add(17, 0);
         p.add(5, 97, 97);
         p.add(5, 98, 98);
         p.add(5, 99, 99);
-        p.add(16, 0, 0, 12);
-        p.add(5, 111, 111);
-        p.add(5, 108, 108);
-        p.add(8, 5, 7);
-        p.add(5, 108, 108);
-        p.add(5, 101, 101);
-        p.add(8, 10, 12);
-        p.add(5, 104, 104);
-        p.add(9, 9);
-        p.add(17, 3);
         p.add(0, 10, 0);
       }),
     );

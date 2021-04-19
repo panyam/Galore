@@ -181,13 +181,9 @@ describe("Regex Compile Tests", () => {
     testRegexCompile(
       compile(null, new Rule("^.$", 0)),
       Prog.with((p) => {
-        p.add(16, 0, 0, 0, 2);
         p.add(3);
-        p.add(17, 0);
         p.add(2);
-        p.add(16, 1, 0, 0, 6);
         p.add(4);
-        p.add(17, 4);
         p.add(0, 10, 0);
       }),
     );

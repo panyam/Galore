@@ -83,7 +83,7 @@ describe("Regex Tests", () => {
 
   test("Test Special Char Classes", () => {
     testRegex(".", ".");
-    testRegex("^.$", ["Cat", [["LookBack", "^"], ".", ["LookAhead", "$"]]]);
+    testRegex("^.$", ["Cat", ["^", ".", "$"]]);
   });
 
   test("Test LookAheads", () => {

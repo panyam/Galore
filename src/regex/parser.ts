@@ -55,10 +55,10 @@ export function parse(regex: string, curr = 0, end = -1): Regex {
       out.push(CharClass.parse(regex.substring(curr + 1, clPos)));
       curr = clPos + 1;
     } else if (currCh == "^") {
-      out.push(new LookBack(new StartOfInput()));
+      out.push(new StartOfInput());
       curr++;
     } else if (currCh == "$") {
-      out.push(new LookAhead(new EndOfInput()));
+      out.push(new EndOfInput());
       curr++;
     } else if (currCh == "|") {
       if (curr + 1 <= end) {

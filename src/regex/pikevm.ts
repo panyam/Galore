@@ -419,6 +419,24 @@ export class VM extends VMBase {
         newThread.positions[instr.args[0]] = tape.index;
         this.addThread(newThread, list, tape);
         break;
+      case OpCode.StartOfInput:
+        // only proceed further if prev was a newline or start
+        const lastCh = this.prevCh(tape);
+        if (tape.index == 0 || lastCh == "\r" || lastCh == "\n" || lastCh == "\u2028" || lastCh == "\u2029") {
+          // have a match so can go forwrd but dont advance tape on
+          // the same generation
+          this.addThread(this.jumpBy(thread, 1), list, tape);
+        }
+        break;
+      case OpCode.EndOfInput:
+        // On end of input we dont advance tape but thread moves on
+        // if at end of line boundary
+        // check if next is end of input
+        const currCh = this.nextCh(tape);
+        if (currCh == "\r" || currCh == "\n" || currCh == "\u2028" || currCh == "\u2029" || !this.hasMore(tape)) {
+          this.addThread(this.jumpBy(thread, 1), list, tape);
+        }
+        break;
       case OpCode.Begin:
         // This results in a new VM being created for this sub program
         const [forward, consume, negate, end] = instr.args;
@@ -428,17 +446,10 @@ export class VM extends VMBase {
           if (this.tracer) this.tracer.threadQueued(thread, tape.index);
           list.push(thread);
         } else {
-          const vm = new VM(this.prog, instr.offset + 1, end, forward == 1);
-          const savedPos = tape.index;
-          const match = vm.match(tape);
-          // const newPos = tape.index;
-          const matchSuccess = (match != null && negate == 0) || (match == null && negate == 1);
-
-          tape.index = savedPos; // always restore it first before doing anything else with it
+          const [matchSuccess, matchEnd] = this.recurseMatch(tape, instr.offset + 1, end, forward == 1, negate == 1);
           if (matchSuccess) {
             // TODO - Consider using a DFA for this case so we can mitigate
-            // pathological cases with an exponential blowup
-            // on a success we have a few options
+            // pathological cases with an exponential blowup on a success
             this.addThread(this.jumpTo(thread, end + 1), list, tape);
           }
         }
@@ -454,6 +465,10 @@ export class VM extends VMBase {
     return this.forward ? tape.hasMore : tape.index > 0;
   }
 
+  protected nextCh(tape: Tape): string {
+    return tape.input[tape.index + (this.forward ? 1 : -1)];
+  }
+
   protected prevCh(tape: Tape): string {
     return tape.input[tape.index - (this.forward ? 1 : -1)];
   }
@@ -465,12 +480,21 @@ export class VM extends VMBase {
   match(tape: Tape): Match | null {
     this.startMatching(tape);
     let bestMatch: TSU.Nullable<Match> = null;
-    for (; this.currThreads.length > 0; ) {
+    while (this.currThreads.length > 0) {
       bestMatch = this.stepChar(tape, bestMatch);
     }
     // ensure tape is rewound to end of last match
     if (bestMatch != null) tape.index = bestMatch.end;
     return bestMatch;
+  }
+
+  recurseMatch(tape: Tape, startOffset: number, endOffset: number, forward = true, negate = false): [boolean, number] {
+    const vm = new VM(this.prog, startOffset, endOffset, forward);
+    const savedPos = tape.index;
+    const match = vm.match(tape);
+    const newPos = tape.index;
+    tape.index = savedPos; // always restore it first and let caller use it
+    return [(match != null && !negate) || (match == null && negate), newPos];
   }
 
   startMatching(tape: Tape): void {
@@ -525,13 +549,7 @@ export class VM extends VMBase {
       case OpCode.Begin:
         const [forward, consume, negate, end] = instr.args;
         TSU.assert(consume == 1, "Plain lookahead cannot be here");
-        const vm = new VM(this.prog, instr.offset + 1, end, forward == 1);
-        const savedPos = tape.index;
-        const match = vm.match(tape);
-        // const newPos = tape.index;
-        const matchSuccess = (match != null && negate == 0) || (match == null && negate == 1);
-
-        tape.index = savedPos; // always restore it first before doing anything else with it
+        const [matchSuccess, matchEnd] = this.recurseMatch(tape, instr.offset + 1, end, forward == 1, negate == 1);
         if (matchSuccess) {
           // TODO - Consider using a DFA for this case so we can mitigate
           // pathological cases with an exponential blowup
@@ -541,7 +559,7 @@ export class VM extends VMBase {
         break;
       case OpCode.End:
         // Return back to calling VM - very similar to a match
-        return new Match(-1, this.startPos, tape.index);
+        return new Match(-1, -1, this.startPos, tape.index);
         break;
       case OpCode.Any:
         if (this.hasMore(tape)) advanceTape = true;
@@ -561,24 +579,6 @@ export class VM extends VMBase {
             advanceTape = true;
             break;
           }
-        }
-        break;
-      case OpCode.StartOfInput:
-        // only proceed further if prev was a newline or start
-        const lastCh = this.prevCh(tape);
-        if (tape.index == 0 || lastCh == "\r" || lastCh == "\n" || lastCh == "\u2028" || lastCh == "\u2029") {
-          // have a match so can go forwrd but dont advance tape on
-          // the same generation
-          this.addThread(this.jumpBy(thread, 1), this.currThreads, tape);
-        }
-        break;
-      case OpCode.EndOfInput:
-        // On end of input we dont advance tape but thread moves on
-        // if at end of line boundary
-        // check if next is end of input
-        const currCh = tape.currCh || null;
-        if (currCh == "\r" || currCh == "\n" || currCh == "\u2028" || currCh == "\u2029" || !this.hasMore(tape)) {
-          this.addThread(this.jumpBy(thread, 1), this.currThreads, tape);
         }
         break;
       case OpCode.Match:

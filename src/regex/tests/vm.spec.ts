@@ -287,4 +287,26 @@ describe("VM Tests", () => {
       "/tmp/test.html",
     );
   });
+
+  test("Test Lines", () => {
+    const prog = compile(
+      null,
+      new Rule("^ *a+", 0, 20),
+      new Rule("b*$", 1, 15),
+      new Rule(`[\n\r]+`, 3, 10),
+      new Rule(`[ \t]+`, 2, 10),
+      new Rule(".", 4, 0),
+    );
+    testInput(
+      prog,
+      `
+      aaaaabcdefgh
+      bbbbb
+      xhzy bbb ccc
+    `,
+      [],
+      true,
+      "/tmp/testlines.html",
+    );
+  });
 });

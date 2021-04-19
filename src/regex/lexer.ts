@@ -1,6 +1,6 @@
 import { Rule } from "./core";
 import { parse } from "./parser";
-import { Prog } from "./vm";
+import { Prog, Match } from "./vm";
 import { Compiler, VM } from "./pikevm";
 import { Tape } from "../tape";
 
@@ -38,7 +38,8 @@ export class Lexer {
     return prog;
   }
 
-  next(tape: Tape): [number, number, number] {
-    return this.vm.match(tape);
+  next(tape: Tape): Match | null {
+    const m = this.vm.match(tape);
+    return m;
   }
 }

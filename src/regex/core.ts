@@ -8,7 +8,7 @@ export enum RegexType {
   CHAR_CLASS,
   UNION,
   CAT,
-  // NEG,
+  NEG,
   REF,
   QUANT,
   LOOK_AHEAD,
@@ -237,7 +237,6 @@ export class Union extends Regex {
   }
 }
 
-/*
 export class Neg extends Regex {
   readonly tag: RegexType = RegexType.NEG;
   constructor(public expr: Regex) {
@@ -246,6 +245,10 @@ export class Neg extends Regex {
 
   reverse(): Neg {
     return new Neg(this.expr.reverse());
+  }
+
+  evalREString(): string {
+    return `(^${this.expr.toString})`;
   }
 
   get debugValue(): any {
@@ -257,7 +260,6 @@ export class Neg extends Regex {
     }
   }
 }
-*/
 
 export class Char extends Regex {
   readonly tag: RegexType = RegexType.CHAR;

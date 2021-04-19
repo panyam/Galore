@@ -185,7 +185,7 @@ describe("Regex Compile Tests", () => {
         p.add(3);
         p.add(17, 0);
         p.add(2);
-        p.add(16, 1, 0, 6);
+        p.add(16, 1, 0, 0, 6);
         p.add(4);
         p.add(17, 4);
         p.add(0, 10, 0);
@@ -217,7 +217,7 @@ describe("Regex Compile Tests", () => {
         p.add(5, 97, 97);
         p.add(5, 98, 98);
         p.add(5, 99, 99);
-        p.add(16, 1, 0, 9);
+        p.add(16, 1, 0, 0, 9);
         p.add(5, 104, 104);
         p.add(5, 101, 101);
         p.add(5, 108, 108);
@@ -237,7 +237,7 @@ describe("Regex Compile Tests", () => {
         p.add(5, 97, 97);
         p.add(5, 98, 98);
         p.add(5, 99, 99);
-        p.add(16, 1, 1, 9);
+        p.add(16, 1, 0, 1, 9);
         p.add(5, 104, 104);
         p.add(5, 101, 101);
         p.add(5, 108, 108);
@@ -257,7 +257,7 @@ describe("Regex Compile Tests", () => {
         p.add(5, 97, 97);
         p.add(5, 98, 98);
         p.add(5, 99, 99);
-        p.add(16, 1, 1, 9);
+        p.add(16, 1, 0, 1, 9);
         p.add(5, 104, 104);
         p.add(5, 101, 101);
         p.add(5, 108, 108);
@@ -274,7 +274,7 @@ describe("Regex Compile Tests", () => {
     testRegexCompile(
       prog,
       Prog.with((p) => {
-        p.add(16, 0, 1, 9);
+        p.add(16, 0, 0, 1, 9);
         p.add(5, 111, 111);
         p.add(5, 108, 108);
         p.add(8, 2, 4);
@@ -297,7 +297,7 @@ describe("Regex Compile Tests", () => {
     testRegexCompile(
       prog,
       Prog.with((p) => {
-        p.add(16, 0, 0, 9);
+        p.add(16, 0, 0, 0, 9);
         p.add(5, 111, 111);
         p.add(5, 108, 108);
         p.add(8, 2, 4);

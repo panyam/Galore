@@ -195,17 +195,27 @@ describe("VM Tests", () => {
     ]);
   });
 
+  test("Test a|aa|aaa with priority", () => {
+    const prog = compile(null, new Rule("a", 0, 100), "aa", "aaa");
+    testInput(prog, "aaaa", [
+      ["a", 0],
+      ["a", 0],
+      ["a", 0],
+      ["a", 0],
+    ]);
+  });
+
+  test("Test a|aa|aaa without priority", () => {
+    const prog = compile(null, "a", "aa", "aaa");
+    testInput(prog, "aaaa", [
+      ["aaa", 2],
+      ["a", 0],
+    ]);
+  });
+
   test("Test a*", () => {
     const prog = compile(null, "a*");
     testInput(prog, "aaaaa", [["aaaaa", 0]]);
-  });
-
-  test("Test a{3}", () => {
-    const prog = compile(null, "a{3}");
-    testInput(prog, "aaaaaa", [
-      ["aaa", 0],
-      ["aaa", 0],
-    ]);
   });
 
   test("Test (a|b)*", () => {
@@ -240,19 +250,27 @@ describe("VM Tests", () => {
     ]);
   });
 
-  test("Test a*?", () => {
+  test("Test a*? | aa without priority", () => {
     const prog = compile(null, "a*?", "aa");
+    testInput(prog, "aaaaa", [["aaaaa", 0]]);
+  });
+
+  test("Test a*? | aa with priority", () => {
+    const prog = compile(null, "a*?", new Rule("aa", 1, 20));
     testInput(prog, "aaaaa", [
-      ["a", 0],
-      ["a", 0],
-      ["a", 0],
-      ["a", 0],
+      ["aa", 1],
+      ["aa", 1],
       ["a", 0],
     ]);
   });
 
+  test("Test (a|b){0, 10}(a|b){5,10}", () => {
+    const prog = compile(null, "(a){0, 10}(a|b){5,10}");
+    testInput(prog, "abbbaaaba", [["abbbaaaba", 0]]);
+  });
+
   test("Test Comments", () => {
-    const prog = compile(null, `/\\*.*?\\*/`, `[ \t\n\r]+`);
+    const prog = compile(null, `/\\*(^\\*/)*\\*/`, `[ \t\n\r]+`);
     // const prog = compile(null, `/\*.*\*/`, `\"(?<!\\\\)\"`, "//.*$");
     testInput(
       prog,
@@ -265,34 +283,8 @@ describe("VM Tests", () => {
         ["/** How about multi line?\n              \n              */", 0],
         ["  ", 1],
       ],
-      false,
-      "/tmp/test.html",
-    );
-  });
-
-  test("Test (a|b){0, 10}(a|b){5,10}", () => {
-    const prog = compile(null, "(a){0, 10}(a|b){5,10}");
-    testInput(prog, "abbbaaaba", [["abbbaaaba", 0]], false, "/tmp/test.html");
-  });
-
-  test("Test Lines", () => {
-    const prog = compile(
-      null,
-      new Rule("^ *a*", 0, 20),
-      new Rule("b*$", 1, 15),
-      new Rule(`[ \t\n\r]+`, 2, 10),
-      new Rule(".", 3, 0),
-    );
-    testInput(
-      prog,
-      `
-      aaaaabcdefgh
-      bbbbb
-      xhzy bbb ccc
-    `,
-      [],
       true,
-      "/tmp/testlines.html",
+      "/tmp/test.html",
     );
   });
 });

@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Tape } from "../tape";
-import { Rule, RegexType, Quant, Regex, Cat, Char, CharClass, Ref, LookAhead, LookBack, Union } from "./core";
+import { Rule, RegexType, Quant, Regex, Cat, Neg, Char, CharClass, Ref, LookAhead, LookBack, Union } from "./core";
 import { Prog, Instr, Match, VM as VMBase } from "./vm";
 
 export enum OpCode {
@@ -84,6 +84,8 @@ export class Compiler {
       this.compileQuant(expr as Quant, prog);
     } else if (expr.tag == RegexType.REF) {
       this.compileRef(expr as Ref, prog);
+    } else if (expr.tag == RegexType.NEG) {
+      this.compileNeg(expr as Neg, prog);
     } else if (expr.tag == RegexType.LOOK_AHEAD) {
       this.compileLookAhead(expr as LookAhead, prog);
     } else if (expr.tag == RegexType.LOOK_BACK) {
@@ -222,12 +224,22 @@ export class Compiler {
   }
 
   /**
+   * Compiles Negative matches.
+   */
+  compileNeg(neg: Neg, prog: Prog): void {
+    const begin = prog.add(OpCode.Begin, 1, 1, 1); // forward, advance and negate if needed
+    this.compileExpr(neg.expr, prog);
+    const end = prog.add(OpCode.End, begin.offset);
+    begin.add(end.offset);
+  }
+
+  /**
    * Compiles lookahead assertions
    */
   compileLookAhead(la: LookAhead, prog: Prog): void {
     // how should this work?
     // Ensure that assertion matches first before continuing with the expression
-    const begin = prog.add(OpCode.Begin, 1, la.negate ? 1 : 0); // forward and negate if needed
+    const begin = prog.add(OpCode.Begin, 1, 0, la.negate ? 1 : 0); // forward and negate if needed
     this.compileExpr(la.cond, prog);
     const end = prog.add(OpCode.End, begin.offset);
     begin.add(end.offset);
@@ -238,7 +250,7 @@ export class Compiler {
    */
   compileLookBack(lb: LookBack, prog: Prog): void {
     // Ensure that assertion matches first before continuing with the expression
-    const begin = prog.add(OpCode.Begin, 0, lb.negate ? 1 : 0); // forward and negate if needed
+    const begin = prog.add(OpCode.Begin, 0, 0, lb.negate ? 1 : 0); // forward and negate if needed
     this.compileExpr(lb.cond.reverse(), prog);
     const end = prog.add(OpCode.End, begin.offset);
     begin.add(end.offset);
@@ -313,6 +325,7 @@ export class VM extends VMBase {
   currThreads: Thread[] = [];
   nextThreads: Thread[] = [];
   tracer: VMTracer;
+  startPos = 0; // Where the match is beginning from - this will be set to tape.index when match is called
 
   gen = 0;
   // Records which "generation" of the match a particular
@@ -408,37 +421,26 @@ export class VM extends VMBase {
         break;
       case OpCode.Begin:
         // This results in a new VM being created for this sub program
-        const [forward, /* consume, */ negate, end] = instr.args;
-        const vm = new VM(this.prog, instr.offset + 1, end, forward == 1);
-        const savedPos = tape.index;
-        const match = vm.match(tape);
-        // const newPos = tape.index;
-        const matchSuccess = (match != null && negate == 0) || (match == null && negate == 1);
+        const [forward, consume, negate, end] = instr.args;
+        if (consume == 1) {
+          // since this results in the consumption of a character (similar to "Char")
+          // defer this to the list
+          if (this.tracer) this.tracer.threadQueued(thread, tape.index);
+          list.push(thread);
+        } else {
+          const vm = new VM(this.prog, instr.offset + 1, end, forward == 1);
+          const savedPos = tape.index;
+          const match = vm.match(tape);
+          // const newPos = tape.index;
+          const matchSuccess = (match != null && negate == 0) || (match == null && negate == 1);
 
-        tape.index = savedPos; // always restore it first before doing anything else with it
-        if (matchSuccess) {
-          // on a success we have a few options
-          if (forward) {
-            // lookahead
+          tape.index = savedPos; // always restore it first before doing anything else with it
+          if (matchSuccess) {
             // TODO - Consider using a DFA for this case so we can mitigate
             // pathological cases with an exponential blowup
-
-            // TODO - See if there is any use case for a consume ption here
-            // ie only advance tape position if it is a non - negative match.
-            // Problem wth consume option is we potentiall have to start a thread
-            // much further out and having to maintain future threads that wont
-            // be awaken this or next generation is a pain
-            // if (consume && !negate) { tape.index = newPos; }
-            this.addThread(this.jumpTo(thread, end + 1), this.currThreads, tape);
-          } else {
-            // lookback
-            // nothing - just continue on after the assertion
-            // note here we are prioritizing it on the same generation
-            // as the tape position has not advanced here
-            this.addThread(this.jumpTo(thread, end + 1), this.currThreads, tape);
+            // on a success we have a few options
+            this.addThread(this.jumpTo(thread, end + 1), list, tape);
           }
-        } else {
-          // fail as nothing else to do
         }
         break;
       default:
@@ -452,114 +454,153 @@ export class VM extends VMBase {
     return this.forward ? tape.hasMore : tape.index > 0;
   }
 
+  protected prevCh(tape: Tape): string {
+    return tape.input[tape.index - (this.forward ? 1 : -1)];
+  }
+
   /**
    * Runs the given instructions and returns a triple:
    * [matchId, matchStart, matchEnd]
    */
   match(tape: Tape): Match | null {
-    const prevCh = () => tape.input[tape.index - delta];
-    let currMatch: Match | null = null;
+    this.startMatching(tape);
+    let bestMatch: TSU.Nullable<Match> = null;
+    for (; this.currThreads.length > 0; ) {
+      bestMatch = this.stepChar(tape, bestMatch);
+    }
+    // ensure tape is rewound to end of last match
+    if (bestMatch != null) tape.index = bestMatch.end;
+    return bestMatch;
+  }
+
+  startMatching(tape: Tape): void {
     this.currThreads = [];
     this.nextThreads = [];
     this.gen++;
     this.addThread(new Thread(this.start, this.gen), this.currThreads, tape);
-    const instrs = this.prog.instrs;
-    const delta = this.forward ? 1 : -1;
     // let largestMatchEnd = -1;
     // let lastMatchIndex = -1;
-    const startPos = tape.index;
-    for (; this.currThreads.length > 0; tape.advance(delta)) {
-      this.gen++;
-      const ch = tape.currChCode;
-      let matchedInGen = false;
-      for (let i = 0; i < this.currThreads.length && !matchedInGen; i++) {
-        const thread = this.currThreads[i];
-        const instr = instrs[thread.offset];
-        // if (this.tracer) this.tracer.threadDequeued(thread, tape.index);
-        if (this.tracer) this.tracer.threadStepped(thread, tape.index, this.gen);
-        const opcode = instr.opcode;
-        const args = instr.args;
-        // Do char match based actions
-        let advanceTape = false;
-        switch (opcode) {
-          case OpCode.End:
-            // Return back to calling VM - very similar to a match
-            return new Match(-1, startPos, tape.index);
-            break;
-          case OpCode.Any:
-            if (this.hasMore(tape)) advanceTape = true;
-            break;
-          case OpCode.Char:
-            if (ch >= args[0] && ch <= args[1]) {
-              // matched so add transition
-              advanceTape = true;
-            }
-            break;
-          case OpCode.CharClass:
-            // TODO - Optimize with binary searches
-            for (let a = 0; a < args.length; a += 2) {
-              if (ch >= args[a] && ch <= args[a + 1]) {
-                advanceTape = true;
-                break;
-              }
-            }
-            break;
-          case OpCode.StartOfInput:
-            // only proceed further if prev was a newline or start
-            const lastCh = prevCh();
-            if (tape.index == 0 || lastCh == "\r" || lastCh == "\n" || lastCh == "\u2028" || lastCh == "\u2029") {
-              // have a match so can go forwrd but dont advance tape on
-              // the same generation
-              this.addThread(this.jumpBy(thread, 1), this.currThreads, tape);
-            }
-            break;
-          case OpCode.EndOfInput:
-            // On end of input we dont advance tape but thread moves on
-            // if at end of line boundary
-            // check if next is end of input
-            const currCh = tape.currCh || null;
-            if (currCh == "\r" || currCh == "\n" || currCh == "\u2028" || currCh == "\u2029" || !this.hasMore(tape)) {
-              this.addThread(this.jumpBy(thread, 1), this.currThreads, tape);
-            }
-            break;
-          case OpCode.Match:
-            // we have a match on this thread so return it
-            // Update the match if we are a higher prioirty or longer match
-            // than what was already found (if any)
-            if (tape.index > startPos) {
-              const currPriority = instr.args[0];
-              const matchIndex = instr.args[1];
-              if (currMatch == null) currMatch = new Match();
-              if (currPriority > currMatch.priority || tape.index > currMatch.end) {
-                currMatch.start = startPos;
-                currMatch.end = tape.index;
-                currMatch.priority = currPriority;
-                currMatch.matchIndex = matchIndex;
-                // highestPriority = currPriority;
-                matchedInGen = true;
-              } else {
-                // Since we kill of lower priority matches becuase of matchedInGen
-                // we should not be here
-                TSU.assert(false, "Should not be here");
-              }
-            }
-            break;
-        }
-        if (advanceTape && this.hasMore(tape)) {
-          this.addThread(this.jumpBy(thread, 1), this.nextThreads, tape, delta);
+    this.startPos = tape.index;
+  }
+
+  stepChar(tape: Tape, currMatch: TSU.Nullable<Match> = null): TSU.Nullable<Match> {
+    // At this point all our threads are point to the next "transition" or "match" action.
+    this.gen++;
+    for (let i = 0; i < this.currThreads.length; i++) {
+      const thread = this.currThreads[i];
+      const nextMatch = this.stepThread(tape, thread);
+      if (nextMatch != null) {
+        if (currMatch == null) currMatch = nextMatch;
+        if (
+          nextMatch.priority > currMatch.priority ||
+          (nextMatch.priority == currMatch.priority && nextMatch.end > currMatch.end)
+        ) {
+          currMatch = nextMatch;
+        } else if (currMatch != nextMatch) {
+          // Since we kill of lower priority matches becuase of matchedInGen
+          // we should not be here
+          // TSU.assert(false, "Should not be here");
         }
       }
-      if (!this.hasMore(tape)) break;
-      this.nextGen();
     }
-    // ensure tape is rewound to end of last match
-    if (currMatch != null) tape.index = currMatch.end;
+    if (this.hasMore(tape)) {
+      tape.advance(this.forward ? 1 : -1);
+    }
+    this.currThreads = this.nextThreads;
+    this.nextThreads = [];
     return currMatch;
   }
 
-  nextGen(): void {
-    this.currThreads = this.nextThreads;
-    this.nextThreads = [];
+  stepThread(tape: Tape, thread: Thread): TSU.Nullable<Match> {
+    if (this.tracer) this.tracer.threadStepped(thread, tape.index, this.gen);
+    let currMatch: TSU.Nullable<Match> = null;
+    const instrs = this.prog.instrs;
+    const instr = instrs[thread.offset];
+    const opcode = instr.opcode;
+    const args = instr.args;
+    // Do char match based actions
+    let advanceTape = false;
+    let ch: number;
+    switch (opcode) {
+      case OpCode.Begin:
+        const [forward, consume, negate, end] = instr.args;
+        TSU.assert(consume == 1, "Plain lookahead cannot be here");
+        const vm = new VM(this.prog, instr.offset + 1, end, forward == 1);
+        const savedPos = tape.index;
+        const match = vm.match(tape);
+        // const newPos = tape.index;
+        const matchSuccess = (match != null && negate == 0) || (match == null && negate == 1);
+
+        tape.index = savedPos; // always restore it first before doing anything else with it
+        if (matchSuccess) {
+          // TODO - Consider using a DFA for this case so we can mitigate
+          // pathological cases with an exponential blowup
+          // on a success we have a few options
+          this.addThread(this.jumpTo(thread, end + 1), this.nextThreads, tape);
+        }
+        break;
+      case OpCode.End:
+        // Return back to calling VM - very similar to a match
+        return new Match(-1, this.startPos, tape.index);
+        break;
+      case OpCode.Any:
+        if (this.hasMore(tape)) advanceTape = true;
+        break;
+      case OpCode.Char:
+        ch = tape.currChCode;
+        if (ch >= args[0] && ch <= args[1]) {
+          // matched so add transition
+          advanceTape = true;
+        }
+        break;
+      case OpCode.CharClass:
+        // TODO - Optimize with binary searches
+        ch = tape.currChCode;
+        for (let a = 0; a < args.length; a += 2) {
+          if (ch >= args[a] && ch <= args[a + 1]) {
+            advanceTape = true;
+            break;
+          }
+        }
+        break;
+      case OpCode.StartOfInput:
+        // only proceed further if prev was a newline or start
+        const lastCh = this.prevCh(tape);
+        if (tape.index == 0 || lastCh == "\r" || lastCh == "\n" || lastCh == "\u2028" || lastCh == "\u2029") {
+          // have a match so can go forwrd but dont advance tape on
+          // the same generation
+          this.addThread(this.jumpBy(thread, 1), this.currThreads, tape);
+        }
+        break;
+      case OpCode.EndOfInput:
+        // On end of input we dont advance tape but thread moves on
+        // if at end of line boundary
+        // check if next is end of input
+        const currCh = tape.currCh || null;
+        if (currCh == "\r" || currCh == "\n" || currCh == "\u2028" || currCh == "\u2029" || !this.hasMore(tape)) {
+          this.addThread(this.jumpBy(thread, 1), this.currThreads, tape);
+        }
+        break;
+      case OpCode.Match:
+        // we have a match on this thread so return it
+        // Update the match if we are a higher prioirty or longer match
+        // than what was already found (if any)
+        if (tape.index > this.startPos) {
+          const currPriority = instr.args[0];
+          const matchIndex = instr.args[1];
+          currMatch = new Match();
+          currMatch.start = this.startPos;
+          currMatch.end = tape.index;
+          currMatch.priority = currPriority;
+          currMatch.matchIndex = matchIndex;
+        }
+        break;
+    }
+    if (advanceTape && this.hasMore(tape)) {
+      const delta = this.forward ? 1 : -1;
+      this.addThread(this.jumpBy(thread, 1), this.nextThreads, tape, delta);
+    }
+    return currMatch;
   }
 }
 

@@ -3,6 +3,7 @@ import {
   Quant,
   RegexType,
   StartOfInput,
+  Neg,
   EndOfInput,
   Regex,
   Cat,
@@ -82,9 +83,16 @@ export function parse(regex: string, curr = 0, end = -1): Regex {
 
       curr++;
       if (regex[curr] != "?") {
-        out.push(parse(regex, curr, clPos - 1));
+        if (regex[curr] == "^") {
+          // negation
+          out.push(new Neg(parse(regex, curr + 1, clPos - 1)));
+        } else {
+          // plain old grouping
+          out.push(parse(regex, curr, clPos - 1));
+        }
         curr = clPos + 1;
       } else {
+        // assertions
         curr++; // skip the "?"
         let after = true;
         if (regex[curr] == "<") {

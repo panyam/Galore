@@ -446,15 +446,6 @@ export class Ref extends Regex {
  */
 export class Rule {
   /**
-   * The generated parsed expression for this rule.
-   */
-  expr: Regex;
-
-  /**
-   */
-  isPrimary = true;
-
-  /**
    * Constructor
    *
    * @param pattern   - The pattern to match for the rule.
@@ -483,6 +474,10 @@ export class Rule {
     public readonly tokenType: any | null,
     public readonly priority = 10,
     public readonly isGreedy = true,
-    public readonly name = "",
   ) {}
+
+  /**
+   * The generated parsed expression for this rule.
+   */
+  expr: Regex;
 }

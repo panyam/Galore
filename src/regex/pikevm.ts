@@ -24,12 +24,12 @@ export enum OpCode {
   End,
 }
 
-type RuleResolver = (name: string) => Rule;
+type RegexResolver = (name: string) => Regex;
 type CompilerListener = (expr: Regex, prog: Prog, start: number, length: number) => void;
 
 export class Compiler {
   constructor(
-    public exprResolver: TSU.Nullable<RuleResolver>,
+    public regexResolver: TSU.Nullable<RegexResolver>,
     public listener: TSU.Nullable<CompilerListener> = null,
   ) {}
 
@@ -107,11 +107,11 @@ export class Compiler {
 
   compileRef(ne: Ref, prog: Prog): void {
     const name = ne.name.trim();
-    const rule = this.exprResolver ? this.exprResolver(name) : null;
-    if (rule == null) {
+    const expr = this.regexResolver ? this.regexResolver(name) : null;
+    if (expr == null) {
       throw new Error(`Cannot find expression: ${name}`);
     }
-    this.compileExpr(rule.expr, prog);
+    this.compileExpr(expr, prog);
   }
 
   compileUnion(union: Union, prog: Prog): void {

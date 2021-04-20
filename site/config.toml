@@ -1,0 +1,5 @@
+baseURL = "http://panyam.github.io/"
+languageCode = "en-us"
+title = "LTB - The Language Toolbox"
+theme = "hugo-theme-mixedpaper"
+publishDir = "../dist/site"

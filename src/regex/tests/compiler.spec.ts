@@ -1,6 +1,6 @@
 const util = require("util");
 import * as TSU from "@panyam/tsutils";
-import { Rule } from "../core";
+import { Rule, Regex } from "../core";
 import { parse } from "../parser";
 import { Prog } from "../vm";
 import { InstrDebugValue, Compiler } from "../pikevm";
@@ -36,7 +36,7 @@ function testRegexCompile(prog: Prog, expected: Prog | null, debug = false, enfo
   return prog;
 }
 
-function compile(exprResolver: null | ((name: string) => Rule), ...rules: Rule[]): Prog {
+function compile(exprResolver: null | ((name: string) => Regex), ...rules: Rule[]): Prog {
   const out = new Compiler(exprResolver);
   rules.forEach((rule) => (rule.expr = parse(rule.pattern)));
   return out.compile(rules);
@@ -190,18 +190,16 @@ describe("Regex Compile Tests", () => {
   });
 
   test("Test Named Groups", () => {
-    const r1 = new Rule("abcde", null, 0, true, "Hello");
-    const prog = compile((name) => r1, r1, new Rule("<Hello  >", 10));
+    const prog = compile((name) => parse("abcde"), new Rule("<Hello  >", 10));
     testRegexCompile(
       prog,
       Prog.with((p) => {
-        p.add(8, 1);
         p.add(5, 97, 97);
         p.add(5, 98, 98);
         p.add(5, 99, 99);
         p.add(5, 100, 100);
         p.add(5, 101, 101);
-        p.add(0, 10, 1);
+        p.add(0, 10, 0);
       }),
     );
   });

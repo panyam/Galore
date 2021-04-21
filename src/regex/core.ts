@@ -5,7 +5,7 @@ export enum RegexType {
   START_OF_INPUT,
   END_OF_INPUT,
   CHAR,
-  CHAR_CLASS,
+  CHAR_RANGE,
   UNION,
   CAT,
   NEG,
@@ -252,8 +252,8 @@ export class Neg extends Regex {
   }
 
   get debugValue(): any {
-    if (this.expr.tag == RegexType.CHAR_CLASS) {
-      const out = (this.expr as CharClass).debugValue as string;
+    if (this.expr.tag == RegexType.CHAR_RANGE) {
+      const out = (this.expr as CharRange).debugValue as string;
       return "[^" + out.substring(1, out.length - 1) + "]";
     } else {
       return ["NOT", this.expr.debugValue];
@@ -351,8 +351,8 @@ export class Char extends Regex {
 /**
  * Character ranges
  */
-export class CharClass extends Regex {
-  readonly tag: RegexType = RegexType.CHAR_CLASS;
+export class CharRange extends Regex {
+  readonly tag: RegexType = RegexType.CHAR_RANGE;
   chars: Char[];
   constructor(...chars: Char[]) {
     super();
@@ -360,12 +360,12 @@ export class CharClass extends Regex {
     this.mergeRanges();
   }
 
-  reverse(): CharClass {
+  reverse(): CharRange {
     return this;
   }
 
   /**
-   * Adds a new Char into this class.
+   * Adds a new Char into this range.
    * Doing so "merges" renges in this class so we dont have overlaps.
    */
   add(ch: Char): this {
@@ -390,7 +390,7 @@ export class CharClass extends Regex {
     return this;
   }
 
-  static parse(value: string, invert = false): CharClass {
+  static parse(value: string, invert = false): CharRange {
     const out: Char[] = [];
     // first see which characters are in this (until the end)
     for (let i = 0; i < value.length; ) {
@@ -406,7 +406,7 @@ export class CharClass extends Regex {
       }
       out.push(currch);
     }
-    return new CharClass(...out);
+    return new CharRange(...out);
   }
 
   protected evalREString(): string {
@@ -467,7 +467,6 @@ export class Rule {
    *                    (still running) with a lower priority are halted.
    *                    We can use this to match literals over a regex
    *                    even though a regex can have a longer match.
-   * @param name      - Name of the rule to be referred by others.
    */
   constructor(
     public readonly pattern: string,

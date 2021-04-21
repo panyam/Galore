@@ -70,7 +70,7 @@ describe("VM Tests", () => {
     ]);
   });
 
-  test("Test Chars Classes", () => {
+  test("Test Chars Ranges", () => {
     const prog = compile(null, "[a-e]");
     testInput(prog, "abcdeabcde", [
       ["a", 0],

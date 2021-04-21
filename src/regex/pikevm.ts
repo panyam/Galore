@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Tape } from "../tape";
-import { Rule, RegexType, Quant, Regex, Cat, Neg, Char, CharClass, Ref, LookAhead, LookBack, Union } from "./core";
+import { Rule, RegexType, Quant, Regex, Cat, Neg, Char, CharRange, Ref, LookAhead, LookBack, Union } from "./core";
 import { Prog, Instr, Match, VM as VMBase } from "./vm";
 
 export enum OpCode {
@@ -10,7 +10,7 @@ export enum OpCode {
   StartOfInput,
   EndOfInput,
   Char,
-  CharClass,
+  CharRange,
   Save,
   Split,
   Jump,
@@ -65,9 +65,9 @@ export class Compiler {
     if (expr.tag == RegexType.CHAR) {
       const char = expr as Char;
       prog.add(OpCode.Char, char.start, char.end);
-    } else if (expr.tag == RegexType.CHAR_CLASS) {
-      const instr = prog.add(OpCode.CharClass);
-      for (const char of (expr as CharClass).chars) {
+    } else if (expr.tag == RegexType.CHAR_RANGE) {
+      const instr = prog.add(OpCode.CharRange);
+      for (const char of (expr as CharRange).chars) {
         instr.add(char.start, char.end);
       }
     } else if (expr.tag == RegexType.START_OF_INPUT) {
@@ -571,7 +571,7 @@ export class VM extends VMBase {
           advanceTape = true;
         }
         break;
-      case OpCode.CharClass:
+      case OpCode.CharRange:
         // TODO - Optimize with binary searches
         ch = tape.currChCode;
         for (let a = 0; a < args.length; a += 2) {
@@ -613,8 +613,8 @@ export function InstrDebugValue(instr: Instr): string {
       const end = (+"" + instr.args[1]).toString(16);
       const s = start == end ? start : `${start}-${end}`;
       return `Char ${s}`;
-    case OpCode.CharClass:
-      let out = "CharClass ";
+    case OpCode.CharRange:
+      let out = "CharRange ";
       for (let i = 0; i < instr.args.length; i += 2) {
         const start = (+"" + instr.args[i]).toString(16);
         const end = (+"" + instr.args[i + 1]).toString(16);

@@ -1,5 +1,32 @@
 baseURL = "http://panyam.github.io/"
 languageCode = "en-us"
 title = "LTB - The Language Toolbox"
-theme = "hugo-theme-mixedpaper"
 publishDir = "../dist/site"
+# [menu]
+#   [[menu.demos]]
+#     name = "Regex"
+#     url = "/demos/regex/"
+#   [[menu.demos]]
+#     name = "SLR Parsing"
+#     url = "/demos/slr/"
+#   [[menu.demos]]
+#     name = "LR Parsing"
+#     url = "/demos/lr/"
+
+
+# Geekdocs configs
+
+pluralizeListTitles = false
+# Geekdoc required configuration
+pygmentsUseClasses = true
+pygmentsCodeFences = true
+disablePathToLower = true
+
+# Needed for mermaid shortcodes
+[markup]
+  [markup.goldmark.renderer]
+    # Needed for mermaid shortcode
+    unsafe = true
+  [markup.tableOfContents]
+    startLevel = 1
+    endLevel = 9

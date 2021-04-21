@@ -9,7 +9,7 @@ import {
   Cat,
   Any,
   Char,
-  CharClass,
+  CharRange,
   Ref,
   LookAhead,
   LookBack,
@@ -45,14 +45,14 @@ export function parse(regex: string, curr = 0, end = -1): Regex {
       out.push(new Any());
       curr++;
     } else if (currCh == "[") {
-      // character classes
+      // character ranges 
       let clPos = curr + 1;
       while (clPos <= end && regex[clPos] != "]") {
         if (regex[clPos] == "\\") clPos++;
         clPos++;
       }
       if (clPos > end) throw new Error("Expected ']' found EOI");
-      out.push(CharClass.parse(regex.substring(curr + 1, clPos)));
+      out.push(CharRange.parse(regex.substring(curr + 1, clPos)));
       curr = clPos + 1;
     } else if (currCh == "^") {
       out.push(new StartOfInput());

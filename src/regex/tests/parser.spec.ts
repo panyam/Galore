@@ -1,6 +1,6 @@
 const util = require("util");
 import * as TSU from "@panyam/tsutils";
-import { Regex, Char, CharClass } from "../core";
+import { Regex, Char, CharRange } from "../core";
 import { parse } from "../parser";
 
 function testRegex(input: string, expected: any, debug = false, enforce = true): Regex {
@@ -68,9 +68,9 @@ describe("Regex Tests", () => {
     expect(() => testRegex("a{1,2,3}", [])).toThrowError();
   });
 
-  test("Test Char Classes", () => {
+  test("Test Char Ranges", () => {
     testRegex("[a-c]", ["a-c"]);
-    const ch = new CharClass();
+    const ch = new CharRange();
     ch.add(new Char(90, 200));
     ch.add(new Char(10, 20));
     ch.add(new Char(50, 150));
@@ -81,7 +81,7 @@ describe("Regex Tests", () => {
     expect(ch.chars[1].end).toBe(200);
   });
 
-  test("Test Special Char Classes", () => {
+  test("Test Special Char Ranges", () => {
     testRegex(".", ".");
     testRegex("^.$", ["Cat", ["^", ".", "$"]]);
   });

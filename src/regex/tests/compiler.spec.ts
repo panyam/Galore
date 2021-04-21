@@ -146,7 +146,7 @@ describe("Regex Compile Tests", () => {
     );
   });
 
-  test("Test Char Classes", () => {
+  test("Test Char Ranges", () => {
     testRegexCompile(
       compile(null, new Rule("[a-c]", 0)),
       Prog.with((p) => {
@@ -170,7 +170,7 @@ describe("Regex Compile Tests", () => {
     );
   });
 
-  test("Test Special Char Classes", () => {
+  test("Test Special Char Ranges", () => {
     testRegexCompile(
       compile(null, new Rule(".", 0)),
       Prog.with((p) => {

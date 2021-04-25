@@ -79,7 +79,7 @@ describe("Analyzer Tests", () => {
       E -> A B X4 ;
     `).grammar;
     leftFactor(g, g.getSym("E"));
-    console.log("NewG: ", g.debugValue);
+    // console.log("NewG: ", g.debugValue);
     expect(g.debugValue).toEqual([
       "E -> E $0",
       "$0 -> A T",

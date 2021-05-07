@@ -2,7 +2,7 @@ import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
 
 type Tape = TLEX.Tape;
-type SimpleTokenizer = TLEX.SimpleTokenizer;
+type SimpleTokenizer = TLEX.Misc.SimpleTokenizer;
 
 export const ReservedChars = {
   "#": true,
@@ -74,21 +74,26 @@ export const SingleChTokens = {
  * Tokenizer with matchers specific to EBNF
  */
 export function EBNFTokenizer(input: string | Tape): SimpleTokenizer {
-  return new TLEX.SimpleTokenizer(input)
+  return new TLEX.Misc.SimpleTokenizer(input)
     .addMatcher(spacesMatcher, true)
     .addMatcher(startStopMatcher(TokenType.COMMENT, "/*", "*/"), true) // Comments
     .addMatcher(singleLineCommentMatcher, true)
     .addMatcher(startStopMatcher(TokenType.STRING, "'", "'")) // Single quoted String
     .addMatcher(startStopMatcher(TokenType.STRING, '"', '"')) // Double quoted String
     .addMatcher(startStopMatcher(TokenType.REGEX, "/", "/")) //  Match regex between "/"s
-    .addMatcher((tape, offset) => {
+    .addMatcher((tape: TLEX.Tape, offset: number) => {
       if (!TLEX.TapeHelper.matches(tape, "->")) return null;
-      return new TLEX.Token(TokenType.ARROW, { value: "->" });
+      const tok = new TLEX.Token(TokenType.ARROW, 0, 0, 0);
+      tok.value = "->";
+      return tok;
     })
     .addMatcher(numberMatcher)
     .addMatcher(identMatcher)
-    .addMatcher((tape, offset) => {
-      return tape.currCh in SingleChTokens ? new TLEX.Token(SingleChTokens[tape.currCh], { value: tape.nextCh }) : null;
+    .addMatcher((tape: TLEX.Tape, offset: number) => {
+      if (!(tape.currCh in SingleChTokens)) return null;
+      const tok = new TLEX.Token(SingleChTokens[tape.currCh], 0, 0, 0);
+      tok.value = tape.nextCh;
+      return tok;
     });
 }
 
@@ -98,13 +103,17 @@ export function numberMatcher(tape: Tape, offset: number): TSU.Nullable<TLEX.Tok
   while (tape.hasMore && isDigit(tape.currCh)) {
     out += tape.nextCh;
   }
-  return new TLEX.Token(TokenType.NUMBER, { value: parseInt(out) });
+  const tok = new TLEX.Token(TokenType.NUMBER, 0, 0, 0);
+  tok.value = parseInt(out);
+  return tok;
 }
 
-export function startStopMatcher(tokenType: TokenType, start: string, end: string): TLEX.TokenMatcher {
-  return (tape, offset) => {
+export function startStopMatcher(tokenType: TokenType, start: string, end: string): TLEX.Misc.TokenMatcher {
+  return (tape: TLEX.Tape, offset: number) => {
     if (TLEX.TapeHelper.matches(tape, start) && TLEX.TapeHelper.advanceAfter(tape, end) >= 0) {
-      return new TLEX.Token(tokenType, { value: tape.substring(offset + start.length, tape.index - end.length) });
+      const tok = new TLEX.Token(tokenType, 0, 0, 0);
+      tok.value = tape.substring(offset + start.length, tape.index - end.length);
+      return tok;
     }
     return null;
   };
@@ -115,7 +124,9 @@ export function identMatcher(tape: Tape, offset: number): TSU.Nullable<TLEX.Toke
   if (isPct) tape.nextCh;
   if (!isIdentChar(tape.currCh)) {
     if (isPct) {
-      return new TLEX.Token(TokenType.PCT_IDENT, { value: "" });
+      const tok = new TLEX.Token(TokenType.PCT_IDENT, 0, 0, 0);
+      tok.value = "";
+      return tok;
     } else {
       return null;
     }
@@ -129,7 +140,9 @@ export function identMatcher(tape: Tape, offset: number): TSU.Nullable<TLEX.Toke
     }
     lit += tape.nextCh;
   }
-  return new TLEX.Token(isPct ? TokenType.PCT_IDENT : TokenType.IDENT, { value: lit });
+  const tok = new TLEX.Token(isPct ? TokenType.PCT_IDENT : TokenType.IDENT, 0, 0, 0);
+  tok.value = lit;
+  return tok;
 }
 
 export function spacesMatcher(tape: Tape, offset: number): TSU.Nullable<TLEX.Token> {
@@ -138,7 +151,9 @@ export function spacesMatcher(tape: Tape, offset: number): TSU.Nullable<TLEX.Tok
     out += tape.nextCh;
   }
   if (out.length == 0) return null;
-  return new TLEX.Token(TokenType.SPACES, { value: out });
+  const tok = new TLEX.Token(TokenType.SPACES, 0, 0, 0);
+  tok.value = out;
+  return tok;
 }
 
 export function singleLineCommentMatcher(tape: Tape, offset: number): TSU.Nullable<TLEX.Token> {
@@ -147,5 +162,7 @@ export function singleLineCommentMatcher(tape: Tape, offset: number): TSU.Nullab
     tape.nextCh;
   }
   tape.nextCh; // consume the "\n"
-  return new TLEX.Token(TokenType.COMMENT, { value: tape.substring(offset + 2, tape.index) });
+  const tok = new TLEX.Token(TokenType.COMMENT, 0, 0, 0);
+  tok.value = tape.substring(offset + 2, tape.index);
+  return tok;
 }

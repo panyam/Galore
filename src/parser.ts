@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Token, NextTokenFunc, TokenBuffer } from "./tokenizer";
+import * as TLEX from "tlex";
 import { Sym, Grammar } from "./grammar";
 
 type Nullable<T> = TSU.Nullable<T>;
@@ -33,7 +33,7 @@ export class PTNode {
 
   get debugValue(): string[] {
     const value = this.value;
-    const out: string[] = [];
+    const out: any[] = [];
     out.push(this.sym.label + " - " + this.value);
     this.children.forEach((node) => node.debugValue.forEach((l) => out.push("  " + l)));
     return out;
@@ -42,20 +42,20 @@ export class PTNode {
 
 export abstract class Parser {
   grammar: Grammar;
-  tokenizer: TokenBuffer;
+  tokenizer: TLEX.TokenBuffer;
   constructor(grammar: Grammar) {
     this.grammar = grammar;
   }
 
-  setTokenizer(tokenizer: NextTokenFunc): this {
-    this.tokenizer = new TokenBuffer(tokenizer);
+  setTokenizer(tokenizer: TLEX.NextTokenFunc): this {
+    this.tokenizer = new TLEX.TokenBuffer(tokenizer);
     return this;
   }
 
   /**
    * Converts the token to a Terminal based on the tag value.
    */
-  getSym(token: Token): Sym {
+  getSym(token: TLEX.Token): Sym {
     const out = this.grammar.getSym(token.tag as string);
     if (out == null) {
       throw new Error("Invalid token tag: " + token.tag + ", Value: " + token.value);

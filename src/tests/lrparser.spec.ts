@@ -1,15 +1,17 @@
 const util = require("util");
 import * as TSU from "@panyam/tsutils";
+import * as TLEX from "tlex";
 import { PTNode } from "../parser";
-import { Token } from "../tokenizer";
 import { mockTokenizer } from "./mocks";
 import { newParser } from "./utils";
 
-function tok(tag: any, value: any): Token {
-  return new Token(tag, { value: value });
+function tok(tag: any, value: any): TLEX.Token {
+  const out = new TLEX.Token(tag, 0, 0, 0);
+  out.value = value;
+  return out;
 }
 
-function testParsing(ptabType: string, grammar: string, tokens: Token[], debug = false): TSU.Nullable<PTNode> {
+function testParsing(ptabType: string, grammar: string, tokens: TLEX.Token[], debug = false): TSU.Nullable<PTNode> {
   const parser = newParser(grammar, ptabType, debug);
   parser.setTokenizer(mockTokenizer(...tokens));
   const result = parser.parse();

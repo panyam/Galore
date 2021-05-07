@@ -1,8 +1,8 @@
 import * as TSU from "@panyam/tsutils";
-import { TokenMatcher, Token, TokenBuffer, SimpleTokenizer } from "./tokenizer";
-import { Tape } from "./tape";
-import { UnexpectedTokenError } from "./errors";
+import * as TLEX from "tlex";
 import { Sym, Grammar, Str } from "./grammar";
+
+type Tape = TLEX.Tape;
 
 export enum TokenType {
   STRING = "STRING",
@@ -26,6 +26,32 @@ export enum TokenType {
   SEMI_COLON = "SEMI_COLON",
 }
 
+export function EBNFTokenizer(): TLEX.Tokenizer {
+  const lexer = new TLEX.Tokenizer();
+  lexer.addRule(new TLEX.Rule(/\[/, TokenType.OPEN_SQ));
+  lexer.addRule(new TLEX.Rule(/\]/, TokenType.CLOSE_SQ));
+  lexer.addRule(new TLEX.Rule(/\(/, TokenType.OPEN_PAREN));
+  lexer.addRule(new TLEX.Rule(/\)/, TokenType.CLOSE_PAREN));
+  lexer.addRule(new TLEX.Rule(/\{/, TokenType.OPEN_BRACE));
+  lexer.addRule(new TLEX.Rule(/\}/, TokenType.CLOSE_BRACE));
+  lexer.addRule(new TLEX.Rule(/\*/, TokenType.STAR));
+  lexer.addRule(new TLEX.Rule(/\+/, TokenType.PLUS));
+  lexer.addRule(new TLEX.Rule(/\?/, TokenType.QMARK));
+  lexer.addRule(new TLEX.Rule(/;/, TokenType.SEMI_COLON));
+  lexer.addRule(new TLEX.Rule(/\|/, TokenType.PIPE));
+  lexer.addRule(new TLEX.Rule(/\s+/, TokenType.SPACES));
+  lexer.addRule(new TLEX.Rule(/\/\*.*?\*\//, TokenType.COMMENT));
+  lexer.addRule(new TLEX.Rule(/\/\/.*$/, TokenType.COMMENT));
+  lexer.addRule(new TLEX.Rule(/"(.*?(?<!\\))"/, TokenType.STRING));
+  lexer.addRule(new TLEX.Rule(/'(.*?(?<!\\))'/, TokenType.STRING));
+  lexer.addRule(new TLEX.Rule(/\/.*?(?<!\\)\//, TokenType.REGEX));
+  lexer.addRule(new TLEX.Rule(/->/, TokenType.ARROW));
+  lexer.addRule(new TLEX.Rule(/\d+/, TokenType.NUMBER));
+  lexer.addRule(new TLEX.Rule(/%[\w][\w\d_]*/, TokenType.PCT_IDENT));
+  lexer.addRule(new TLEX.Rule(/[\w][\w\d_]*/, TokenType.IDENT));
+  return lexer;
+}
+
 export enum NodeType {
   GRAMMAR = "GRAMMAR",
   DECL = "DECL",
@@ -43,28 +69,6 @@ export enum NodeType {
   IDENT = "IDENT",
   ERROR = "ERROR",
   COMMENT = "COMMENT",
-}
-
-/**
- * Tokenizer with matchers specific to EBNF
- */
-export function EBNFTokenizer(input: string | Tape): SimpleTokenizer {
-  return new SimpleTokenizer(input)
-    .addMatcher(spacesMatcher, true)
-    .addMatcher(startStopMatcher(TokenType.COMMENT, "/*", "*/"), true) // Comments
-    .addMatcher(singleLineCommentMatcher, true)
-    .addMatcher(startStopMatcher(TokenType.STRING, "'", "'")) // Single quoted String
-    .addMatcher(startStopMatcher(TokenType.STRING, '"', '"')) // Double quoted String
-    .addMatcher(startStopMatcher(TokenType.REGEX, "/", "/")) //  Match regex between "/"s
-    .addMatcher((tape, offset) => {
-      if (!tape.matches("->")) return null;
-      return new Token(TokenType.ARROW, { value: "->" });
-    })
-    .addMatcher(numberMatcher)
-    .addMatcher(identMatcher)
-    .addMatcher((tape, offset) => {
-      return tape.currCh in SingleChTokens ? new Token(SingleChTokens[tape.currCh], { value: tape.nextCh() }) : null;
-    });
 }
 
 /**
@@ -91,7 +95,7 @@ export function EBNFTokenizer(input: string | Tape): SimpleTokenizer {
  */
 export class EBNFParser {
   readonly grammar: Grammar;
-  private tokenizer: TokenBuffer;
+  private tokenizer: TLEX.TokenBuffer;
   private allowLeftRecursion = false;
 
   /*
@@ -162,8 +166,19 @@ export class EBNFParser {
   }
 
   parse(input: string): void {
-    const et = EBNFTokenizer(input);
-    this.tokenizer = new TokenBuffer(et.nextToken.bind(et));
+    const et = EBNFTokenizer();
+    const tape = new TLEX.Tape(input);
+    const ntFunc = () => {
+      let out = et.next(tape);
+      while (out && (out.tag == TokenType.SPACES || out.tag == TokenType.COMMENT)) {
+        out = et.next(tape);
+      }
+      if (out?.tag == TokenType.STRING) {
+        out.value = tape.substring(out.start + 1, out.end - 1);
+      }
+      return out;
+    };
+    this.tokenizer = new TLEX.TokenBuffer(ntFunc);
     this.parseGrammar();
   }
 
@@ -188,7 +203,7 @@ export class EBNFParser {
   parseDecl(): void {
     const ident = this.tokenizer.expectToken(TokenType.IDENT);
     if (this.tokenizer.consumeIf(TokenType.ARROW)) {
-      const nt = this.ensureSymbol(ident.value, false);
+      const nt = this.ensureSymbol(ident.value as string, false);
       if (nt.isTerminal) {
         // it is a terminal so mark it as a non-term now that we
         // know there is a declaration for it.
@@ -249,8 +264,8 @@ export class EBNFParser {
         }
         this.tokenizer.expectToken(TokenType.CLOSE_SQ);
       } else if (this.tokenizer.nextMatches(TokenType.IDENT, TokenType.STRING, TokenType.NUMBER, TokenType.REGEX)) {
-        const token = this.tokenizer.next() as Token;
-        let label = token.value;
+        const token = this.tokenizer.next() as TLEX.Token;
+        let label = token.value as string;
         if (token.tag == TokenType.STRING || token.tag == TokenType.NUMBER) {
           label = "L:" + token.value;
         } else if (token.tag == TokenType.REGEX) {
@@ -260,7 +275,7 @@ export class EBNFParser {
         const currSym = this.ensureSymbol(label, true);
         curr = new Str(currSym);
       } else {
-        throw new UnexpectedTokenError(this.tokenizer.peek());
+        throw new TLEX.UnexpectedTokenError(this.tokenizer.peek());
       }
 
       if (curr == null) {
@@ -278,106 +293,4 @@ export class EBNFParser {
     }
     return out;
   }
-}
-
-export const SingleChTokens = {
-  "[": TokenType.OPEN_SQ,
-  "]": TokenType.CLOSE_SQ,
-  "(": TokenType.OPEN_PAREN,
-  ")": TokenType.CLOSE_PAREN,
-  "{": TokenType.OPEN_BRACE,
-  "}": TokenType.CLOSE_BRACE,
-  "*": TokenType.STAR,
-  "+": TokenType.PLUS,
-  "?": TokenType.QMARK,
-  "|": TokenType.PIPE,
-  ";": TokenType.SEMI_COLON,
-} as TSU.StringMap<TokenType>;
-
-export const ReservedChars = {
-  "#": true,
-  "&": true,
-  "%": true,
-  "@": true,
-  ":": true,
-  "!": true,
-  "*": true,
-  "~": true,
-  "`": true,
-  "'": true,
-  ".": true,
-  "^": true,
-  "|": true,
-  "?": true,
-  "<": true,
-  ">": true,
-  $: true,
-} as TSU.StringMap<boolean>;
-
-export const isSpace = (ch: string): boolean => ch.trim() === "";
-export const isDigit = (ch: string): boolean => ch >= "0" && ch <= "9";
-export function isIdentChar(ch: string): boolean {
-  if (ch in SingleChTokens) return false;
-  if (ch in ReservedChars) return false;
-  if (isSpace(ch)) return false;
-  if (isDigit(ch)) return false;
-  return true;
-}
-
-export function numberMatcher(tape: Tape, offset: number): TSU.Nullable<Token> {
-  if (!isDigit(tape.currCh)) return null;
-  let out = "";
-  while (tape.hasMore && isDigit(tape.currCh)) {
-    out += tape.nextCh();
-  }
-  return new Token(TokenType.NUMBER, { value: parseInt(out) });
-}
-
-export function startStopMatcher(tokenType: TokenType, start: string, end: string): TokenMatcher {
-  return (tape, offset) => {
-    if (tape.matches(start) && tape.advanceAfter(end) >= 0) {
-      return new Token(tokenType, { value: tape.substring(offset + start.length, tape.index - end.length) });
-    }
-    return null;
-  };
-}
-
-export function identMatcher(tape: Tape, offset: number): TSU.Nullable<Token> {
-  const isPct = tape.currCh == "%";
-  if (isPct) tape.nextCh();
-  if (!isIdentChar(tape.currCh)) {
-    if (isPct) {
-      return new Token(TokenType.PCT_IDENT, { value: "" });
-    } else {
-      return null;
-    }
-  }
-  // Combination of everything else
-  let lit = tape.nextCh();
-  while (tape.hasMore) {
-    const currCh = tape.currCh;
-    if (!isIdentChar(currCh) && !isDigit(currCh)) {
-      break;
-    }
-    lit += tape.nextCh();
-  }
-  return new Token(isPct ? TokenType.PCT_IDENT : TokenType.IDENT, { value: lit });
-}
-
-export function spacesMatcher(tape: Tape, offset: number): TSU.Nullable<Token> {
-  let out = "";
-  while (tape.hasMore && isSpace(tape.currCh)) {
-    out += tape.nextCh();
-  }
-  if (out.length == 0) return null;
-  return new Token(TokenType.SPACES, { value: out });
-}
-
-export function singleLineCommentMatcher(tape: Tape, offset: number): TSU.Nullable<Token> {
-  if (!tape.matches("//")) return null;
-  while (tape.hasMore && tape.currCh != "\n") {
-    tape.nextCh();
-  }
-  tape.nextCh(); // consume the "\n"
-  return new Token(TokenType.COMMENT, { value: tape.substring(offset + 2, tape.index) });
 }

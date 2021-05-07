@@ -1,8 +1,8 @@
+import * as TLEX from "tlex";
 const util = require("util");
 import { EBNFParser } from "../ebnf";
 import { ParseTable, Parser } from "../ll";
 import { PTNode } from "../parser";
-import { Token } from "../tokenizer";
 import { verifyLLParseTable } from "./utils";
 import Samples from "./samples";
 import { mockTokenizer } from "./mocks";
@@ -52,8 +52,10 @@ describe("ParseTable Tests", () => {
   });
 });
 
-function tok(tag: any, value: any): Token {
-  return new Token(tag, { value: value });
+function tok(tag: any, value: any): TLEX.Token {
+  const out = new TLEX.Token(tag, 0, 0, 0);
+  out.value = value;
+  return out;
 }
 
 describe("Parser Tests", () => {

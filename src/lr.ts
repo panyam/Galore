@@ -1,8 +1,7 @@
 import * as TSU from "@panyam/tsutils";
+import * as TLEX from "tlex";
 import { Sym, Grammar, Rule } from "./grammar";
 import { PTNode, Parser as ParserBase } from "./parser";
-import { TokenBuffer, NextTokenFunc } from "./tokenizer";
-import { UnexpectedTokenError } from "./errors";
 import { IDSet } from "./sets";
 
 type Nullable<T> = TSU.Nullable<T>;
@@ -472,7 +471,7 @@ export class Parser extends ParserBase {
       let [topState, topNode] = stack.top();
       const actions = this.parseTable.getActions(topState, nextSym);
       if (actions == null || actions.length == 0) {
-        throw new UnexpectedTokenError(token);
+        throw new TLEX.UnexpectedTokenError(token);
       }
 
       const action = this.resolveActions(actions, stack, tokenizer);
@@ -520,7 +519,7 @@ export class Parser extends ParserBase {
   /**
    * Pick an action among several actions based on several factors (eg curr parse stack, tokenizer etc).
    */
-  resolveActions(actions: LRAction[], stack: ParseStack, tokenizer: TokenBuffer): LRAction {
+  resolveActions(actions: LRAction[], stack: ParseStack, tokenizer: TLEX.TokenBuffer): LRAction {
     if (actions.length > 1) {
       throw new Error("Multiple actions found.");
     }

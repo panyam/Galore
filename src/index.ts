@@ -1,10 +1,7 @@
 export * from "./grammar";
-export * from "./errors";
 export * from "./parser";
 export * from "./ptables";
 export * from "./sets";
-export * from "./tokenizer";
-export * from "./tape";
 export * as Graph from "./graph";
 export * as EBNF from "./ebnf";
 export * as Analyzer from "./analyzer";

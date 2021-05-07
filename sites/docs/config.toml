@@ -1,0 +1,4 @@
+baseURL = "http://localhost:1313/sites/docs/"
+languageCode = "en-us"
+title = "LTB Docs"
+theme = "hugo-geekdoc"

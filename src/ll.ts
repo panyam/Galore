@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
+import * as TLEX from "tlex";
 import { Sym, Grammar, Rule } from "./grammar";
-import { Token } from "./tokenizer";
 import { PTNode, Parser as ParserBase } from "./parser";
 import { printGrammar } from "./utils";
 
@@ -178,7 +178,7 @@ export class Parser extends ParserBase {
     const tokenizer = this.tokenizer;
     const stack = this.stack;
     const g = this.grammar;
-    let token: Nullable<Token>;
+    let token: Nullable<TLEX.Token>;
     let topItem: Sym;
     let topNode: PTNode;
     do {
@@ -190,9 +190,9 @@ export class Parser extends ParserBase {
         if (topItem == nextSym) {
           // Something must happen here to stack symbol to build
           // the parse tree
-          this.consumeTokenAndPop(nextSym, nextValue);
+          this.consumeTokenAndPop(nextSym, token!);
         } else {
-          this.processInvalidToken(nextSym, nextValue);
+          this.processInvalidToken(nextSym, token);
         }
       } else {
         const entries = this.parseTable.get(topItem, nextSym);
@@ -219,11 +219,11 @@ export class Parser extends ParserBase {
       parentNode.add(node, 0);
     }
   }
-  consumeTokenAndPop(nextSym: Sym, nextToken: Token): void {
+  consumeTokenAndPop(nextSym: Sym, nextToken: TLEX.Token): void {
     const [sym, ptnode] = this.stack.top();
     TSU.assert(sym == nextSym);
     TSU.assert(ptnode.sym == nextSym);
-    ptnode.value = nextToken;
+    ptnode.value = nextToken.value;
     this.tokenizer.next();
     this.stack.pop();
   }

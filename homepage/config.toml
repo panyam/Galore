@@ -1,6 +1,5 @@
 baseURL = "/"
 title = "Language Toolbox"
-publishdir = "../site"
 
 enableRobotsTXT = true
 

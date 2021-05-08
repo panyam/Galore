@@ -3,3 +3,12 @@ languageCode = "en-us"
 title = "Language Toolbox"
 theme = "docsy"
 publishdir = "../site"
+
+# Highlighting config
+pygmentsCodeFences = true
+pygmentsUseClasses = false
+# Use the new Chroma Go highlighter in Hugo.
+pygmentsUseClassic = false
+#pygmentsOptions = "linenos=table"
+# See https://help.farbox.com/pygments.html
+pygmentsStyle = "tango"

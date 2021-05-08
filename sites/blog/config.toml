@@ -1,4 +1,0 @@
-baseURL = "http://localhost:1313/sites/blog/"
-languageCode = "en-us"
-title = "LTB Blog"
-theme = "hugo-geekblog"

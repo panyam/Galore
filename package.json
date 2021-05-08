@@ -43,10 +43,6 @@
     "version": "git add -A src",
     "postversion": "git push && git push --tags"
   },
-  "dependencies": {
-    "@panyam/tsutils": "file:../tsutils",
-    "tlex": "file:../tlex"
-  },
   "devDependencies": {
     "@types/jest": "^26.0.20",
     "@types/js-yaml": "^4.0.0",
@@ -70,5 +66,9 @@
     "webpack-bundle-analyzer": "^4.4.0",
     "webpack-cli": "^4.5.0",
     "webpack-dev-server": "^3.11.2"
+  },
+  "dependencies": {
+    "@panyam/tsutils": "file:../tsutils",
+    "tlex": "file:../tlex"
   }
 }

@@ -1,6 +1,7 @@
 yarn.lock
 *.d.ts
 app.js
+/site
 *.js.map
 src/**/*.js
 tests/*.js

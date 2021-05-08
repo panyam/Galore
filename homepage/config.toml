@@ -1,0 +1,5 @@
+baseURL = "https://langtoolbox.appspot.com/"
+languageCode = "en-us"
+title = "Language Toolbox"
+theme = "docsy"
+publishdir = "../site"

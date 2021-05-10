@@ -309,7 +309,7 @@ export class EBNFParser {
         let label = token.value as string;
         if (token.tag == TokenType.STRING || token.tag == TokenType.NUMBER) {
           label = '"' + token.value + '"';
-          const pattern = token.value.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+          const pattern = str2regex(token.value);
           const rule = new TLEX.Rule(pattern, { tag: label, priority: 20 });
           this.generatedTokenizer.addRule(rule);
         } else if (token.tag == TokenType.REGEX) {

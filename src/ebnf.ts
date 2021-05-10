@@ -4,6 +4,10 @@ import { Sym, Grammar, Str } from "./grammar";
 
 type Tape = TLEX.Tape;
 
+const str2regex = (s: string): string => {
+  return s.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+};
+
 export enum TokenType {
   STRING = "STRING",
   REGEX = "REGEX",
@@ -28,27 +32,39 @@ export enum TokenType {
 
 export function EBNFTokenizer(): TLEX.Tokenizer {
   const lexer = new TLEX.Tokenizer();
-  lexer.addRule(new TLEX.Rule(/\[/, TokenType.OPEN_SQ));
-  lexer.addRule(new TLEX.Rule(/\]/, TokenType.CLOSE_SQ));
-  lexer.addRule(new TLEX.Rule(/\(/, TokenType.OPEN_PAREN));
-  lexer.addRule(new TLEX.Rule(/\)/, TokenType.CLOSE_PAREN));
-  lexer.addRule(new TLEX.Rule(/\{/, TokenType.OPEN_BRACE));
-  lexer.addRule(new TLEX.Rule(/\}/, TokenType.CLOSE_BRACE));
-  lexer.addRule(new TLEX.Rule(/\*/, TokenType.STAR));
-  lexer.addRule(new TLEX.Rule(/\+/, TokenType.PLUS));
-  lexer.addRule(new TLEX.Rule(/\?/, TokenType.QMARK));
-  lexer.addRule(new TLEX.Rule(/;/, TokenType.SEMI_COLON));
-  lexer.addRule(new TLEX.Rule(/\|/, TokenType.PIPE));
-  lexer.addRule(new TLEX.Rule(/\s+/, TokenType.SPACES));
-  lexer.addRule(new TLEX.Rule(/\/\*.*?\*\//, TokenType.COMMENT));
-  lexer.addRule(new TLEX.Rule(/\/\/.*$/, TokenType.COMMENT));
-  lexer.addRule(new TLEX.Rule(/"(.*?(?<!\\))"/, TokenType.STRING));
-  lexer.addRule(new TLEX.Rule(/'(.*?(?<!\\))'/, TokenType.STRING));
-  lexer.addRule(new TLEX.Rule(/\/.*?(?<!\\)\//, TokenType.REGEX));
-  lexer.addRule(new TLEX.Rule(/->/, TokenType.ARROW));
-  lexer.addRule(new TLEX.Rule(/\d+/, TokenType.NUMBER));
-  lexer.addRule(new TLEX.Rule(/%[\w][\w\d_]*/, TokenType.PCT_IDENT));
-  lexer.addRule(new TLEX.Rule(/[\w][\w\d_]*/, TokenType.IDENT));
+  lexer.add(/\[/, { tag: TokenType.OPEN_SQ });
+  lexer.add(/\]/, { tag: TokenType.CLOSE_SQ });
+  lexer.add(/\(/, { tag: TokenType.OPEN_PAREN });
+  lexer.add(/\)/, { tag: TokenType.CLOSE_PAREN });
+  lexer.add(/\{/, { tag: TokenType.OPEN_BRACE });
+  lexer.add(/\}/, { tag: TokenType.CLOSE_BRACE });
+  lexer.add(/\*/, { tag: TokenType.STAR });
+  lexer.add(/\+/, { tag: TokenType.PLUS });
+  lexer.add(/\?/, { tag: TokenType.QMARK });
+  lexer.add(/;/, { tag: TokenType.SEMI_COLON });
+  lexer.add(/\|/, { tag: TokenType.PIPE });
+  lexer.add(/\s+/m, { tag: TokenType.SPACES }, () => null);
+  lexer.add(/\/\*.*?\*\//, { tag: TokenType.COMMENT }, () => null);
+  lexer.add(/\/\/.*$/, { tag: TokenType.COMMENT }, () => null);
+  lexer.add(/"(.*?(?<!\\))"/, { tag: TokenType.STRING }, (rule, tape, token) => {
+    token.value = tape.substring(token.start + 1, token.end - 1);
+    return token;
+  });
+  lexer.add(/'(.*?(?<!\\))'/, { tag: TokenType.STRING }, (rule, tape, token) => {
+    token.value = tape.substring(token.start + 1, token.end - 1);
+    return token;
+  });
+  lexer.add(/\/(.*?(?<!\\))\//, { tag: TokenType.REGEX }, (rule, tape, token) => {
+    token.value = tape.substring(token.start + 1, token.end - 1);
+    return token;
+  });
+  lexer.add(/->/, { tag: TokenType.ARROW });
+  lexer.add(/\d+/, { tag: TokenType.NUMBER });
+  lexer.add(/%([\w][\w\d_]*)/, { tag: TokenType.PCT_IDENT }, (rule, tape, token) => {
+    token.value = tape.substring(token.start + 1, token.end);
+    return token;
+  });
+  lexer.add(/[\w][\w\d_]*/, { tag: TokenType.IDENT });
   return lexer;
 }
 
@@ -97,6 +113,7 @@ export class EBNFParser {
   readonly grammar: Grammar;
   private tokenizer: TLEX.TokenBuffer;
   private allowLeftRecursion = false;
+  readonly generatedTokenizer: TLEX.Tokenizer = new TLEX.Tokenizer();
 
   /*
    * The newSymbol callback provided to the contructor is a way for the client to
@@ -126,8 +143,8 @@ export class EBNFParser {
    * with this lit/ident going forward.
    *
    * All symbols created for the grammar, since they are either created
-   * by this parser or by the client (invokved by this parser), are stored
-   * locally to be returned in this method.
+   * by this parser or by the client (invokved by this parser), are
+   * stored locally to be returned in this method.
    */
   symbolForLabel(label: string): TSU.Nullable<Sym> {
     return this.symbolsByLabel[label] || null;
@@ -167,42 +184,56 @@ export class EBNFParser {
 
   parse(input: string): void {
     const et = EBNFTokenizer();
-    const tape = new TLEX.Tape(input);
-    const ntFunc = () => {
-      let out = et.next(tape);
-      while (out && (out.tag == TokenType.SPACES || out.tag == TokenType.COMMENT)) {
-        out = et.next(tape);
-      }
-      if (out?.tag == TokenType.STRING) {
-        out.value = tape.substring(out.start + 1, out.end - 1);
-      }
+    const ntFunc = (tape: Tape) => {
+      const out = et.next(tape);
       return out;
     };
     this.tokenizer = new TLEX.TokenBuffer(ntFunc);
-    this.parseGrammar();
+    this.parseGrammar(new TLEX.Tape(input));
   }
 
-  parseGrammar(): void {
-    let peeked = this.tokenizer.peek();
+  parseGrammar(tape: TLEX.Tape): void {
+    let peeked = this.tokenizer.peek(tape);
     while (peeked != null) {
       if (peeked.tag == TokenType.IDENT) {
         // declaration
-        this.parseDecl();
+        this.parseDecl(tape);
       } else if (peeked.tag == TokenType.PCT_IDENT) {
         // Some kind of directive
-        this.tokenizer.next();
-        console.log("Here: ", peeked);
-        TSU.assert(peeked.value == "skip", "Invalid directive: " + peeked.value);
-        const next = this.tokenizer.expectToken(TokenType.STRING, TokenType.REGEX);
-        // TODO - add next to skip list
+        this.tokenizer.next(tape);
+        if (peeked.value == "skip") {
+          const next = this.tokenizer.expectToken(tape, TokenType.STRING, TokenType.REGEX);
+          const pattern = next.tag == TokenType.STRING ? str2regex(next.value) : next.value;
+          const label = "/" + next.value + "/";
+          const rule = new TLEX.Rule(pattern, { tag: label, priority: 30 });
+          rule.skip = true;
+          this.generatedTokenizer.addRule(rule);
+        } else if (peeked.value == "token") {
+          const tokName = this.tokenizer.expectToken(tape, TokenType.IDENT);
+          const tokPattern = this.tokenizer.expectToken(tape, TokenType.STRING, TokenType.REGEX);
+          let rule: TLEX.Rule;
+          if (tokPattern.tag == TokenType.STRING || tokPattern.tag == TokenType.NUMBER) {
+            const pattern = str2regex(tokPattern.value);
+            rule = new TLEX.Rule(pattern, { tag: tokName.value, priority: 20 });
+          } else if (tokPattern.tag == TokenType.REGEX) {
+            rule = new TLEX.Rule(tokPattern.value, { tag: tokName.value, priority: 10 });
+          } else {
+            throw new TLEX.UnexpectedTokenError(tokPattern);
+          }
+          this.generatedTokenizer.addRule(rule);
+          // register it
+          this.ensureSymbol(tokName.value, true);
+        } else {
+          throw new Error("Invalid directive: " + peeked.value);
+        }
       }
-      peeked = this.tokenizer.peek();
+      peeked = this.tokenizer.peek(tape);
     }
   }
 
-  parseDecl(): void {
-    const ident = this.tokenizer.expectToken(TokenType.IDENT);
-    if (this.tokenizer.consumeIf(TokenType.ARROW)) {
+  parseDecl(tape: Tape): void {
+    const ident = this.tokenizer.expectToken(tape, TokenType.IDENT);
+    if (this.tokenizer.consumeIf(tape, TokenType.ARROW)) {
       const nt = this.ensureSymbol(ident.value as string, false);
       if (nt.isTerminal) {
         // it is a terminal so mark it as a non-term now that we
@@ -211,38 +242,46 @@ export class EBNFParser {
       } else if (nt.isAuxiliary) {
         throw new Error("NT is already auxiliary and cannot be reused.");
       }
-      for (const rule of this.parseProductions(this.grammar, nt)) {
+      for (const rule of this.parseProductions(tape, this.grammar, nt)) {
         this.grammar.add(nt, rule);
       }
-      this.tokenizer.expectToken(TokenType.SEMI_COLON);
+      this.tokenizer.expectToken(tape, TokenType.SEMI_COLON);
     }
   }
 
-  parseProductions(grammar: Grammar, nt: TSU.Nullable<Sym>): Str[] {
+  parseProductions(tape: Tape, grammar: Grammar, nt: TSU.Nullable<Sym>): Str[] {
     const out: Str[] = [];
-    while (this.tokenizer.peek() != null) {
-      const rule = this.parseProd(grammar);
+    while (this.tokenizer.peek(tape) != null) {
+      const rule = this.parseProd(tape, grammar);
       if (rule) out.push(rule);
-      if (this.tokenizer.consumeIf(TokenType.PIPE)) {
+      if (this.tokenizer.consumeIf(tape, TokenType.PIPE)) {
         continue;
-      } else if (this.tokenizer.nextMatches(TokenType.CLOSE_SQ, TokenType.CLOSE_PAREN, TokenType.SEMI_COLON)) {
+      } else if (this.tokenizer.nextMatches(tape, TokenType.CLOSE_SQ, TokenType.CLOSE_PAREN, TokenType.SEMI_COLON)) {
         break;
       }
     }
     return out;
   }
 
-  parseProd(grammar: Grammar): Str {
+  parseProd(tape: Tape, grammar: Grammar): Str {
     const out = new Str();
     while (true) {
       // if we are starting with a FOLLOW symbol then return as it marks
       // the end of this production
-      if (this.tokenizer.nextMatches(TokenType.CLOSE_PAREN, TokenType.CLOSE_SQ, TokenType.SEMI_COLON, TokenType.PIPE)) {
+      if (
+        this.tokenizer.nextMatches(
+          tape,
+          TokenType.CLOSE_PAREN,
+          TokenType.CLOSE_SQ,
+          TokenType.SEMI_COLON,
+          TokenType.PIPE,
+        )
+      ) {
         return out;
       }
       let curr: TSU.Nullable<Str> = null;
-      if (this.tokenizer.consumeIf(TokenType.OPEN_PAREN)) {
-        const rules = this.parseProductions(grammar, null);
+      if (this.tokenizer.consumeIf(tape, TokenType.OPEN_PAREN)) {
+        const rules = this.parseProductions(tape, grammar, null);
         if (rules.length == 0) {
           // nothing
         } else if (rules.length == 1) {
@@ -251,9 +290,9 @@ export class EBNFParser {
           // create a new NT over this
           curr = grammar.anyof(...rules);
         }
-        this.tokenizer.expectToken(TokenType.CLOSE_PAREN);
-      } else if (this.tokenizer.consumeIf(TokenType.OPEN_SQ)) {
-        const rules = this.parseProductions(grammar, null);
+        this.tokenizer.expectToken(tape, TokenType.CLOSE_PAREN);
+      } else if (this.tokenizer.consumeIf(tape, TokenType.OPEN_SQ)) {
+        const rules = this.parseProductions(tape, grammar, null);
         if (rules.length == 0) {
           // nothing
         } else if (rules.length == 1) {
@@ -262,31 +301,40 @@ export class EBNFParser {
           // create a new NT over this
           curr = grammar.opt(grammar.anyof(...rules));
         }
-        this.tokenizer.expectToken(TokenType.CLOSE_SQ);
-      } else if (this.tokenizer.nextMatches(TokenType.IDENT, TokenType.STRING, TokenType.NUMBER, TokenType.REGEX)) {
-        const token = this.tokenizer.next() as TLEX.Token;
+        this.tokenizer.expectToken(tape, TokenType.CLOSE_SQ);
+      } else if (
+        this.tokenizer.nextMatches(tape, TokenType.IDENT, TokenType.STRING, TokenType.NUMBER, TokenType.REGEX)
+      ) {
+        const token = this.tokenizer.next(tape) as TLEX.Token;
         let label = token.value as string;
         if (token.tag == TokenType.STRING || token.tag == TokenType.NUMBER) {
-          label = "L:" + token.value;
+          label = '"' + token.value + '"';
+          const pattern = token.value.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+          const rule = new TLEX.Rule(pattern, { tag: label, priority: 20 });
+          this.generatedTokenizer.addRule(rule);
         } else if (token.tag == TokenType.REGEX) {
-          label = "R:" + token.value;
+          label = "/" + token.value + "/";
+          const rule = new TLEX.Rule(token.value, { tag: label, priority: 10 });
+          this.generatedTokenizer.addRule(rule);
+        } else {
+          // Normal
         }
         // See if this symbol is already registered
         const currSym = this.ensureSymbol(label, true);
         curr = new Str(currSym);
       } else {
-        throw new TLEX.UnexpectedTokenError(this.tokenizer.peek());
+        throw new TLEX.UnexpectedTokenError(this.tokenizer.peek(tape));
       }
 
       if (curr == null) {
         throw new Error("Could not determine node");
       }
 
-      if (this.tokenizer.consumeIf(TokenType.STAR)) {
+      if (this.tokenizer.consumeIf(tape, TokenType.STAR)) {
         curr = grammar.atleast0(curr, this.allowLeftRecursion);
-      } else if (this.tokenizer.consumeIf(TokenType.PLUS)) {
+      } else if (this.tokenizer.consumeIf(tape, TokenType.PLUS)) {
         curr = grammar.atleast1(curr, this.allowLeftRecursion);
-      } else if (this.tokenizer.consumeIf(TokenType.QMARK)) {
+      } else if (this.tokenizer.consumeIf(tape, TokenType.QMARK)) {
         curr = grammar.opt(curr);
       }
       out.extend(curr);

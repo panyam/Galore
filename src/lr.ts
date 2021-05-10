@@ -459,13 +459,13 @@ export class Parser extends ParserBase {
   /**
    * Parses the input and returns the resulting root Parse Tree node.
    */
-  parse(): Nullable<PTNode> {
-    const tokenizer = this.tokenizer;
+  protected parseInput(input: TLEX.Tape): Nullable<PTNode> {
+    const tokenbuffer = this.tokenbuffer;
     const stack = this.stack;
     const g = this.grammar;
     let output: Nullable<PTNode> = null;
-    while (tokenizer.peek() != null || !stack.isEmpty) {
-      const token = tokenizer.peek();
+    while (tokenbuffer.peek(input) != null || !stack.isEmpty) {
+      const token = tokenbuffer.peek(input);
       const nextSym = token == null ? g.Eof : this.getSym(token);
       const nextValue = token == null ? null : token.value;
       let [topState, topNode] = stack.top();
@@ -474,11 +474,11 @@ export class Parser extends ParserBase {
         throw new TLEX.UnexpectedTokenError(token);
       }
 
-      const action = this.resolveActions(actions, stack, tokenizer);
+      const action = this.resolveActions(actions, stack, tokenbuffer);
       if (action.tag == LRActionType.ACCEPT) {
         break;
       } else if (action.tag == LRActionType.SHIFT) {
-        tokenizer.next();
+        tokenbuffer.next(input);
         const newNode = new PTNode(nextSym, nextValue);
         stack.push(action.gotoState!, newNode);
       } else {
@@ -493,7 +493,7 @@ export class Parser extends ParserBase {
           newNode.children.splice(0, 0, node);
         }
         [topState, topNode] = stack.top();
-        const newAction = this.resolveActions(this.parseTable.getActions(topState, action.rule.nt), stack, tokenizer);
+        const newAction = this.resolveActions(this.parseTable.getActions(topState, action.rule.nt), stack, tokenbuffer);
         TSU.assert(newAction != null, "Top item does not have an action.");
         stack.push(newAction.gotoState!, newNode);
         this.notifyReduction(newNode, action.rule);
@@ -517,9 +517,9 @@ export class Parser extends ParserBase {
   }
 
   /**
-   * Pick an action among several actions based on several factors (eg curr parse stack, tokenizer etc).
+   * Pick an action among several actions based on several factors (eg curr parse stack, tokenbuffer etc).
    */
-  resolveActions(actions: LRAction[], stack: ParseStack, tokenizer: TLEX.TokenBuffer): LRAction {
+  resolveActions(actions: LRAction[], stack: ParseStack, tokenbuffer: TLEX.TokenBuffer): LRAction {
     if (actions.length > 1) {
       throw new Error("Multiple actions found.");
     }

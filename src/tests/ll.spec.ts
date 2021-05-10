@@ -58,13 +58,33 @@ function tok(tag: any, value: any): TLEX.Token {
   return out;
 }
 
+/**
+ * Helper to create a grammar, and its parser.
+ */
+export function newParser(input: string, debug = false): Parser {
+  const eparser = new EBNFParser(input);
+  const g = eparser.grammar.augmentStartSymbol();
+  const parser = new Parser(g);
+  const tokenizer = eparser.generatedTokenizer;
+  parser.setTokenizer(tokenizer.next.bind(tokenizer));
+  if (debug) {
+    console.log(
+      "===============================\nGrammar (as default): \n",
+      g.debugValue.map((x, i) => `${i + 1}  -   ${x}`),
+      "===============================\nGrammar (as Bison): \n",
+      g.debugValue.map((x, i) => `${x.replace("->", ":")} ; \n`).join(""),
+      "===============================\nParseTable: \n",
+      parser.parseTable.debugValue,
+    );
+    console.log("Prog: \n", `${tokenizer.vm.prog.debugValue().join("\n")}`);
+  }
+  return parser;
+}
+
 describe("Parser Tests", () => {
   test("Tests 1", () => {
-    const g = new EBNFParser(Samples.expr2).grammar;
-
-    const tokenizer = mockTokenizer(tok("id", "A"), tok("PLUS", "+"), tok("id", "B"), tok("STAR", "*"), tok("id", "C"));
-    const parser = new Parser(g).setTokenizer(tokenizer);
-    const result = parser.parse();
+    const parser = newParser(Samples.expr2, true);
+    const result = parser.parse("A+B*C");
     expect(result?.debugValue).toEqual([
       "E - null",
       "  T - null",

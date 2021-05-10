@@ -42,13 +42,13 @@ export class PTNode {
 
 export abstract class Parser {
   grammar: Grammar;
-  tokenizer: TLEX.TokenBuffer;
+  tokenbuffer: TLEX.TokenBuffer;
   constructor(grammar: Grammar) {
     this.grammar = grammar;
   }
 
   setTokenizer(tokenizer: TLEX.NextTokenFunc): this {
-    this.tokenizer = new TLEX.TokenBuffer(tokenizer);
+    this.tokenbuffer = new TLEX.TokenBuffer(tokenizer);
     return this;
   }
 
@@ -63,8 +63,15 @@ export abstract class Parser {
     return out;
   }
 
+  parse(input: string | TLEX.Tape): Nullable<PTNode> {
+    if (typeof input === "string") {
+      input = new TLEX.Tape(input);
+    }
+    return this.parseInput(input);
+  }
+
   /**
    * Parses the input and returns the resulting root Parse Tree node.
    */
-  abstract parse(): Nullable<PTNode>;
+  protected abstract parseInput(input: TLEX.Tape): Nullable<PTNode>;
 }

@@ -174,15 +174,15 @@ export class Parser extends ParserBase {
   /**
    * Parses the input and returns the resulting root Parse Tree node.
    */
-  parse(): Nullable<PTNode> {
-    const tokenizer = this.tokenizer;
+  protected parseInput(input: TLEX.Tape): Nullable<PTNode> {
+    const tokenbuffer = this.tokenbuffer;
     const stack = this.stack;
     const g = this.grammar;
     let token: Nullable<TLEX.Token>;
     let topItem: Sym;
     let topNode: PTNode;
     do {
-      token = tokenizer.peek();
+      token = tokenbuffer.peek(input);
       [topItem, topNode] = stack.top();
       const nextSym = token == null ? g.Eof : this.getSym(token);
       const nextValue = token == null ? null : token.value;
@@ -190,13 +190,15 @@ export class Parser extends ParserBase {
         if (topItem == nextSym) {
           // Something must happen here to stack symbol to build
           // the parse tree
-          this.consumeTokenAndPop(nextSym, token!);
+          this.consumeTokenAndPop(input, nextSym, token!);
         } else {
           this.processInvalidToken(nextSym, token);
         }
       } else {
         const entries = this.parseTable.get(topItem, nextSym);
         if (entries.length != 1) {
+          console.log("TopItem: ", topItem);
+          console.log("nextSym: ", nextSym);
           this.processInvalidReductions(topNode, topItem, nextSym, nextValue, entries);
         } else {
           const [sym, ptnode] = this.stack.pop();
@@ -219,12 +221,13 @@ export class Parser extends ParserBase {
       parentNode.add(node, 0);
     }
   }
-  consumeTokenAndPop(nextSym: Sym, nextToken: TLEX.Token): void {
+  consumeTokenAndPop(tape: TLEX.Tape, nextSym: Sym, nextToken: TLEX.Token): void {
     const [sym, ptnode] = this.stack.top();
     TSU.assert(sym == nextSym);
     TSU.assert(ptnode.sym == nextSym);
     ptnode.value = nextToken.value;
-    this.tokenizer.next();
+    console.log("Consuming token: ", nextToken);
+    this.tokenbuffer.next(tape);
     this.stack.pop();
   }
 

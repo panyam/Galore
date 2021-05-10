@@ -13,16 +13,15 @@ In this example we will build a JSON parser using LTB.
 Grammars in LTB are an extension of the Extended Backaus Naur Form (EBNF).   The EBNF grammar for JSON is:
 
 ```
-%token NUMBER /-?\d+(\.\d+)?([eE][+-]?\d+)?/
-%token STRING /".*?(?<!\\)"/
-%skip /[ \t\n\f\r]+/
-
-Value -> Dict | List | STRING | NUMBER | Boolean | "null"
-List -> "[" Value ( "," value ) * "]"
-Dict -> "{" [ Pair ("," Pair)* ] "}"
-Pair -> STRING ":" value
-Boolean -> "true" | "false"
-
+  %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
+  %token STRING /".*?(?<!\\)"/
+  %skip /[ \\t\\n\\f\\r]+/
+  
+  Value -> Dict | List | STRING | NUMBER | Boolean | "null" ;
+  List -> "[" Value ( "," value ) * "]" ;
+  Dict -> "{" [ Pair ("," Pair)* ] "}" ;
+  Pair -> STRING ":" value ;
+  Boolean -> "true" | "false" ;
 ```
 
 
@@ -32,5 +31,13 @@ That is it.  LTB There are other ways to refactor and import common rules to avo
 
 Let us try it out below.
 
+What do we want here?
+
+We want 3 panels - for grammar input, text input and parse tree result.
+
+We want a 3 panel thing where left panel is the grammar,
+
+right panel "top" has the 
+{{ partial "ltbdemo/ltbdemo.html" }}
 <ltb>
 </ltb>

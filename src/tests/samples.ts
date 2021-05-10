@@ -40,6 +40,13 @@ export default {
       factor -> NUM | LP exp RP ;
   `,
   expr2: `
+      %token PLUS "+"
+      %token STAR "*"
+      %token OPEN "("
+      %token CLOSE ")"
+      %token id /[A-Za-z]+/
+      %skip /[ \\t\\n\\f\\r]+/
+
       E -> T E1 ;
       E1 -> PLUS T E1 | ;
       T  -> F T1 ;

@@ -114,7 +114,8 @@ export function logParserDebug(parser: Parser): void {
  * Helper to create a grammar, and its parser.
  */
 export function newParser(input: string, ptabType = "slr", debug = false): Parser {
-  const g = new EBNFParser(input).grammar.augmentStartSymbol();
+  const eparser = new EBNFParser(input);
+  const g = eparser.grammar.augmentStartSymbol();
   const ptMaker = ptabType == "lr1" ? makeLRParseTable : makeSLRParseTable;
   const [ptable, ig] = ptMaker(g);
   if (debug) {
@@ -134,7 +135,9 @@ export function newParser(input: string, ptabType = "slr", debug = false): Parse
       ptable.conflictActions,
     );
   }
-  return new Parser(g, ptable, ig);
+  const parser = new Parser(g, ptable, ig);
+  parser.setTokenizer(eparser.generatedTokenizer.next.bind(eparser.generatedTokenizer));
+  return parser;
 }
 
 export function mergedDebugValue(ptable: ParseTable, ig: LRItemGraph): any {

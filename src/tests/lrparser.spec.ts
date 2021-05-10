@@ -11,10 +11,9 @@ function tok(tag: any, value: any): TLEX.Token {
   return out;
 }
 
-function testParsing(ptabType: string, grammar: string, tokens: TLEX.Token[], debug = false): TSU.Nullable<PTNode> {
+function testParsing(ptabType: string, grammar: string, input: string, debug = false): TSU.Nullable<PTNode> {
   const parser = newParser(grammar, ptabType, debug);
-  parser.setTokenizer(mockTokenizer(...tokens));
-  const result = parser.parse();
+  const result = parser.parse(input);
   if (debug) {
     console.log(util.inspect(result?.debugValue || null, { showHidden: false, depth: null }));
   }
@@ -30,7 +29,7 @@ describe("LRParsing Tests", () => {
       T -> T star F | F ;
       F -> open E close | id ;
       `,
-      [tok("id", "A")],
+      "A",
     );
     expect(result?.debugValue).toEqual(["E - null", "  T - null", "    F - null", "      id - A"]);
   });
@@ -43,7 +42,7 @@ describe("LRParsing Tests", () => {
       T -> T star F | F ;
       F -> open E close | id ;
       `,
-      [tok("id", "A"), tok("plus", "+"), tok("id", "B"), tok("star", "*"), tok("id", "C")],
+      "A+B*C",
     );
     expect(result?.debugValue).toEqual([
       "E - null",
@@ -70,21 +69,7 @@ describe("LRParsing Tests", () => {
       T -> T star F | F ;
       F -> open E close | id ;
       `,
-      [
-        tok("id", "A"),
-        tok("plus", "+"),
-        tok("id", "B"),
-        tok("star", "*"),
-        tok("id", "C"),
-        tok("plus", "+"),
-        tok("open", "("),
-        tok("id", "x"),
-        tok("star", "*"),
-        tok("id", "y"),
-        tok("plus", "+"),
-        tok("id", "z"),
-        tok("close", ")"),
-      ],
+      "A+B*C+(x*y+z)",
     );
     expect(result?.debugValue).toEqual([
       "E - null",

@@ -186,6 +186,8 @@ export class LR1ItemSet extends LRItemSet {
 export abstract class LRItemGraph {
   readonly grammar: Grammar;
 
+  gotoSymbolSorter: null | ((s1: Sym, s2: Sym) => number) = null;
+
   // List of all unique LRItems that can be used in this item graph.
   // Note that since the same Item can reside in multiple sets only
   // one is created via the newItem method and it is referred
@@ -205,7 +207,9 @@ export abstract class LRItemGraph {
   abstract closure(itemSet: LRItemSet): LRItemSet;
   abstract startSet(): LRItemSet;
 
-  constructor(grammar: Grammar) {
+  constructor(grammar: Grammar, config: any = null) {
+    config = config || {};
+    this.gotoSymbolSorter = config.gotoSymbolSorter || null;
     this.grammar = grammar;
     this.items = new IDSet();
     this.itemSets = new IDSet();
@@ -242,7 +246,11 @@ export abstract class LRItemGraph {
       const currSet = out.get(i);
       // This will also include the null symbol since Grammar
       // adds Null and Eof symbols automatically
-      for (const sym of this.grammar.allSymbols) {
+      let allSymbols = this.grammar.allSymbols;
+      if (this.gotoSymbolSorter) {
+        allSymbols = allSymbols.map((x) => x).sort(this.gotoSymbolSorter);
+      }
+      for (const sym of allSymbols) {
         if (sym != this.grammar.Null) {
           const gotoSet = this.goto(currSet, sym);
           if (gotoSet.size > 0) {
@@ -471,7 +479,12 @@ export class Parser extends ParserBase {
       let [topState, topNode] = stack.top();
       const actions = this.parseTable.getActions(topState, nextSym);
       if (actions == null || actions.length == 0) {
-        throw new TLEX.UnexpectedTokenError(token);
+        // TODO - use a error handler here
+        console.log("Stack: ", stack);
+        throw new TLEX.ParseError(
+          token?.start || 0,
+          `Unexpected token at state (${topState.id}): ${token?.tag} ('${nextSym.label}')`,
+        );
       }
 
       const action = this.resolveActions(actions, stack, tokenbuffer);

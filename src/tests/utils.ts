@@ -8,7 +8,7 @@ import { FirstSets, NullableSet, FollowSets } from "../sets";
 import { ParseTable as LLParseTable } from "../ll";
 import { LRAction, ParseTable, LRItemGraph } from "../lr";
 import { makeSLRParseTable, makeLRParseTable } from "../ptables";
-import { Parser, LR0ItemGraph, LR1ItemGraph } from "../lr";
+import { Parser } from "../lr";
 
 type StringMap<T> = TSU.StringMap<T>;
 
@@ -113,29 +113,21 @@ export function logParserDebug(parser: Parser): void {
 /**
  * Helper to create a grammar, and its parser.
  */
-export function newParser(input: string, ptabType = "slr", debug = false): Parser {
-  const eparser = new EBNFParser(input);
-  const g = eparser.grammar.augmentStartSymbol();
+export function newParser(input: string, ptabType = "slr", config: any = null): Parser {
+  const params = config == null || typeof config === "boolean" ? {} : config;
+  const debug = config === true || params["debug"] || false;
+  params.grammar = params.grammar || {};
+  params.itemGraph = params.itemGraph || {};
+  const g = new Grammar(params.grammar);
+  const eparser = new EBNFParser(input, { ...(params.parser || {}), grammar: g });
+  g.augmentStartSymbol();
   const ptMaker = ptabType == "lr1" ? makeLRParseTable : makeSLRParseTable;
-  const [ptable, ig] = ptMaker(g);
-  if (debug) {
-    console.log(
-      "===============================\nGrammar (as default): \n",
-      g.debugValue.map((x, i) => `${i + 1}  -   ${x}`),
-      "===============================\nGrammar (as Bison): \n",
-      g.debugValue.map((x, i) => `${x.replace("->", ":")} ; \n`).join(""),
-      "===============================\nParseTable: \n",
-      util.inspect(mergedDebugValue(ptable, ig), {
-        showHidden: false,
-        depth: null,
-        maxArrayLength: null,
-        maxStringLength: null,
-      }),
-      "===============================\nConflicts: \n",
-      ptable.conflictActions,
-    );
-  }
+  const [ptable, ig] = ptMaker(g, params);
   const parser = new Parser(g, ptable, ig);
+  if (debug) {
+    logParserDebug(parser);
+    console.log("Prog: \n", `${eparser.generatedTokenizer.vm.prog.debugValue().join("\n")}`);
+  }
   parser.setTokenizer(eparser.generatedTokenizer.next.bind(eparser.generatedTokenizer));
   return parser;
 }

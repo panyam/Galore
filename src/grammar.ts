@@ -31,6 +31,11 @@ export class Sym {
    */
   id: number;
 
+  /**
+   * An ID assigned to indicate order of "creation" of this symbol in the grammar.
+   */
+  creationId = -1;
+
   constructor(grammar: Grammar, label: string, isTerminal: boolean, id: Nullable<number> = null) {
     this.isTerminal = isTerminal;
     this.label = label;
@@ -168,11 +173,13 @@ export class Grammar {
   protected _rulesForNT: Nullable<StringMap<Rule[]>> = null;
   protected _followSets: Nullable<FollowSets> = null;
 
-  // static readonly AUG_SYM_ID = -2;
-  // static readonly NULL_SYM_ID = -3;
-  // static readonly EOF_SYM_ID = -1;
-  readonly Null: Sym; // = new Sym(this, "", true, Grammar.NULL_SYM_ID);
-  readonly Eof: Sym; // = new Sym(this, "<EOF>", true, Grammar.EOF_SYM_ID);
+  /**
+   * Prefix used for auxiliary symbols.
+   */
+  auxNTPrefix: string;
+
+  readonly Null: Sym;
+  readonly Eof: Sym;
   private _AugStartRule: Rule;
   private _hasNull = false;
 
@@ -187,6 +194,7 @@ export class Grammar {
 
   constructor(config?: any) {
     config = config || {};
+    this.auxNTPrefix = config.auxNTPrefix || "$";
     this.Null = this.newTerm("");
     this.Eof = this.newTerm("$end");
   }
@@ -234,14 +242,6 @@ export class Grammar {
     const augSym = this.newNT(label);
     this._AugStartRule = new Rule(augSym, new Str(this.startSymbol));
     this.addRule(this._AugStartRule, 0);
-    /*
-    const sym = TSU.assert(this.getSym(label) == null);
-    if (this.startSymbol) {
-      const augSym = new Sym(this, label, false, Grammar.AUG_SYM_ID);
-      this._AugStartRule = new Rule(augSym, new Str(this.startSymbol));
-      this.addRule(this._AugStartRule);
-    }
-    */
     return this;
   }
 
@@ -264,6 +264,10 @@ export class Grammar {
 
   get terminals(): ReadonlyArray<Sym> {
     return this.symbolSet.entries.filter((x) => x.isTerminal);
+  }
+
+  get allNonTerminals(): ReadonlyArray<Sym> {
+    return this.symbolSet.entries.filter((x) => !x.isTerminal);
   }
 
   get nonTerminals(): ReadonlyArray<Sym> {
@@ -332,7 +336,7 @@ export class Grammar {
         nonterm = this.newNT(nt);
       }
     } else {
-      nonterm = this.symbolSet.ensure(nt);
+      nonterm = this.ensureSym(nt);
     }
     return this.addRule(new Rule(nonterm, production));
   }
@@ -414,11 +418,23 @@ export class Grammar {
     return this.symbolSet.getByKey(label);
   }
 
+  ensureSym(sym: Sym, throwIfExists = false): Sym {
+    const sym2 = this.symbolSet.ensure(sym, throwIfExists);
+    if (sym == sym2) {
+      if (sym2.creationId < 0) {
+    sym2.creationId = this.symbolSet.size;
+      }
+    } else {
+      TSU.assert(!throwIfExists, "Should have already thrown error");
+    }
+    return sym2;
+  }
+
   newTerm(label: string): Sym {
     if (this.getSym(label) != null) {
       throw new Error(`${label} is already exists`);
     }
-    return this.symbolSet.ensure(new Sym(this, label, true), true);
+    return this.ensureSym(new Sym(this, label, true), true);
   }
 
   /**
@@ -436,7 +452,7 @@ export class Grammar {
     }
     let nt = new Sym(this, label, false);
     nt.isAuxiliary = isAuxiliary;
-    nt = this.symbolSet.ensure(nt, true);
+    nt = this.ensureSym(nt, true);
     if (!isAuxiliary) {
       if (this.startSymbol == null) {
         this.startSymbol = nt;
@@ -605,7 +621,7 @@ export class Grammar {
   // Override this to have a different
   protected auxNTCount = 0;
   protected newAuxNTName(): string {
-    return "$" + this.auxNTCount++;
+    return this.auxNTPrefix + this.auxNTCount++;
   }
 
   newAuxNT(name = ""): Sym {
@@ -644,6 +660,22 @@ export class Grammar {
       }
       return true;
     });
+  }
+
+  print(options: any = null): string[] {
+    options = options || {};
+    const ruleSep = options.ruleSep || "->";
+    const includeSemiColon = options.includeSemiColon || false;
+    const lambdaSymbol = options.lambdaSymbol || "";
+    const out: string[] = [];
+    this.forEachRule(null, (rule: Rule, index: number) => {
+      let r = `${rule.nt.label} ${ruleSep} `;
+      if (rule.rhs.length > 0) r += rule.rhs.debugString;
+      else r += lambdaSymbol;
+      if (includeSemiColon) r += " ;";
+      out.push(r);
+    });
+    return out;
   }
 
   /**
@@ -742,7 +774,7 @@ export class Grammar {
       });
       return out;
     };
-    return allMinimalCycles(this.nonTerminals, (val: Sym) => val.label, edgeFunctor);
+    return allMinimalCycles(this.allNonTerminals, (val: Sym) => val.label, edgeFunctor);
   }
 
   /**
@@ -762,6 +794,6 @@ export class Grammar {
       });
       return out;
     };
-    return allMinimalCycles(this.nonTerminals, (val: Sym) => val.id, edgeFunctor);
+    return allMinimalCycles(this.allNonTerminals, (val: Sym) => val.id, edgeFunctor);
   }
 }

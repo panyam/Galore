@@ -131,7 +131,7 @@ export class EBNFParser {
 
   constructor(input: string, config: any = {}) {
     this.symbolsByLabel = {};
-    this.grammar = new Grammar();
+    this.grammar = config.grammar || new Grammar();
     this.allowLeftRecursion = config.allowLeftRecursion || false;
     this.newSymbolCallback = config.newSymbol || null;
     this.parse(input);
@@ -206,8 +206,7 @@ export class EBNFParser {
           const pattern = next.tag == TokenType.STRING ? str2regex(next.value) : next.value;
           const label = "/" + next.value + "/";
           const rule = new TLEX.Rule(pattern, { tag: label, priority: 30 });
-          rule.skip = true;
-          this.generatedTokenizer.addRule(rule);
+          this.generatedTokenizer.addRule(rule, () => null);
         } else if (peeked.value == "token") {
           const tokName = this.tokenizer.expectToken(tape, TokenType.IDENT);
           const tokPattern = this.tokenizer.expectToken(tape, TokenType.STRING, TokenType.REGEX);

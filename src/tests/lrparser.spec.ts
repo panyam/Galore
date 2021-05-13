@@ -4,6 +4,7 @@ import * as TLEX from "tlex";
 import { PTNode } from "../parser";
 import { mockTokenizer } from "./mocks";
 import { newParser } from "./utils";
+import { Sym } from "../Grammar";
 
 function tok(tag: any, value: any): TLEX.Token {
   const out = new TLEX.Token(tag, 0, 0, 0);
@@ -11,39 +12,36 @@ function tok(tag: any, value: any): TLEX.Token {
   return out;
 }
 
-function testParsing(ptabType: string, grammar: string, input: string, debug = false): TSU.Nullable<PTNode> {
-  const parser = newParser(grammar, ptabType, debug);
+function testParsing(ptabType: string, grammar: string, input: string, config: any = false): TSU.Nullable<PTNode> {
+  const parser = newParser(grammar, ptabType, config);
   const result = parser.parse(input);
-  if (debug) {
+  if (config === true || config.debug) {
     console.log(util.inspect(result?.debugValue || null, { showHidden: false, depth: null }));
   }
   return result;
 }
 
-describe("LRParsing Tests", () => {
-  test("Test Single ID", () => {
-    const result = testParsing(
-      "slr",
-      `
+const test_grammar = `
+      %token plus "+"
+      %token star "*"
+      %token open "("
+      %token close ")"
+      %token id /[A-Za-z]+/
+      %skip /[ \\t\\n\\f\\r]+/
+
       E -> E plus T | T ;
       T -> T star F | F ;
       F -> open E close | id ;
-      `,
-      "A",
-    );
+`;
+
+describe("LRParsing Tests", () => {
+  test("Test Single ID", () => {
+    const result = testParsing("slr", test_grammar, "A");
     expect(result?.debugValue).toEqual(["E - null", "  T - null", "    F - null", "      id - A"]);
   });
 
   test("Test A + B * C", () => {
-    const result = testParsing(
-      "slr",
-      `
-      E -> E plus T | T ;
-      T -> T star F | F ;
-      F -> open E close | id ;
-      `,
-      "A+B*C",
-    );
+    const result = testParsing("slr", test_grammar, "A+B*C");
     expect(result?.debugValue).toEqual([
       "E - null",
       "  E - null",
@@ -62,15 +60,7 @@ describe("LRParsing Tests", () => {
   });
 
   test("Test A + B * C + (x * y + z)", () => {
-    const result = testParsing(
-      "slr",
-      `
-      E -> E plus T | T ;
-      T -> T star F | F ;
-      F -> open E close | id ;
-      `,
-      "A+B*C+(x*y+z)",
-    );
+    const result = testParsing("slr", test_grammar, "A+B*C+(x*y+z)");
     expect(result?.debugValue).toEqual([
       "E - null",
       "  E - null",
@@ -120,5 +110,36 @@ describe("LRParsing Tests", () => {
       `,
       "slr",
     );
+  });
+
+  test("Test JSON", () => {
+    const result = testParsing(
+      "slr",
+      `
+        %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
+        %token STRING /".*?(?<!\\\\)"/
+        %skip /[ \\t\\n\\f\\r]+/
+
+        Value -> Dict | List | STRING | NUMBER | "true" | "false" | "null" ;
+        List -> "[" [ Value ( "," Value ) * ] "]" ;
+        Dict -> "{" [ Pair ("," Pair)* ] "}" ;
+        Pair -> STRING ":" Value ;
+      `,
+      `{"key": ["item0", "item1", 3.14 ] }`,
+      // `{ "key" : 3.14 }`,
+      // `[ 1 ]`,
+      {
+        debug: true,
+        grammar: { auxNTPrefix: "_" },
+        itemGraph: {
+          gotoSymbolSorter2: (s1: Sym, s2: Sym) => {
+            const diff = (s1.isTerminal ? 0 : 1) - (s2.isTerminal ? 0 : 1);
+            if (diff != 0) return;
+            return s1.creationId - s2.creationId;
+          },
+        },
+      },
+    );
+    console.log("Result: ", result?.debugValue);
   });
 });

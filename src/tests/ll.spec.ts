@@ -83,7 +83,7 @@ export function newParser(input: string, debug = false): Parser {
 
 describe("Parser Tests", () => {
   test("Tests 1", () => {
-    const parser = newParser(Samples.expr2, true);
+    const parser = newParser(Samples.expr2);
     const result = parser.parse("A+B*C");
     expect(result?.debugValue).toEqual([
       "E - null",

@@ -1,3 +1,4 @@
+import { Grammar } from "../grammar";
 import { EBNFParser } from "../ebnf";
 import { expectNullables, expectFSEntries } from "./utils";
 import Samples from "./samples";
@@ -85,5 +86,68 @@ describe("FollowSet Tests", () => {
 
     expect(g.firstSets.debugValue).toEqual({ S: "<, b, c, x>", A: "<, b, c, x>", X: "<, x>" });
     expect(g.followSets.debugValue).toEqual({ S: "<$end, b, c, x>", A: "<$end, b, c, x>", X: "<$end, b, c, x>" });
+  });
+
+  test("Tests JSON with Lists only", () => {
+    const g = new Grammar({ auxNTPrefix: "_" });
+    new EBNFParser(
+      `
+        Value -> List | NULL ;
+        List -> OSQ Value ( COMMA Value ) * CSQ ;
+    `,
+      { grammar: g },
+    );
+
+    expect(g.firstSets.debugValue).toEqual({ Value: "<NULL, OSQ>", List: "<OSQ>", _0: "<, COMMA>" });
+    expect(g.followSets.debugValue).toEqual({
+      Value: "<$end, COMMA, CSQ>",
+      List: "<$end, COMMA, CSQ>",
+      _0: "<CSQ>",
+    });
+  });
+
+  test("Tests Bigger JSON", () => {
+    const g = new Grammar({ auxNTPrefix: "_" });
+    new EBNFParser(
+      `
+        Value -> Dict | List | STRING | NUMBER | TRUE | FALSE | NULL ;
+        List -> OSQ [ Value ( COMMA Value ) * ] CSQ ;
+        Dict -> OBRACE [ Pair (COMMA Pair)* ] CBRACE ;
+        Pair -> STRING COLON Value ;
+    `,
+      { grammar: g },
+    );
+
+    /*
+    console.log(
+      "Grammar: \n",
+      g.print({ lambdaSymbol: "''", ruleSep: "->", includeSemiColon: false }).join("\n"),
+      "\nFirstSets: \n",
+      g.firstSets.debugValue,
+      "\nFollowSets: \n",
+      g.followSets.debugValue,
+    );
+   */
+
+    expect(g.firstSets.debugValue).toEqual({
+      Value: "<FALSE, NULL, NUMBER, OBRACE, OSQ, STRING, TRUE>",
+      Dict: "<OBRACE>",
+      List: "<OSQ>",
+      _0: "<, COMMA>",
+      _1: "<, FALSE, NULL, NUMBER, OBRACE, OSQ, STRING, TRUE>",
+      Pair: "<STRING>",
+      _2: "<, COMMA>",
+      _3: "<, STRING>",
+    });
+    expect(g.followSets.debugValue).toEqual({
+      Value: "<$end, CBRACE, COMMA, CSQ>",
+      Dict: "<$end, CBRACE, COMMA, CSQ>",
+      List: "<$end, CBRACE, COMMA, CSQ>",
+      _0: "<CSQ>",
+      _1: "<CSQ>",
+      Pair: "<CBRACE, COMMA>",
+      _2: "<CBRACE>",
+      _3: "<CBRACE>",
+    });
   });
 });

@@ -113,8 +113,8 @@ export class IDSet<T extends { id: number }> {
       this._entriesByKey[this.keyFunc(entry)] = entry;
       entry.id = this._entries.length;
       this._entries.push(entry);
+      return entry;
     }
-    return entry;
   }
 
   has(entry: T): boolean {
@@ -220,7 +220,7 @@ export class NullableSet {
     let beforeCount = 0;
     do {
       beforeCount = this.entries.size;
-      this.grammar.nonTerminals.forEach((nt) => this.visit(nt));
+      this.grammar.allNonTerminals.forEach((nt) => this.visit(nt));
     } while (beforeCount != this.entries.size);
   }
 

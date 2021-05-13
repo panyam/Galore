@@ -226,7 +226,6 @@ export class Parser extends ParserBase {
     TSU.assert(sym == nextSym);
     TSU.assert(ptnode.sym == nextSym);
     ptnode.value = nextToken.value;
-    console.log("Consuming token: ", nextToken);
     this.tokenbuffer.next(tape);
     this.stack.pop();
   }

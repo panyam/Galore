@@ -422,7 +422,7 @@ export class Grammar {
     const sym2 = this.symbolSet.ensure(sym, throwIfExists);
     if (sym == sym2) {
       if (sym2.creationId < 0) {
-    sym2.creationId = this.symbolSet.size;
+        sym2.creationId = this.symbolSet.size;
       }
     } else {
       TSU.assert(!throwIfExists, "Should have already thrown error");

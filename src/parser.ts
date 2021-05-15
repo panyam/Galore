@@ -8,10 +8,21 @@ export class PTNode {
   readonly sym: Sym;
   parent: Nullable<PTNode> = null;
   value: any;
-  readonly children: PTNode[] = [];
-  constructor(sym: Sym, value: any = null) {
+  readonly children: PTNode[];
+  constructor(sym: Sym, value: any = null, ...children: PTNode[]) {
     this.sym = sym;
     this.value = value;
+    this.children = children || [];
+  }
+
+  get reprString(): string {
+    /*
+    let out = `Node(${this.sym.label}, {this.value}`;
+    if (this.children.length > 0) out += ", " + this.children.map((c) => c.reprString).join(", ");
+    out += ")";
+    return out;
+    */
+    return this.debugValue(false).join("\n");
   }
 
   get isTerminal(): boolean {
@@ -31,12 +42,19 @@ export class PTNode {
     return this;
   }
 
-  get debugValue(): string[] {
-    const value = this.value;
-    const out: any[] = [];
-    out.push(this.sym.label + " - " + this.value);
-    this.children.forEach((node) => node.debugValue.forEach((l) => out.push("  " + l)));
-    return out;
+  debugValue(raw = true): any {
+    if (raw) {
+      const out: any = [this.sym.label];
+      if (this.value) out.push(this.value);
+      if (this.children.length > 0) out.push(this.children.map((c) => c.debugValue(raw)));
+      return out;
+    } else {
+      const out: any[] = [];
+      const value = this.value;
+      out.push(this.sym.label + " - " + this.value);
+      this.children.forEach((node) => (node.debugValue(raw) as string[]).forEach((l) => out.push("  " + l)));
+      return out;
+    }
   }
 }
 

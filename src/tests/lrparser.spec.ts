@@ -3,8 +3,8 @@ import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
 import { PTNode } from "../parser";
 import { mockTokenizer } from "./mocks";
-import { newParser } from "./utils";
 import { Sym } from "../Grammar";
+import { newParser } from "../factory";
 
 function tok(tag: any, value: any): TLEX.Token {
   const out = new TLEX.Token(tag, 0, 0, 0);
@@ -12,8 +12,8 @@ function tok(tag: any, value: any): TLEX.Token {
   return out;
 }
 
-function testParsing(ptabType: string, grammar: string, input: string, config: any = false): TSU.Nullable<PTNode> {
-  const parser = newParser(grammar, ptabType, config);
+function testParsing(grammar: string, input: string, config: any = {}): TSU.Nullable<PTNode> {
+  const parser = newParser(grammar, config);
   const result = parser.parse(input);
   if (config === true || config.debug) {
     console.log(util.inspect(result?.debugValue || null, { showHidden: false, depth: null }));
@@ -36,13 +36,13 @@ const test_grammar = `
 
 describe("LRParsing Tests", () => {
   test("Test Single ID", () => {
-    const result = testParsing("slr", test_grammar, "A");
-    expect(result?.debugValue).toEqual(["E - null", "  T - null", "    F - null", "      id - A"]);
+    const result = testParsing(test_grammar, "A", { type: "slr" });
+    expect(result?.debugValue(false)).toEqual(["E - null", "  T - null", "    F - null", "      id - A"]);
   });
 
   test("Test A + B * C", () => {
-    const result = testParsing("slr", test_grammar, "A+B*C");
-    expect(result?.debugValue).toEqual([
+    const result = testParsing(test_grammar, "A+B*C", { type: "slr" });
+    expect(result?.debugValue(false)).toEqual([
       "E - null",
       "  E - null",
       "    T - null",
@@ -60,8 +60,8 @@ describe("LRParsing Tests", () => {
   });
 
   test("Test A + B * C + (x * y + z)", () => {
-    const result = testParsing("slr", test_grammar, "A+B*C+(x*y+z)");
-    expect(result?.debugValue).toEqual([
+    const result = testParsing(test_grammar, "A+B*C+(x*y+z)", { type: "slr" });
+    expect(result?.debugValue(false)).toEqual([
       "E - null",
       "  E - null",
       "    E - null",
@@ -108,13 +108,12 @@ describe("LRParsing Tests", () => {
         expr -> num | expr PLUS  expr ;
         num -> DIGIT | num DIGIT ;
       `,
-      "slr",
+      { type: "slr" },
     );
   });
 
   test("Test JSON", () => {
     const result = testParsing(
-      "slr",
       `
         %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
         %token STRING /".*?(?<!\\\\)"/
@@ -129,7 +128,7 @@ describe("LRParsing Tests", () => {
       // `{ "key" : 3.14 }`,
       // `[ 1 ]`,
       {
-        debug: true,
+        type: "slr",
         grammar: { auxNTPrefix: "_" },
         itemGraph: {
           gotoSymbolSorter2: (s1: Sym, s2: Sym) => {
@@ -140,6 +139,5 @@ describe("LRParsing Tests", () => {
         },
       },
     );
-    console.log("Result: ", result?.debugValue);
   });
 });

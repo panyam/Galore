@@ -1,4 +1,5 @@
-import { newParser, mergedDebugValue } from "./utils";
+import { newParser } from "../factory";
+import { mergedDebugValue } from "../debug";
 
 describe("LR ParseTable", () => {
   test("Test Basic", () => {
@@ -8,7 +9,7 @@ describe("LR ParseTable", () => {
         T -> T STAR F | F ;
         F -> OPEN E CLOSE | id ;
       `,
-      "slr",
+      { type: "slr" },
     );
     const v = mergedDebugValue(parser.parseTable, parser.itemGraph);
     expect(v).toEqual({

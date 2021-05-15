@@ -85,7 +85,7 @@ describe("Parser Tests", () => {
   test("Tests 1", () => {
     const parser = newParser(Samples.expr2);
     const result = parser.parse("A+B*C");
-    expect(result?.debugValue).toEqual([
+    expect(result?.debugValue(false)).toEqual([
       "E - null",
       "  T - null",
       "    F - null",

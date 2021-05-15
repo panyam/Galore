@@ -1,4 +1,6 @@
-import { testParseTable, newParser, mergedDebugValue } from "./utils";
+import { testParseTable } from "./utils";
+import { newParser } from "../factory";
+import { mergedDebugValue } from "../debug";
 
 describe("LR ParseTable", () => {
   test("Dragon Book 4.39 LR", () => {
@@ -77,7 +79,7 @@ describe("Sample Parse Tables", () => {
         T -> int Y | OPEN E CLOSE ;
         Y -> STAR T | ;
       `,
-      "slr",
+      { type: "slr" },
     );
     const v = mergedDebugValue(parser.parseTable, parser.itemGraph);
     expect(v).toEqual({

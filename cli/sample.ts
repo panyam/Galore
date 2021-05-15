@@ -1,3 +1,4 @@
+const util = require("util");
 import { newParser } from "../src/tests/utils";
 const g = `
         %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
@@ -11,5 +12,19 @@ const g = `
         Boolean -> "true" | "false" ;
 `;
 const parser = newParser(g, "slr", true);
-const result = parser.parse('{"key": ["item0", "item1", 3.14]}');
-console.log("Parse Tree: ", result?.debugValue);
+const result = parser.parse(`{
+  "name": "Earth",                                                                          
+  "age": 4600000000,                                                                        
+  "moons": [ "luna" ]
+}`);
+console.log("Parse Tree: ");
+console.log(result?.reprString);
+/*
+  util.inspect(result?.reprString, {
+    showHidden: false,
+    depth: null,
+    maxArrayLength: null,
+    maxStringLength: null,
+  }),
+);
+*/

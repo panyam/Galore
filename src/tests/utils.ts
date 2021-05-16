@@ -12,11 +12,11 @@ import { logParserDebug, mergedDebugValue } from "../debug";
 type StringMap<T> = TSU.StringMap<T>;
 
 export function Goto(ig: LRItemGraph, newState: number): LRAction {
-  return LRAction.Goto(ig.itemSets.get(newState));
+  return LRAction.Goto(ig.itemSets.get(newState).id);
 }
 
 export function Shift(itemGraph: LRItemGraph, newState: number): LRAction {
-  return LRAction.Shift(itemGraph.itemSets.get(newState));
+  return LRAction.Shift(itemGraph.itemSets.get(newState).id);
 }
 
 export function Reduce(rule: Rule): LRAction {

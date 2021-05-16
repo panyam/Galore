@@ -17,7 +17,7 @@ export function makeSLRParseTable(grammar: Grammar, config: any = null): [ParseT
         if (sym.isTerminal) {
           const gotoSet = ig.getGoto(itemSet, sym);
           if (gotoSet) {
-            parseTable.addAction(itemSet, sym, LRAction.Shift(gotoSet));
+            parseTable.addAction(itemSet.id, sym, LRAction.Shift(gotoSet.id));
           }
         }
       } else {
@@ -26,7 +26,7 @@ export function makeSLRParseTable(grammar: Grammar, config: any = null): [ParseT
         grammar.followSets.forEachTerm(rule.nt, (term) => {
           if (term != null) {
             TSU.assert(term.isTerminal);
-            parseTable.addAction(itemSet, term, LRAction.Reduce(rule));
+            parseTable.addAction(itemSet.id, term, LRAction.Reduce(rule));
           }
         });
       }
@@ -35,14 +35,14 @@ export function makeSLRParseTable(grammar: Grammar, config: any = null): [ParseT
     // Now create GOTO entries for (State,X) where X is a non-term
     ig.forEachGoto(itemSet, (sym, next) => {
       if (sym != null && !sym.isTerminal) {
-        parseTable.addAction(itemSet, sym, LRAction.Goto(next));
+        parseTable.addAction(itemSet.id, sym, LRAction.Goto(next.id));
       }
     });
 
     // If this state contains the augmented item, S' -> S .
     // then add accept
     if (itemSet.has(ig.items.ensure(new LRItem(grammar.augStartRule, 1)).id)) {
-      parseTable.addAction(itemSet, grammar.Eof, LRAction.Accept());
+      parseTable.addAction(itemSet.id, grammar.Eof, LRAction.Accept());
     }
   }
   return [parseTable, ig];
@@ -66,7 +66,7 @@ export function makeLRParseTable(grammar: Grammar, config: any = null): [ParseTa
         if (sym.isTerminal) {
           const nextSet = ig.getGoto(itemSet, sym);
           if (nextSet) {
-            parseTable.addAction(itemSet, sym, LRAction.Shift(nextSet));
+            parseTable.addAction(itemSet.id, sym, LRAction.Shift(nextSet.id));
           }
         }
       } else if (!rule.nt.equals(grammar.augStartRule.nt)) {
@@ -75,7 +75,7 @@ export function makeLRParseTable(grammar: Grammar, config: any = null): [ParseTa
         // Reduce nt -> rule for t
         const lookaheads = (itemSet as LR1ItemSet).getLookAheads(item);
         for (const lookahead of lookaheads) {
-          parseTable.addAction(itemSet, lookahead, LRAction.Reduce(rule));
+          parseTable.addAction(itemSet.id, lookahead, LRAction.Reduce(rule));
         }
       }
     }
@@ -83,7 +83,7 @@ export function makeLRParseTable(grammar: Grammar, config: any = null): [ParseTa
     // Now create GOTO entries for (State,X) where X is a non-term
     ig.forEachGoto(itemSet, (sym, next) => {
       if (sym != null && !sym.isTerminal) {
-        parseTable.addAction(itemSet, sym, LRAction.Goto(next));
+        parseTable.addAction(itemSet.id, sym, LRAction.Goto(next.id));
       }
     });
 
@@ -92,7 +92,7 @@ export function makeLRParseTable(grammar: Grammar, config: any = null): [ParseTa
     const lr1Item = ig.items.ensure(new LRItem(grammar.augStartRule, 1));
     (itemSet as LR1ItemSet).addLookAhead(lr1Item, grammar.Eof);
     if (itemSet.has(lr1Item.id)) {
-      parseTable.addAction(itemSet, grammar.Eof, LRAction.Accept());
+      parseTable.addAction(itemSet.id, grammar.Eof, LRAction.Accept());
     }
   }
   return [parseTable, ig];

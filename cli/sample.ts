@@ -1,5 +1,5 @@
 const util = require("util");
-import { newParser } from "../src/tests/utils";
+import { newParser } from "../src/factory";
 const g = `
         %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
         %token STRING /".*?(?<!\\\\)"/
@@ -11,7 +11,7 @@ const g = `
         Pair -> STRING ":" Value ;
         Boolean -> "true" | "false" ;
 `;
-const parser = newParser(g, "slr", true);
+const parser = newParser(g, { flatten: true, type: "slr" });
 const result = parser.parse(`{
   "name": "Earth",                                                                          
   "age": 4600000000,                                                                        

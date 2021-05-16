@@ -1,7 +1,7 @@
 import { EBNFParser } from "./ebnf";
 import { makeSLRParseTable, makeLRParseTable } from "./ptables";
 import { Parser } from "./lr";
-import { Str, Grammar, Rule } from "./grammar";
+import { Grammar } from "./grammar";
 import { logParserDebug } from "./debug";
 
 /**
@@ -12,8 +12,7 @@ export function newParser(input: string, config: any = null): Parser {
   const debug = config === true || params["debug"] || false;
   params.grammar = params.grammar || {};
   params.itemGraph = params.itemGraph || {};
-  params.type = params.type || "slr";
-  const ptabType = params.type;
+  const ptabType = params.type || "slr";
   const g = new Grammar(params.grammar);
   const eparser = new EBNFParser(input, { ...(params.parser || {}), grammar: g });
   g.augmentStartSymbol();

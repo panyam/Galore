@@ -117,7 +117,9 @@ If a parent node in the parse tree contains a child with a single node, child's 
 To turn this on, simply set the "flatten" option to true in the newParser method, eg:
 
 ```
-const parser = LTB.newParser(g);
+const parser = LTB.newParser(g, {
+  flatten: true
+});
 const ptree = parser.parse(`{
   "name": "Earth",                                                                          
   "age": 4600000000,                                                                        

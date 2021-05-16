@@ -454,12 +454,17 @@ export class ParseStack {
 export class Parser extends ParserBase {
   parseTable: ParseTable;
   stack: ParseStack;
+  /**
+   * Whether to flatten parse tree nodes with a single child.
+   */
+  flatten: boolean;
   readonly itemGraph: LRItemGraph;
-  constructor(grammar: Grammar, parseTable: ParseTable, itemGraph: LRItemGraph) {
+  constructor(grammar: Grammar, parseTable: ParseTable, itemGraph: LRItemGraph, config: any = {}) {
     super(grammar);
     TSU.assert((grammar.augStartRule || null) != null, "Grammar's start symbol has not been augmented");
     this.parseTable = parseTable;
     this.itemGraph = itemGraph;
+    this.flatten = config.flatten || false;
     this.stack = new ParseStack(this.grammar, this.parseTable);
     this.stack.push(itemGraph.startSet(), new PTNode(grammar.augStartRule.nt));
   }

@@ -437,7 +437,10 @@ export class ParseStack {
   }
 
   pop(): [number, PTNode] {
-    return this.top(true);
+    const out = this.top();
+    this.stateStack.pop();
+    this.nodeStack.pop();
+    return out;
   }
 
   /**
@@ -495,7 +498,6 @@ export class Parser extends ParserBase {
     this.flatten = config.flatten || false;
     this.stack = new ParseStack(this.grammar, this.parseTable);
     this.stack.push(0, new PTNode(grammar.augStartRule.nt));
-    // this.stack.push(itemGraph.startSet(), new PTNode(grammar.augStartRule.nt));
     this.beforeAddingChildNode = config.beforeAddingChildNode;
     this.onRuleReduced = config.onRuleReduced;
   }
@@ -545,24 +547,12 @@ export class Parser extends ParserBase {
         const newAction = this.resolveActions(this.parseTable.getActions(topState, action.rule.nt), stack, tokenbuffer);
         TSU.assert(newAction != null, "Top item does not have an action.");
         stack.push(newAction.gotoState!, newNode);
-        this.notifyReduction(newNode, action.rule);
+        if (this.onRuleReduced) this.onRuleReduced(newNode, action.rule);
         output = newNode;
       }
     }
     // It is possible that here no reductions have been done!
     return output;
-  }
-
-  /**
-   * called when a reduction has been performed.  At this time
-   * all the children have already been reduced (and called with
-   * this method).  Now is the opportunity for the parent node
-   * reduction to perform custom actions.  Note that this method
-   * cannot modify the stack.  It can only be used to perform
-   * things like AST building or logging etc.
-   */
-  notifyReduction(node: PTNode, rule: Rule): void {
-    //
   }
 
   /**

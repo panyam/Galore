@@ -20,7 +20,7 @@ export class LRAction {
   tag: LRActionType;
 
   // Next state to go to after performing the action (if valid).
-  gotoState: Nullable<LRItemSet> = null;
+  gotoState: Nullable<number> = null;
 
   // The rule to be used for a reduce action
   rule: Nullable<Rule> = null;
@@ -28,11 +28,11 @@ export class LRAction {
   toString(): string {
     if (this.tag == LRActionType.ACCEPT) return "Acc";
     else if (this.tag == LRActionType.SHIFT) {
-      return "S" + this.gotoState!.id;
+      return "S" + this.gotoState!;
     } else if (this.tag == LRActionType.REDUCE) {
       return "R " + this.rule!.id;
     } else {
-      return "" + this.gotoState!.id;
+      return "" + this.gotoState!;
     }
   }
 
@@ -40,7 +40,7 @@ export class LRAction {
     return this.tag == another.tag && this.gotoState == another.gotoState && this.rule == another.rule;
   }
 
-  static Shift(goto: LRItemSet): LRAction {
+  static Shift(goto: number): LRAction {
     const out = new LRAction();
     out.tag = LRActionType.SHIFT;
     out.gotoState = goto;
@@ -54,7 +54,7 @@ export class LRAction {
     return out;
   }
 
-  static Goto(gotoState: LRItemSet): LRAction {
+  static Goto(gotoState: number): LRAction {
     const out = new LRAction();
     out.tag = LRActionType.GOTO;
     out.gotoState = gotoState;
@@ -360,12 +360,12 @@ export class ParseTable {
   /**
    * Gets the action for a given sym from a given state.
    */
-  getActions(state: LRItemSet, next: Sym, ensure = false): LRAction[] {
+  getActions(stateId: number, next: Sym, ensure = false): LRAction[] {
     let l1: NumMap<LRAction[]>;
-    if (state.id in this.actions) {
-      l1 = this.actions[state.id];
+    if (stateId in this.actions) {
+      l1 = this.actions[stateId];
     } else if (ensure) {
-      l1 = this.actions[state.id] = {};
+      l1 = this.actions[stateId] = {};
     } else {
       return [];
     }
@@ -378,20 +378,14 @@ export class ParseTable {
     return [];
   }
 
-  addAction(state: LRItemSet, next: Sym, action: LRAction): void {
-    const actions = this.getActions(state, next, true);
-    if (state.id == 1 && next.label == "b" && action.tag == LRActionType.REDUCE) {
-      // TSU.assert(false, "Shouldnt be here");
-    }
-    if (state.id == 4 && next.label == "x" && action.tag == LRActionType.REDUCE) {
-      // TSU.assert(false, "Shouldnt be here");
-    }
+  addAction(stateId: number, next: Sym, action: LRAction): void {
+    const actions = this.getActions(stateId, next, true);
     if (actions.findIndex((ac) => ac.equals(action)) < 0) {
       actions.push(action);
     }
     if (actions.length > 1) {
-      this.conflictActions[state.id] = this.conflictActions[state.id] || {};
-      this.conflictActions[state.id][next.label] = true;
+      this.conflictActions[stateId] = this.conflictActions[stateId] || {};
+      this.conflictActions[stateId][next.label] = true;
     }
   }
 
@@ -417,7 +411,7 @@ export class ParseStack {
   // A way of marking the kind of item that is on the stack
   // true => isStateId
   // false => isSymbolId
-  readonly stateStack: LRItemSet[] = [];
+  readonly stateStack: number[] = [];
   readonly nodeStack: PTNode[] = [];
   constructor(g: Grammar, parseTable: ParseTable) {
     this.grammar = g;
@@ -425,12 +419,12 @@ export class ParseStack {
     TSU.assert(g.startSymbol != null, "Start symbol not selected");
   }
 
-  push(state: LRItemSet, node: PTNode): void {
+  push(state: number, node: PTNode): void {
     this.stateStack.push(state);
     this.nodeStack.push(node);
   }
 
-  top(pop = false): [LRItemSet, PTNode] {
+  top(pop = false): [number, PTNode] {
     if (this.isEmpty) {
       TSU.assert(false, "Stack is empty.");
     }
@@ -442,8 +436,17 @@ export class ParseStack {
     return [state, node];
   }
 
-  pop(): [LRItemSet, PTNode] {
+  pop(): [number, PTNode] {
     return this.top(true);
+  }
+
+  /**
+   * Pop N items from the stack.
+   */
+  popN(n = 1): void {
+    const L = this.stateStack.length;
+    this.stateStack.splice(L - n, n);
+    this.nodeStack.splice(L - n, n);
   }
 
   get isEmpty(): boolean {
@@ -451,22 +454,50 @@ export class ParseStack {
   }
 }
 
+/**
+ * As the parse tree is built, nodes are created and added to parents bottom up.
+ * This method is called before a child node is added to its parent.  The
+ * node's left-most siblings have already been added this point.
+ *
+ * This method is an opportunity to filter or transfor the node or even adding
+ * other nodes to the parent's child list.  Note that at this point the parent
+ * has *NOT* been added to its parent.
+ *
+ * In order to filter out the node, return null.  Otherwise return a
+ * PTNode instance for the actual node to be added to the parent.
+ */
+type BeforeAddingChildCallback = (parent: PTNode, child: PTNode) => TSU.Nullable<PTNode>;
+
+/**
+ * This method is called when after a rule has been reduced.  At this time
+ * all the children have already been reduced (and called with this method).
+ * Now is the opportunity for the parent node reduction to perform custom
+ * actions.  Note that this method cannot modify the stack.  It can only be
+ * used to perform things like AST building or logging etc.
+ */
+type RuleReductionCallback = (node: PTNode, rule: Rule) => TSU.Nullable<PTNode>;
+
 export class Parser extends ParserBase {
-  parseTable: ParseTable;
   stack: ParseStack;
   /**
    * Whether to flatten parse tree nodes with a single child.
    */
   flatten: boolean;
   readonly itemGraph: LRItemGraph;
-  constructor(grammar: Grammar, parseTable: ParseTable, itemGraph: LRItemGraph, config: any = {}) {
+  beforeAddingChildNode: BeforeAddingChildCallback;
+  onRuleReduced: RuleReductionCallback;
+
+  constructor(grammar: Grammar, public parseTable: ParseTable, itemGraph: LRItemGraph, config: any = {}) {
     super(grammar);
     TSU.assert((grammar.augStartRule || null) != null, "Grammar's start symbol has not been augmented");
     this.parseTable = parseTable;
     this.itemGraph = itemGraph;
     this.flatten = config.flatten || false;
     this.stack = new ParseStack(this.grammar, this.parseTable);
-    this.stack.push(itemGraph.startSet(), new PTNode(grammar.augStartRule.nt));
+    this.stack.push(0, new PTNode(grammar.augStartRule.nt));
+    // this.stack.push(itemGraph.startSet(), new PTNode(grammar.augStartRule.nt));
+    this.beforeAddingChildNode = config.beforeAddingChildNode;
+    this.onRuleReduced = config.onRuleReduced;
   }
 
   /**
@@ -488,7 +519,7 @@ export class Parser extends ParserBase {
         console.log("Stack: ", stack);
         throw new TLEX.ParseError(
           token?.start || 0,
-          `Unexpected token at state (${topState.id}): ${token?.tag} ('${nextSym.label}')`,
+          `Unexpected token at state (${topState}): ${token?.tag} ('${nextSym.label}')`,
         );
       }
 

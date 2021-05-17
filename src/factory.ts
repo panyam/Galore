@@ -18,7 +18,7 @@ export function newParser(input: string, config: any = null): Parser {
   g.augmentStartSymbol();
   const ptMaker = ptabType == "lr1" ? makeLRParseTable : makeSLRParseTable;
   const [ptable, ig] = ptMaker(g, params);
-  const parser = new Parser(g, ptable, ig);
+  const parser = (config.builder ? config.builder(g) : new Parser(g)).initialize(ptable, ig);
   if (debug) {
     logParserDebug(parser);
     console.log("Prog: \n", `${eparser.generatedTokenizer.vm.prog.debugValue().join("\n")}`);

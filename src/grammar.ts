@@ -177,6 +177,7 @@ export class Grammar {
    * Prefix used for auxiliary symbols.
    */
   auxNTPrefix: string;
+  auxInfo: TSU.StringMap<any> = {};
 
   readonly Null: Sym;
   readonly Eof: Sym;
@@ -523,7 +524,13 @@ export class Grammar {
 
   opt(exp: Str | string): Str {
     // convert to aux rule
-    return this.anyof(exp, new Str());
+    const out = this.anyof(exp, new Str());
+    const nt = out.syms[0];
+    TSU.assert(out.syms.length == 1 && nt.isAuxiliary, "NT must be an auxiliary symbol");
+    this.auxInfo[nt.label] = {
+      type: "opt",
+    };
+    return out;
   }
 
   atleast0(exp: Str | string, leftRec = false): Str {
@@ -556,6 +563,10 @@ export class Grammar {
     });
     if (auxNT == null) {
       auxNT = this.newAuxNT();
+      this.auxInfo[auxNT.label] = {
+        leftRec: leftRec,
+        type: "atleast0",
+      };
       this.add(auxNT, new Str());
       if (leftRec) {
         this.add(auxNT, new Str(auxNT).extend(s));
@@ -596,6 +607,10 @@ export class Grammar {
     });
     if (auxNT == null) {
       auxNT = this.newAuxNT();
+      this.auxInfo[auxNT.label] = {
+        leftRec: leftRec,
+        type: "atleast1",
+      };
       this.add(auxNT, s);
       if (leftRec) {
         this.add(auxNT, new Str(auxNT).extend(s));
@@ -633,6 +648,9 @@ export class Grammar {
     let nt = this.findAuxNTByRules(...rules);
     if (nt == null) {
       nt = this.newAuxNT();
+      this.auxInfo[nt.label] = {
+        type: "anyof",
+      };
       for (const rule of rules) this.add(nt, rule);
     }
     return nt;

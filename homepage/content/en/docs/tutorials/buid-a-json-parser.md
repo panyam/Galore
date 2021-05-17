@@ -102,13 +102,17 @@ $0 -> B
 $0 -> $0 B
 ```
 
-Transformations (discussed next) are very useful in controlling what is included in the tree.
+Tree callbacks (discussed next) are very useful in controlling what is included in the tree.
 
-## Tree Transformers
+## Tree Callbacks
 
 Our goal in this example is to return a valid JSON object from a given input.   However so far we only have a parse tree in its rawest form.  It is quite possible to perform further passes to shape the tree as needed and even more passes to construct the JSON object.  However these additional passes are wasteful.
 
-Let us explore a few options present to us.
+The Parser object exposes two callbacks:
+
+* **`onNextToken(token: Token) => Nullable<Token>`**: This method is called as soon as the next token is received from the tokenizer.  This allows one to filter out tokens or even transform them based on any other context being maintained.
+* **`beforeAddingChildNode(parent: PTNode, child: PTNode) => TSU.Nullable<PTNode`**: When a child node is created this method is called (along with the parent node) so that any filtering can be performed.  For example this method be used to filter out static terminals (like operators etc).
+* **`onRuleReduced(node: PTNode, rule: Rule) => Nullable<PTNode>`**: This callback is invokved after a reduction of a rightmost derivation is performed on the parse stack.  This is an opportunity for any custom tranformations to be performed on the node (and its children) before the node is added back to the parse stack as the parsing continues.
 
 ### Flattening single child nodes
 

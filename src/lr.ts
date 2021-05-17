@@ -475,26 +475,41 @@ type BeforeAddingChildCallback = (parent: PTNode, child: PTNode) => TSU.Nullable
  */
 type RuleReductionCallback = (node: PTNode, rule: Rule) => TSU.Nullable<PTNode>;
 
+/**
+ * This method is called as soon as the next token is received from the tokenizer.
+ * This allows one to filter out tokens or even transform them based on any other
+ * context being maintained.
+ */
+type NextTokenCallback = (token: TLEX.Token) => TSU.Nullable<TLEX.Token>;
+
 export class Parser extends ParserBase {
+  parseTable: ParseTable;
   stack: ParseStack;
+  itemGraph: LRItemGraph;
+
   /**
    * Whether to flatten parse tree nodes with a single child.
    */
   flatten: boolean;
-  readonly itemGraph: LRItemGraph;
   beforeAddingChildNode: BeforeAddingChildCallback;
   onRuleReduced: RuleReductionCallback;
+  onNextToken: NextTokenCallback;
 
-  constructor(grammar: Grammar, public parseTable: ParseTable, itemGraph: LRItemGraph, config: any = {}) {
+  constructor(grammar: Grammar, config: any = {}) {
     super(grammar);
     TSU.assert((grammar.augStartRule || null) != null, "Grammar's start symbol has not been augmented");
-    this.parseTable = parseTable;
-    this.itemGraph = itemGraph;
     this.flatten = config.flatten || false;
-    this.stack = new ParseStack(this.grammar, this.parseTable);
-    this.stack.push(0, new PTNode(grammar.augStartRule.nt));
     this.beforeAddingChildNode = config.beforeAddingChildNode;
     this.onRuleReduced = config.onRuleReduced;
+    this.onNextToken = config.onNextToken;
+  }
+
+  initialize(parseTable: ParseTable, itemGraph: LRItemGraph): this {
+    this.parseTable = parseTable;
+    this.itemGraph = itemGraph;
+    this.stack = new ParseStack(this.grammar, this.parseTable);
+    this.stack.push(0, new PTNode(this.grammar.augStartRule.nt));
+    return this;
   }
 
   /**
@@ -506,7 +521,8 @@ export class Parser extends ParserBase {
     const g = this.grammar;
     let output: Nullable<PTNode> = null;
     while (tokenbuffer.peek(input) != null || !stack.isEmpty) {
-      const token = tokenbuffer.peek(input);
+      let token = tokenbuffer.peek(input);
+      if (token && this.onNextToken) token = this.onNextToken(token);
       const nextSym = token == null ? g.Eof : this.getSym(token);
       const nextValue = token == null ? null : token.value;
       let [topState, topNode] = stack.top();

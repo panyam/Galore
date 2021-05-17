@@ -543,7 +543,6 @@ export class Parser extends ParserBase {
         }
         // Pop ruleLen number of items off the stack
         stack.popN(ruleLen);
-        const [_, node] = stack.pop();
         [topState, topNode] = stack.top();
         const newAction = this.resolveActions(this.parseTable.getActions(topState, action.rule.nt), stack, tokenbuffer);
         TSU.assert(newAction != null, "Top item does not have an action.");

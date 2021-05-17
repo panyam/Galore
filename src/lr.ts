@@ -424,16 +424,11 @@ export class ParseStack {
     this.nodeStack.push(node);
   }
 
-  top(pop = false): [number, PTNode] {
-    if (this.isEmpty) {
-      TSU.assert(false, "Stack is empty.");
-    }
-    const [state, node] = [this.stateStack[this.stateStack.length - 1], this.nodeStack[this.nodeStack.length - 1]];
-    if (pop) {
-      this.stateStack.pop();
-      this.nodeStack.pop();
-    }
-    return [state, node];
+  /**
+   * Gets the nth item from the top of the stack.
+   */
+  top(nth = 0): [number, PTNode] {
+    return [this.stateStack[this.stateStack.length - 1 - nth], this.nodeStack[this.nodeStack.length - 1 - nth]];
   }
 
   pop(): [number, PTNode] {

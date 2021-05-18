@@ -12,10 +12,28 @@ const g = `
         Boolean -> "true" | "false" ;
 `;
 const parser = newParser(g, { flatten: true, type: "slr" });
-parser.onRuleReduced = (node, rule) => {
+parser.beforeAddingChildNode = (parent, child) => {
+  if (child.sym.isTerminal) {
+    // only allow true, false, string, number and null terminals
+    if (
+      child.sym.label != "STRING" &&
+      child.sym.label != "NUMBER" &&
+      child.sym.label != "Boolean" &&
+      child.sym.label != "null" &&
+      child.sym.label != "true" &&
+      child.sym.label != "false"
+    ) {
+      return null;
+    }
+  }
+  return child;
+};
+/*
+parser.onReduction = (node, rule) => {
   if (!rule.nt.isAuxiliary) return node;
   return node;
 };
+*/
 
 const result = parser.parse(`{
   "name": "Earth",                                                                          

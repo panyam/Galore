@@ -462,7 +462,7 @@ export class ParseStack {
  * In order to filter out the node, return null.  Otherwise return a
  * PTNode instance for the actual node to be added to the parent.
  */
-type BeforeAddingChildCallback = (parent: PTNode, child: PTNode) => TSU.Nullable<PTNode>;
+export type BeforeAddingChildCallback = (parent: PTNode, child: PTNode) => TSU.Nullable<PTNode>;
 
 /**
  * This method is called when after a rule has been reduced.  At this time
@@ -471,14 +471,14 @@ type BeforeAddingChildCallback = (parent: PTNode, child: PTNode) => TSU.Nullable
  * actions.  Note that this method cannot modify the stack.  It can only be
  * used to perform things like AST building or logging etc.
  */
-type RuleReductionCallback = (node: PTNode, rule: Rule) => PTNode;
+export type RuleReductionCallback = (node: PTNode, rule: Rule) => PTNode;
 
 /**
  * This method is called as soon as the next token is received from the tokenizer.
  * This allows one to filter out tokens or even transform them based on any other
  * context being maintained.
  */
-type NextTokenCallback = (token: TLEX.Token) => TSU.Nullable<TLEX.Token>;
+export type NextTokenCallback = (token: TLEX.Token) => TSU.Nullable<TLEX.Token>;
 
 export class Parser extends ParserBase {
   parseTable: ParseTable;
@@ -490,14 +490,14 @@ export class Parser extends ParserBase {
    */
   flatten: boolean;
   beforeAddingChildNode: BeforeAddingChildCallback;
-  onRuleReduced: RuleReductionCallback;
+  onReduction: RuleReductionCallback;
   onNextToken: NextTokenCallback;
 
   constructor(config: any = {}) {
     super();
     this.flatten = config.flatten || false;
     this.beforeAddingChildNode = config.beforeAddingChildNode;
-    this.onRuleReduced = config.onRuleReduced;
+    this.onReduction = config.onReduction;
     this.onNextToken = config.onNextToken;
   }
 
@@ -560,8 +560,8 @@ export class Parser extends ParserBase {
         const newAction = this.resolveActions(this.parseTable.getActions(topState, action.rule.nt), stack, tokenbuffer);
         TSU.assert(newAction != null, "Top item does not have an action.");
         stack.push(newAction.gotoState!, newNode);
-        if (this.onRuleReduced) {
-          newNode = this.onRuleReduced(newNode, action.rule);
+        if (this.onReduction) {
+          newNode = this.onReduction(newNode, action.rule);
         }
         output = newNode;
       }

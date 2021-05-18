@@ -1,6 +1,7 @@
 ---
-title: "Buid a Json Parser"
+title: "Build a Json Parser"
 date: 2021-05-08T11:10:00-07:00
+weight: 1
 draft: true
 description: >
   An example showing how to build a fully functional JSON parser using the LTB.
@@ -102,7 +103,7 @@ $0 -> B
 $0 -> $0 B
 ```
 
-Tree callbacks (discussed next) are very useful in controlling what is included in the tree.
+Tree callbacks (discussed next) are very useful in uncluttering the tree from useless and auxiliary information.
 
 ## Tree Callbacks
 
@@ -113,6 +114,59 @@ The Parser object exposes two callbacks:
 * **`onNextToken(token: Token) => Nullable<Token>`**: This method is called as soon as the next token is received from the tokenizer.  This allows one to filter out tokens or even transform them based on any other context being maintained.
 * **`beforeAddingChildNode(parent: PTNode, child: PTNode) => TSU.Nullable<PTNode`**: When a child node is created this method is called (along with the parent node) so that any filtering can be performed.  For example this method be used to filter out static terminals (like operators etc).
 * **`onRuleReduced(node: PTNode, rule: Rule) => Nullable<PTNode>`**: This callback is invokved after a reduction of a rightmost derivation is performed on the parse stack.  This is an opportunity for any custom tranformations to be performed on the node (and its children) before the node is added back to the parse stack as the parsing continues.
+
+### Removing useless tokens
+
+The first cleanup we can do is to remove the "useless" tokens like "{", "[" etc.  This can be done with:
+
+```
+const parser = LTB.newParser(grammar);
+parser.beforeAddingChildNode = (parent: PTNode, child: PTNode) => {
+  if (child.sym.isTerminal) {
+      // only allow true, false, string, number and null terminals
+      if (
+        child.sym.label != "STRING" &&
+        child.sym.label != "NUMBER" &&
+        child.sym.label != "Boolean" &&
+        child.sym.label != "null" &&
+        child.sym.label != "true" &&
+        child.sym.label != "false"
+      ) {
+        return null;
+      }
+    }
+    return child;
+}
+```
+
+Every PTNode records the current symbol (either terminal or non terminal) that leads the production.  We then use the label associated with the symbol to match our allowed tokens.  If a custom tokenizer was used then the tag of the symbol can be used instead.  More on this in ({{< relref "./using-custom-tokenizers.md" >}} "Using custom tokenizers").
+
+With the above callback our parse tree now looks bit uncluttered:
+
+```
+Value - null
+  Dict - null
+    $3 - null
+      Pair - null
+        STRING - "name"
+        Value - null
+          STRING - "Earth"
+      $2 - null
+        Pair - null
+          STRING - "age"
+          Value - null
+            NUMBER - 4600000000
+        $2 - null
+          Pair - null
+            STRING - "moons"
+            Value - null
+              List - null
+                $1 - null
+                  Value - null
+                    STRING - "luna"
+                  $0 - null
+          $2 - null
+```
 
 ### Removing auxiliary prouctions
 

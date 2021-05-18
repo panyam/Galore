@@ -140,6 +140,18 @@ export class Rule {
   id: number;
   nt: Sym;
   rhs: Str;
+  /**
+   * Fields are a way to indentify specific symbols instead of only
+   * accessing them via indices.
+   * For example consider the rule:
+   *
+   * E -> E ("+" | "-") E;
+   *
+   * This represents a binary arithmetic expression with left and right
+   * hand sides along with the right operator.
+   */
+  protected fields: StringMap<number>;
+
   constructor(nt: Sym, rhs: Str) {
     if (nt.isTerminal) {
       throw new Error("Cannot add rules to a terminal");

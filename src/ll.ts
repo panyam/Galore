@@ -165,10 +165,17 @@ export class ParseStack {
 export class Parser extends ParserBase {
   parseTable: ParseTable;
   stack: ParseStack;
-  constructor(grammar: Grammar, parseTable?: ParseTable) {
-    super(grammar);
-    this.parseTable = parseTable || new ParseTable(grammar);
+
+  setGrammar(grammar: Grammar): this {
+    super.setGrammar(grammar);
+    this.initialize();
+    return this;
+  }
+
+  initialize(parseTable?: ParseTable): this {
+    this.parseTable = parseTable || new ParseTable(this.grammar);
     this.stack = new ParseStack(this.grammar, this.parseTable);
+    return this;
   }
 
   /**

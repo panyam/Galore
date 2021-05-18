@@ -64,7 +64,7 @@ function tok(tag: any, value: any): TLEX.Token {
 export function newParser(input: string, debug = false): Parser {
   const eparser = new EBNFParser(input);
   const g = eparser.grammar.augmentStartSymbol();
-  const parser = new Parser(g);
+  const parser = new Parser().setGrammar(g);
   const tokenizer = eparser.generatedTokenizer;
   parser.setTokenizer(tokenizer.next.bind(tokenizer));
   if (debug) {

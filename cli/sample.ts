@@ -13,9 +13,10 @@ const g = `
 `;
 const parser = newParser(g, { flatten: true, type: "slr" });
 parser.onRuleReduced = (node, rule) => {
-  console.log("Rule: ", rule, "Node: ", node);
+  if (!rule.nt.isAuxiliary) return node;
   return node;
 };
+
 const result = parser.parse(`{
   "name": "Earth",                                                                          
   "age": 4600000000,                                                                        

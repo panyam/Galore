@@ -406,7 +406,6 @@ export class ParseTable {
 }
 
 export class ParseStack {
-  readonly grammar: Grammar;
   readonly parseTable: ParseTable;
   // A way of marking the kind of item that is on the stack
   // true => isStateId
@@ -414,7 +413,6 @@ export class ParseStack {
   readonly stateStack: number[] = [];
   readonly nodeStack: PTNode[] = [];
   constructor(g: Grammar, parseTable: ParseTable) {
-    this.grammar = g;
     this.parseTable = parseTable;
     TSU.assert(g.startSymbol != null, "Start symbol not selected");
   }
@@ -473,7 +471,7 @@ type BeforeAddingChildCallback = (parent: PTNode, child: PTNode) => TSU.Nullable
  * actions.  Note that this method cannot modify the stack.  It can only be
  * used to perform things like AST building or logging etc.
  */
-type RuleReductionCallback = (node: PTNode, rule: Rule) => TSU.Nullable<PTNode>;
+type RuleReductionCallback = (node: PTNode, rule: Rule) => PTNode;
 
 /**
  * This method is called as soon as the next token is received from the tokenizer.
@@ -495,9 +493,8 @@ export class Parser extends ParserBase {
   onRuleReduced: RuleReductionCallback;
   onNextToken: NextTokenCallback;
 
-  constructor(grammar: Grammar, config: any = {}) {
-    super(grammar);
-    TSU.assert((grammar.augStartRule || null) != null, "Grammar's start symbol has not been augmented");
+  constructor(config: any = {}) {
+    super();
     this.flatten = config.flatten || false;
     this.beforeAddingChildNode = config.beforeAddingChildNode;
     this.onRuleReduced = config.onRuleReduced;
@@ -549,7 +546,7 @@ export class Parser extends ParserBase {
         const ruleLen = action.rule.rhs.length;
         // pop this many items off the stack and create a node
         // from this
-        const newNode = new PTNode(action.rule.nt);
+        let newNode = new PTNode(action.rule.nt);
         for (let i = ruleLen - 1; i >= 0; i--) {
           let childNode: TSU.Nullable<PTNode> = stack.top(i)[1];
           if (this.beforeAddingChildNode) childNode = this.beforeAddingChildNode(newNode, childNode);
@@ -563,7 +560,9 @@ export class Parser extends ParserBase {
         const newAction = this.resolveActions(this.parseTable.getActions(topState, action.rule.nt), stack, tokenbuffer);
         TSU.assert(newAction != null, "Top item does not have an action.");
         stack.push(newAction.gotoState!, newNode);
-        if (this.onRuleReduced) this.onRuleReduced(newNode, action.rule);
+        if (this.onRuleReduced) {
+          newNode = this.onRuleReduced(newNode, action.rule);
+        }
         output = newNode;
       }
     }

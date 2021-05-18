@@ -124,9 +124,11 @@ describe("LRParsing Tests", () => {
         Dict -> "{" [ Pair ("," Pair)* ] "}" ;
         Pair -> STRING ":" Value ;
       `,
-      `{"key": ["item0", "item1", 3.14 ] }`,
-      // `{ "key" : 3.14 }`,
-      // `[ 1 ]`,
+      `{
+        "name": "Earth",                                                                          
+        "age": 4600000000,                                                                        
+        "moons": [ "luna" ]
+      }`,
       {
         type: "slr",
         grammar: { auxNTPrefix: "_" },

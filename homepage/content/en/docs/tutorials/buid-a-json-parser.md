@@ -13,7 +13,7 @@ In this example we will build a JSON parser using LTB.
 Grammars in LTB are an extension of the Extended Backaus Naur Form (EBNF).   The EBNF grammar for JSON is:
 
 ```
-const g = `
+const grammar = `
   %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
   %token STRING /".*?(?<!\\)"/
   %skip /[ \\t\\n\\f\\r]+/
@@ -36,7 +36,7 @@ Create the parser:
 ```
 import * as LTB from "ltb"
 
-const parser = LTB.newParser(g);
+const parser = LTB.newParser(grammar);
 const ptree = parser.parse(`{
   "name": "Earth",                                                                          
   "age": 4600000000,                                                                        
@@ -113,6 +113,58 @@ The Parser object exposes two callbacks:
 * **`onNextToken(token: Token) => Nullable<Token>`**: This method is called as soon as the next token is received from the tokenizer.  This allows one to filter out tokens or even transform them based on any other context being maintained.
 * **`beforeAddingChildNode(parent: PTNode, child: PTNode) => TSU.Nullable<PTNode`**: When a child node is created this method is called (along with the parent node) so that any filtering can be performed.  For example this method be used to filter out static terminals (like operators etc).
 * **`onRuleReduced(node: PTNode, rule: Rule) => Nullable<PTNode>`**: This callback is invokved after a reduction of a rightmost derivation is performed on the parse stack.  This is an opportunity for any custom tranformations to be performed on the node (and its children) before the node is added back to the parse stack as the parsing continues.
+
+### Removing auxiliary prouctions
+
+As shown before the productions with $0, $1 are auto generated to allow more complex BNF specifications (eg optionals, inline repititions, inline groups etc).  It is really not fair for the author of the grammar to have to worry about cleaning these auxiliary productions from the parse tree.  Instead passing the removeAuxiliaryProductions flag to the newParser command will do the trick, eg:
+
+```
+const parser = LTB.newParser(grammar, {
+  removeAuxilliaryProductions: true
+});
+```
+
+This would ensure our resultant parse tree would look like:
+
+```
+Value - null
+  Dict - null
+    "{" - {
+    $3 - null
+      Pair - null
+        STRING - "name"
+        ":" - :
+        Value - null
+          STRING - "Earth"
+      $2 - null
+        "," - ,
+        Pair - null
+          STRING - "age"
+          ":" - :
+          Value - null
+            NUMBER - 4600000000
+        $2 - null
+          "," - ,
+          Pair - null
+            STRING - "moons"
+            ":" - :
+            Value - null
+              List - null
+                "[" - [
+                $1 - null
+                  Value - null
+                    STRING - "luna"
+                  $0 - null
+                "]" - ]
+          $2 - null
+    "}" - }
+```
+
+T
+The same e
+just becaue up the parser tree  These productions can be removed with the help of tree callbacks (TL;DR - there are shortcut flags to the parser so that these do not have to be performed on every grammar!).
+
+
 
 ### Flattening single child nodes
 

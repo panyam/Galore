@@ -61,8 +61,11 @@ export class PTNode {
 export abstract class Parser {
   grammar: Grammar;
   tokenbuffer: TLEX.TokenBuffer;
-  constructor(grammar: Grammar) {
+
+  setGrammar(grammar: Grammar): this {
+    TSU.assert((grammar.augStartRule || null) != null, "Grammar's start symbol has not been augmented");
     this.grammar = grammar;
+    return this;
   }
 
   setTokenizer(tokenizer: TLEX.NextTokenFunc): this {

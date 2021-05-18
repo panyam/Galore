@@ -2,9 +2,9 @@ import * as TSU from "@panyam/tsutils";
 import { Grammar } from "./grammar";
 import { LRAction, ParseTable, LRItem, LR1ItemSet, LR0ItemGraph, LR1ItemGraph } from "./lr";
 
-export function makeSLRParseTable(grammar: Grammar, config: any = null): [ParseTable, LR0ItemGraph] {
-  config = config || {};
-  const ig = new LR0ItemGraph(grammar, config.itemGraph).refresh();
+export function makeSLRParseTable(grammar: Grammar, igConfig: any = null): [ParseTable, LR0ItemGraph] {
+  igConfig = igConfig || {};
+  const ig = new LR0ItemGraph(grammar, igConfig).refresh();
   const parseTable = new ParseTable(grammar);
   for (const itemSet of ig.itemSets.entries) {
     // Look for transitions from this set
@@ -51,9 +51,9 @@ export function makeSLRParseTable(grammar: Grammar, config: any = null): [ParseT
 /**
  * A canonical LR1 parse table maker.
  */
-export function makeLRParseTable(grammar: Grammar, config: any = null): [ParseTable, LR1ItemGraph] {
-  config = config || {};
-  const ig = new LR1ItemGraph(grammar, config.itemGraph).refresh();
+export function makeLRParseTable(grammar: Grammar, igConfig: any = null): [ParseTable, LR1ItemGraph] {
+  igConfig = igConfig || {};
+  const ig = new LR1ItemGraph(grammar, igConfig).refresh();
   const parseTable = new ParseTable(grammar);
   for (const itemSet of ig.itemSets.entries) {
     // Look for transitions from this set

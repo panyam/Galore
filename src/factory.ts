@@ -7,22 +7,45 @@ import { logParserDebug } from "./debug";
 /**
  * Helper to create a grammar, and its parser.
  */
-export function newParser(input: string, config: any = null): Parser {
-  const params = config == null || typeof config === "boolean" ? {} : config;
-  const debug = config === true || params["debug"] || false;
-  params.grammar = params.grammar || {};
-  params.itemGraph = params.itemGraph || {};
-  const ptabType = params.type || "slr";
-  const g = new Grammar(params.grammar);
-  const eparser = new EBNFParser(input, { ...(params.parser || {}), grammar: g });
-  g.augmentStartSymbol();
-  const ptMaker = ptabType == "lr1" ? makeLRParseTable : makeSLRParseTable;
-  const [ptable, ig] = ptMaker(g, params);
-  const parser = (config.builder ? config.builder(g) : new Parser(g)).initialize(ptable, ig);
-  if (debug) {
-    logParserDebug(parser);
-    console.log("Prog: \n", `${eparser.generatedTokenizer.vm.prog.debugValue().join("\n")}`);
+export function newParser(input: string, params: any = null): Parser {
+  if (typeof params === "boolean") throw new Error("Config must be a dict");
+  const parserParams = { ...params };
+  // remove all non parser params from them
+  delete parserParams["grammarLoader"];
+  delete parserParams["ptableMaker"];
+  delete parserParams["type"];
+  delete parserParams["debug"];
+  delete parserParams["tokenizer"];
+  const parser = params.builder ? params.builder(parserParams) : new Parser(parserParams || {});
+
+  let g: Grammar;
+  if (params.grammarLoader) {
+    g = params.grammarLoader(input, parser);
+    parser.setGrammar(g);
+  } else {
+    g = new Grammar(params.grammar || {});
+    const eparser = new EBNFParser(input, { ...(params.ebnfParser || {}), grammar: g });
+    g.augmentStartSymbol();
+    parser.setGrammar(g).setTokenizer(eparser.generatedTokenizer.next.bind(eparser.generatedTokenizer));
+    if (params.debug) {
+      console.log("Prog: \n", `${eparser.generatedTokenizer.vm.prog.debugValue().join("\n")}`);
+    }
   }
-  parser.setTokenizer(eparser.generatedTokenizer.next.bind(eparser.generatedTokenizer));
+
+  if (params.tokenizer) {
+    parser.setTokenizer(params.tokenizer);
+  }
+
+  if (params.ptableMaker) {
+    const [ptable, ig] = params.ptableMaker(g);
+    parser.initialize(ptable, ig);
+  } else {
+    const ptMaker = params.type == "lr1" ? makeLRParseTable : makeSLRParseTable;
+    const [ptable, ig] = ptMaker(g, params.itemGraph || {});
+    parser.initialize(ptable, ig);
+  }
+  if (params.debug) {
+    logParserDebug(parser);
+  }
   return parser;
 }

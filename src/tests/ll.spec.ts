@@ -86,22 +86,22 @@ describe("Parser Tests", () => {
     const parser = newParser(Samples.expr2);
     const result = parser.parse("A+B*C");
     expect(result?.debugValue(false)).toEqual([
-      "E - null",
-      "  T - null",
-      "    F - null",
+      "E",
+      "  T",
+      "    F",
       "      id - A",
-      "    T1 - null",
-      "  E1 - null",
+      "    T1",
+      "  E1",
       "    PLUS - +",
-      "    T - null",
-      "      F - null",
+      "    T",
+      "      F",
       "        id - B",
-      "      T1 - null",
+      "      T1",
       "        STAR - *",
-      "        F - null",
+      "        F",
       "          id - C",
-      "        T1 - null",
-      "    E1 - null",
+      "        T1",
+      "    E1",
     ]);
   });
 });

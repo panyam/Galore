@@ -112,7 +112,7 @@ export enum NodeType {
 export class EBNFParser {
   readonly grammar: Grammar;
   private tokenizer: TLEX.TokenBuffer;
-  private allowLeftRecursion = false;
+  private leftRecursive = false;
   readonly generatedTokenizer: TLEX.Tokenizer = new TLEX.Tokenizer();
 
   /*
@@ -132,7 +132,7 @@ export class EBNFParser {
   constructor(input: string, config: any = {}) {
     this.symbolsByLabel = {};
     this.grammar = config.grammar || new Grammar();
-    this.allowLeftRecursion = config.allowLeftRecursion || false;
+    this.leftRecursive = "leftRecursive" in config ? config.leftRecursive : true;
     this.newSymbolCallback = config.newSymbol || null;
     this.parse(input);
   }
@@ -330,9 +330,9 @@ export class EBNFParser {
       }
 
       if (this.tokenizer.consumeIf(tape, TokenType.STAR)) {
-        curr = grammar.atleast0(curr, this.allowLeftRecursion);
+        curr = grammar.atleast0(curr, this.leftRecursive);
       } else if (this.tokenizer.consumeIf(tape, TokenType.PLUS)) {
-        curr = grammar.atleast1(curr, this.allowLeftRecursion);
+        curr = grammar.atleast1(curr, this.leftRecursive);
       } else if (this.tokenizer.consumeIf(tape, TokenType.QMARK)) {
         curr = grammar.opt(curr);
       }

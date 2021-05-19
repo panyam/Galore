@@ -89,25 +89,41 @@ describe("FollowSet Tests", () => {
   });
 
   test("Tests JSON with Lists only", () => {
-    const g = new Grammar({ auxNTPrefix: "_" });
+    const gRight = new Grammar({ auxNTPrefix: "_" });
     new EBNFParser(
       `
         Value -> List | NULL ;
         List -> OSQ Value ( COMMA Value ) * CSQ ;
     `,
-      { grammar: g },
+      { grammar: gRight, leftRecursive: false },
     );
 
-    expect(g.firstSets.debugValue).toEqual({ Value: "<NULL, OSQ>", List: "<OSQ>", _0: "<, COMMA>" });
-    expect(g.followSets.debugValue).toEqual({
+    expect(gRight.firstSets.debugValue).toEqual({ Value: "<NULL, OSQ>", List: "<OSQ>", _0: "<, COMMA>" });
+    expect(gRight.followSets.debugValue).toEqual({
       Value: "<$end, COMMA, CSQ>",
       List: "<$end, COMMA, CSQ>",
       _0: "<CSQ>",
     });
+
+    const gLeft = new Grammar({ auxNTPrefix: "_" });
+    new EBNFParser(
+      `
+        Value -> List | NULL ;
+        List -> OSQ Value ( COMMA Value ) * CSQ ;
+    `,
+      { grammar: gLeft, leftRecursive: true },
+    );
+
+    expect(gLeft.firstSets.debugValue).toEqual({ Value: "<NULL, OSQ>", List: "<OSQ>", _0: "<, COMMA>" });
+    expect(gLeft.followSets.debugValue).toEqual({
+      Value: "<$end, COMMA, CSQ>",
+      List: "<$end, COMMA, CSQ>",
+      _0: "<COMMA, CSQ>",
+    });
   });
 
   test("Tests Bigger JSON", () => {
-    const g = new Grammar({ auxNTPrefix: "_" });
+    const gRight = new Grammar({ auxNTPrefix: "_" });
     new EBNFParser(
       `
         Value -> Dict | List | STRING | NUMBER | TRUE | FALSE | NULL ;
@@ -115,21 +131,21 @@ describe("FollowSet Tests", () => {
         Dict -> OBRACE [ Pair (COMMA Pair)* ] CBRACE ;
         Pair -> STRING COLON Value ;
     `,
-      { grammar: g },
+      { grammar: gRight, leftRecursive: false },
     );
 
     /*
     console.log(
       "Grammar: \n",
-      g.print({ lambdaSymbol: "''", ruleSep: "->", includeSemiColon: false }).join("\n"),
+      gRight.print({ lambdaSymbol: "''", ruleSep: "->", includeSemiColon: false }).join("\n"),
       "\nFirstSets: \n",
-      g.firstSets.debugValue,
+      gRight.firstSets.debugValue,
       "\nFollowSets: \n",
-      g.followSets.debugValue,
+      gRight.followSets.debugValue,
     );
    */
 
-    expect(g.firstSets.debugValue).toEqual({
+    expect(gRight.firstSets.debugValue).toEqual({
       Value: "<FALSE, NULL, NUMBER, OBRACE, OSQ, STRING, TRUE>",
       Dict: "<OBRACE>",
       List: "<OSQ>",
@@ -139,7 +155,7 @@ describe("FollowSet Tests", () => {
       _2: "<, COMMA>",
       _3: "<, STRING>",
     });
-    expect(g.followSets.debugValue).toEqual({
+    expect(gRight.followSets.debugValue).toEqual({
       Value: "<$end, CBRACE, COMMA, CSQ>",
       Dict: "<$end, CBRACE, COMMA, CSQ>",
       List: "<$end, CBRACE, COMMA, CSQ>",
@@ -147,6 +163,50 @@ describe("FollowSet Tests", () => {
       _1: "<CSQ>",
       Pair: "<CBRACE, COMMA>",
       _2: "<CBRACE>",
+      _3: "<CBRACE>",
+    });
+
+    // Do the same with leftRecursive grammar
+    const gLeft = new Grammar({ auxNTPrefix: "_" });
+    new EBNFParser(
+      `
+        Value -> Dict | List | STRING | NUMBER | TRUE | FALSE | NULL ;
+        List -> OSQ [ Value ( COMMA Value ) * ] CSQ ;
+        Dict -> OBRACE [ Pair (COMMA Pair)* ] CBRACE ;
+        Pair -> STRING COLON Value ;
+    `,
+      { grammar: gLeft },
+    );
+
+    /*
+    console.log(
+      "Grammar: \n",
+      gLeft.print({ lambdaSymbol: "''", ruleSep: "->", includeSemiColon: false }).join("\n"),
+      "\nFirstSets: \n",
+      gLeft.firstSets.debugValue,
+      "\nFollowSets: \n",
+      gLeft.followSets.debugValue,
+    );
+   */
+
+    expect(gLeft.firstSets.debugValue).toEqual({
+      Value: "<FALSE, NULL, NUMBER, OBRACE, OSQ, STRING, TRUE>",
+      Dict: "<OBRACE>",
+      List: "<OSQ>",
+      _0: "<, COMMA>",
+      _1: "<, FALSE, NULL, NUMBER, OBRACE, OSQ, STRING, TRUE>",
+      Pair: "<STRING>",
+      _2: "<, COMMA>",
+      _3: "<, STRING>",
+    });
+    expect(gLeft.followSets.debugValue).toEqual({
+      Value: "<$end, CBRACE, COMMA, CSQ>",
+      Dict: "<$end, CBRACE, COMMA, CSQ>",
+      List: "<$end, CBRACE, COMMA, CSQ>",
+      _0: "<COMMA, CSQ>",
+      _1: "<CSQ>",
+      Pair: "<CBRACE, COMMA>",
+      _2: "<CBRACE, COMMA>",
       _3: "<CBRACE>",
     });
   });

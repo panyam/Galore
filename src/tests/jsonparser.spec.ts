@@ -22,7 +22,7 @@ function testParsing(input: string, onParser: (p: Parser) => void, debug = false
   if (debug) {
     console.log(
       "Parse Tree: ",
-      util.inspect(result?.debugValue(false), {
+      util.inspect(result?.debugValue(true), {
         showHidden: false,
         depth: null,
         maxArrayLength: null,
@@ -62,18 +62,24 @@ describe("JSON Parsing", () => {
                 [
                   "$2",
                   [
-                    ['","', ","],
-                    [
-                      "Pair",
-                      [
-                        ["STRING", '"b"'],
-                        ['":"', ":"],
-                        ["Value", [["STRING", '"xyz"']]],
-                      ],
-                    ],
                     [
                       "$2",
                       [
+                        [
+                          "$2",
+                          [
+                            ["$2"],
+                            ['","', ","],
+                            [
+                              "Pair",
+                              [
+                                ["STRING", '"b"'],
+                                ['":"', ":"],
+                                ["Value", [["STRING", '"xyz"']]],
+                              ],
+                            ],
+                          ],
+                        ],
                         ['","', ","],
                         [
                           "Pair",
@@ -83,21 +89,15 @@ describe("JSON Parsing", () => {
                             ["Value", [["Boolean", [['"false"', "false"]]]]],
                           ],
                         ],
-                        [
-                          "$2",
-                          [
-                            ['","', ","],
-                            [
-                              "Pair",
-                              [
-                                ["STRING", '"d"'],
-                                ['":"', ":"],
-                                ["Value", [['"null"', "null"]]],
-                              ],
-                            ],
-                            ["$2"],
-                          ],
-                        ],
+                      ],
+                    ],
+                    ['","', ","],
+                    [
+                      "Pair",
+                      [
+                        ["STRING", '"d"'],
+                        ['":"', ":"],
+                        ["Value", [['"null"', "null"]]],
                       ],
                     ],
                   ],
@@ -111,29 +111,139 @@ describe("JSON Parsing", () => {
     ]);
   });
   test("Filter Useless Tokens", () => {
-    const result = testParsing(
-      `{"a": 1, "b": "xyz", "c": false, "d": null}`,
-      (p: Parser) => {
-        p.beforeAddingChildNode = (parent, child) => {
-          if (child.sym.isTerminal) {
-            // only allow true, false, string, number and null
-            // terminals
-            if (
-              child.sym.label != "STRING" &&
-              child.sym.label != "NUMBER" &&
-              child.sym.label != "Boolean" &&
-              child.sym.label != "null" &&
-              child.sym.label != "true" &&
-              child.sym.label != "false"
-            ) {
-              return null;
-            }
+    const result = testParsing(`{"a": 1, "b": "xyz", "c": false, "d": null}`, (p: Parser) => {
+      p.beforeAddingChildNode = (parent, child) => {
+        if (child.sym.isTerminal) {
+          // only allow true, false, string, number and null
+          // terminals
+          if (
+            child.sym.label != "STRING" &&
+            child.sym.label != "NUMBER" &&
+            child.sym.label != "Boolean" &&
+            child.sym.label != "null" &&
+            child.sym.label != "true" &&
+            child.sym.label != "false"
+          ) {
+            return null;
           }
-          return child;
-        };
-      },
-      true,
-    );
-    // expect(result?.debugValue(true)).toEqual([]);
+        }
+        return child;
+      };
+    });
+    expect(result?.debugValue(true)).toEqual([
+      "Value",
+      [
+        [
+          "Dict",
+          [
+            [
+              "$3",
+              [
+                [
+                  "Pair",
+                  [
+                    ["STRING", '"a"'],
+                    ["Value", [["NUMBER", "1"]]],
+                  ],
+                ],
+                [
+                  "$2",
+                  [
+                    [
+                      "$2",
+                      [
+                        [
+                          "$2",
+                          [
+                            ["$2"],
+                            [
+                              "Pair",
+                              [
+                                ["STRING", '"b"'],
+                                ["Value", [["STRING", '"xyz"']]],
+                              ],
+                            ],
+                          ],
+                        ],
+                        [
+                          "Pair",
+                          [
+                            ["STRING", '"c"'],
+                            ["Value", [["Boolean"]]],
+                          ],
+                        ],
+                      ],
+                    ],
+                    ["Pair", [["STRING", '"d"'], ["Value"]]],
+                  ],
+                ],
+              ],
+            ],
+          ],
+        ],
+      ],
+    ]);
+  });
+  test("Inline Simple productions", () => {
+    const result = testParsing(`{"a": 1, "b": "xyz", "c": false, "d": null}`, (p: Parser) => {
+      p.beforeAddingChildNode = (parent, child) => {
+        if (child.sym.isTerminal) {
+          // only allow true, false, string, number and null
+          // terminals
+          if (
+            child.sym.label != "STRING" &&
+            child.sym.label != "NUMBER" &&
+            child.sym.label != "Boolean" &&
+            child.sym.label != "null" &&
+            child.sym.label != "true" &&
+            child.sym.label != "false"
+          ) {
+            return null;
+          }
+        }
+        return child;
+      };
+      p.onReduction = (node, rule) => {
+        if (node.children.length == 1) return node.children[0];
+        return node;
+      };
+    });
+    expect(result?.debugValue(true)).toEqual([
+      "$3",
+      [
+        [
+          "Pair",
+          [
+            ["STRING", '"a"'],
+            ["NUMBER", "1"],
+          ],
+        ],
+        [
+          "$2",
+          [
+            [
+              "$2",
+              [
+                [
+                  "$2",
+                  [
+                    ["$2"],
+                    [
+                      "Pair",
+                      [
+                        ["STRING", '"b"'],
+                        ["STRING", '"xyz"'],
+                      ],
+                    ],
+                  ],
+                ],
+                ["Pair", [["STRING", '"c"'], ["Boolean"]]],
+              ],
+            ],
+            ["Pair", [["STRING", '"d"'], ["Value"]]],
+          ],
+        ],
+      ],
+    ]);
   });
 });

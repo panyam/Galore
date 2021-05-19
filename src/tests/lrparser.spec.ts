@@ -16,7 +16,8 @@ function testParsing(grammar: string, input: string, config: any = {}): TSU.Null
   const parser = newParser(grammar, config);
   const result = parser.parse(input);
   if (config === true || config.debug) {
-    console.log(util.inspect(result?.debugValue || null, { showHidden: false, depth: null }));
+    // console.log(result?.reprString);
+    console.log(util.inspect(result?.debugValue(true) || null, { showHidden: false, depth: null }));
   }
   return result;
 }
@@ -37,24 +38,24 @@ const test_grammar = `
 describe("LRParsing Tests", () => {
   test("Test Single ID", () => {
     const result = testParsing(test_grammar, "A", { type: "slr" });
-    expect(result?.debugValue(false)).toEqual(["E - null", "  T - null", "    F - null", "      id - A"]);
+    expect(result?.debugValue(false)).toEqual(["E", "  T", "    F", "      id - A"]);
   });
 
   test("Test A + B * C", () => {
     const result = testParsing(test_grammar, "A+B*C", { type: "slr" });
     expect(result?.debugValue(false)).toEqual([
-      "E - null",
-      "  E - null",
-      "    T - null",
-      "      F - null",
+      "E",
+      "  E",
+      "    T",
+      "      F",
       "        id - A",
       "  plus - +",
-      "  T - null",
-      "    T - null",
-      "      F - null",
+      "  T",
+      "    T",
+      "      F",
       "        id - B",
       "    star - *",
-      "    F - null",
+      "    F",
       "      id - C",
     ]);
   });
@@ -62,36 +63,36 @@ describe("LRParsing Tests", () => {
   test("Test A + B * C + (x * y + z)", () => {
     const result = testParsing(test_grammar, "A+B*C+(x*y+z)", { type: "slr" });
     expect(result?.debugValue(false)).toEqual([
-      "E - null",
-      "  E - null",
-      "    E - null",
-      "      T - null",
-      "        F - null",
+      "E",
+      "  E",
+      "    E",
+      "      T",
+      "        F",
       "          id - A",
       "    plus - +",
-      "    T - null",
-      "      T - null",
-      "        F - null",
+      "    T",
+      "      T",
+      "        F",
       "          id - B",
       "      star - *",
-      "      F - null",
+      "      F",
       "        id - C",
       "  plus - +",
-      "  T - null",
-      "    F - null",
+      "  T",
+      "    F",
       "      open - (",
-      "      E - null",
-      "        E - null",
-      "          T - null",
-      "            T - null",
-      "              F - null",
+      "      E",
+      "        E",
+      "          T",
+      "            T",
+      "              F",
       "                id - x",
       "            star - *",
-      "            F - null",
+      "            F",
       "              id - y",
       "        plus - +",
-      "        T - null",
-      "          F - null",
+      "        T",
+      "          F",
       "            id - z",
       "      close - )",
     ]);
@@ -141,5 +142,95 @@ describe("LRParsing Tests", () => {
         },
       },
     );
+  });
+});
+
+describe("Auxiliary Symbol Tests", () => {
+  const g1 = `
+      %token A "a"
+      %token B "b"
+      %token C "c"
+      %skip /[ \\t\\n\\f\\r]+/
+
+      X -> A B* C ;
+    `;
+  test("Test Zero or More with no B", () => {
+    const result = testParsing(g1, "a c");
+    expect(result?.debugValue()).toEqual(["X", [["A", "a"], ["$0"], ["C", "c"]]]);
+  });
+
+  test("Test Zero or More with error", () => {
+    expect(() => testParsing(g2, "a d c")).toThrowError("Invalid character found at offset (3): ' '");
+  });
+
+  test("Test Zero or More", () => {
+    const result = testParsing(g1, "a b b b b c");
+    expect(result?.debugValue()).toEqual([
+      "X",
+      [
+        ["A", "a"],
+        [
+          "$0",
+          [
+            [
+              "$0",
+              [
+                [
+                  "$0",
+                  [
+                    ["$0", [["$0"], ["B", "b"]]],
+                    ["B", "b"],
+                  ],
+                ],
+                ["B", "b"],
+              ],
+            ],
+            ["B", "b"],
+          ],
+        ],
+        ["C", "c"],
+      ],
+    ]);
+  });
+
+  const g2 = `
+      %token A "a"
+      %token B "b"
+      %token C "c"
+      %skip /[ \\t\\n\\f\\r]+/
+
+      X -> A B+ C ;
+    `;
+  test("Test One or More with Failure", () => {
+    expect(() => testParsing(g2, "a c")).toThrowError("Parse Error at (2): Unexpected token at state (1): C ('C')");
+  });
+  test("Test One or More", () => {
+    const result = testParsing(g2, "a b b b b c");
+    expect(result?.debugValue()).toEqual([
+      "X",
+      [
+        ["A", "a"],
+        [
+          "$0",
+          [
+            [
+              "$0",
+              [
+                [
+                  "$0",
+                  [
+                    ["$0", [["B", "b"]]],
+                    ["B", "b"],
+                  ],
+                ],
+                ["B", "b"],
+              ],
+            ],
+            ["B", "b"],
+          ],
+        ],
+        ["C", "c"],
+      ],
+    ]);
   });
 });

@@ -543,7 +543,7 @@ export class Grammar {
     return out;
   }
 
-  atleast0(exp: Str | string, leftRec = false): Str {
+  atleast0(exp: Str | string, leftRec = true): Str {
     const s = this.normalizeRule(exp);
     // We want to find another auxiliary NT that has the following rules:
     //    X -> exp X | ;    # if leftRec = true
@@ -584,7 +584,7 @@ export class Grammar {
     return new Str(auxNT);
   }
 
-  atleast1(exp: Str | string, leftRec = false): Str {
+  atleast1(exp: Str | string, leftRec = true): Str {
     const s = this.normalizeRule(exp);
     // We want to find another auxiliary NT that has the following rules:
     //    X -> exp X | exp ;    # if leftRec = true

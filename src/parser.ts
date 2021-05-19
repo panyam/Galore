@@ -1,8 +1,38 @@
 import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
-import { Sym, Grammar } from "./grammar";
+import { Sym, Grammar, Rule } from "./grammar";
 
 type Nullable<T> = TSU.Nullable<T>;
+
+/**
+ * As the parse tree is built, nodes are created and added to parents bottom up.
+ * This method is called before a child node is added to its parent.  The
+ * node's left-most siblings have already been added this point.
+ *
+ * This method is an opportunity to filter or transfor the node or even adding
+ * other nodes to the parent's child list.  Note that at this point the parent
+ * has *NOT* been added to its parent.
+ *
+ * In order to filter out the node, return null.  Otherwise return a
+ * PTNode instance for the actual node to be added to the parent.
+ */
+export type BeforeAddingChildCallback = (parent: PTNode, child: PTNode) => TSU.Nullable<PTNode>;
+
+/**
+ * This method is called when after a rule has been reduced.  At this time
+ * all the children have already been reduced (and called with this method).
+ * Now is the opportunity for the parent node reduction to perform custom
+ * actions.  Note that this method cannot modify the stack.  It can only be
+ * used to perform things like AST building or logging etc.
+ */
+export type RuleReductionCallback = (node: PTNode, rule: Rule) => PTNode;
+
+/**
+ * This method is called as soon as the next token is received from the tokenizer.
+ * This allows one to filter out tokens or even transform them based on any other
+ * context being maintained.
+ */
+export type NextTokenCallback = (token: TLEX.Token) => TSU.Nullable<TLEX.Token>;
 
 export class PTNode {
   readonly sym: Sym;
@@ -13,6 +43,15 @@ export class PTNode {
     this.sym = sym;
     this.value = value;
     this.children = children || [];
+  }
+
+  get childCount(): number {
+    return this.children.length;
+  }
+
+  childAt(index: number): PTNode {
+    if (index < 0) return this.children[this.children.length + index];
+    return this.children[index];
   }
 
   get reprString(): string {
@@ -51,7 +90,7 @@ export class PTNode {
     } else {
       const out: any[] = [];
       const value = this.value;
-      out.push(this.sym.label + " - " + this.value);
+      out.push(this.value == null ? this.sym.label : this.sym.label + " - " + this.value);
       this.children.forEach((node) => (node.debugValue(raw) as string[]).forEach((l) => out.push("  " + l)));
       return out;
     }

@@ -49,36 +49,36 @@ console.log(ptree?.debugValue);
 Resulting in:
 
 ```
-Value - null
-  Dict - null
+Value
+  Dict
     "{" - {
-    $3 - null
-      Pair - null
+    $3
+      Pair
         STRING - "name"
         ":" - :
-        Value - null
+        Value
           STRING - "Earth"
-      $2 - null
+      $2
         "," - ,
-        Pair - null
+        Pair
           STRING - "age"
           ":" - :
-          Value - null
+          Value
             NUMBER - 4600000000
-        $2 - null
+        $2
           "," - ,
-          Pair - null
+          Pair
             STRING - "moons"
             ":" - :
-            Value - null
-              List - null
+            Value
+              List
                 "[" - [
-                $1 - null
-                  Value - null
+                $1
+                  Value
                     STRING - "luna"
-                  $0 - null
+                  $0
                 "]" - ]
-          $2 - null
+          $2
     "}" - }
 ```
 
@@ -109,11 +109,11 @@ Tree callbacks (discussed next) are very useful in uncluttering the tree from us
 
 Our goal in this example is to return a valid JSON object from a given input.   However so far we only have a parse tree in its rawest form.  It is quite possible to perform further passes to shape the tree as needed and even more passes to construct the JSON object.  However these additional passes are wasteful.
 
-The Parser object exposes two callbacks:
+The Parser object exposes three useful callbacks:
 
 * **`onNextToken(token: Token) => Nullable<Token>`**: This method is called as soon as the next token is received from the tokenizer.  This allows one to filter out tokens or even transform them based on any other context being maintained.
-* **`beforeAddingChildNode(parent: PTNode, child: PTNode) => TSU.Nullable<PTNode`**: When a child node is created this method is called (along with the parent node) so that any filtering can be performed.  For example this method be used to filter out static terminals (like operators etc).
-* **`onRuleReduced(node: PTNode, rule: Rule) => Nullable<PTNode>`**: This callback is invokved after a reduction of a rightmost derivation is performed on the parse stack.  This is an opportunity for any custom tranformations to be performed on the node (and its children) before the node is added back to the parse stack as the parsing continues.
+* **`beforeAddingChildNode(parent: PTNode, child: PTNode) => Nullable<PTNode>`**: When a child node is created this method is called (along with the parent node) so that any filtering can be performed.  For example this method be used to filter out static terminals (like operators etc).
+* **`onReduction(node: PTNode, rule: Rule) => Nullable<PTNode>`**: This callback is invokved after a reduction of a rightmost derivation is performed on the parse stack.  This is an opportunity for any custom tranformations to be performed on the node (and its children) before the node is added back to the parse stack as the parsing continues.
 
 ### Removing useless tokens
 
@@ -144,33 +144,120 @@ Every PTNode records the current symbol (either terminal or non terminal) that l
 With the above callback our parse tree now looks bit uncluttered:
 
 ```
-Value - null
-  Dict - null
-    $3 - null
-      Pair - null
+Value
+  Dict
+    $3
+      Pair
         STRING - "name"
-        Value - null
+        Value
           STRING - "Earth"
-      $2 - null
-        Pair - null
+      $2
+        Pair
           STRING - "age"
-          Value - null
+          Value
             NUMBER - 4600000000
-        $2 - null
-          Pair - null
+        $2
+          Pair
             STRING - "moons"
-            Value - null
-              List - null
-                $1 - null
-                  Value - null
+            Value
+              List
+                $1
+                  Value
                     STRING - "luna"
-                  $0 - null
-          $2 - null
+                  $0
+          $2
 ```
+
+### Inlining productions
+
+Another cleanup that can be performed is inlining productions with single children.  For example Value -> STRING or Value -> List above.  This can be done with the onReduction rule:
+
+```
+const parser = LTB.newParser(grammar);
+parser.onReduction = (node, rule) => {
+  if (node.children.length == 1 && !node.children[0].sym.isAuxiliary) return node.children[0];
+  return node;
+};
+```
+
+With this our resultant now looks a lot more promising and closer to what a real JSON document might look like:
+
+```
+Dict
+  $3
+    Pair
+      STRING - "name"
+      STRING - "Earth"
+    $2
+      Pair
+        STRING - "age"
+        NUMBER - 4600000000
+      $2
+        Pair
+          STRING - "moons"
+          List
+            $1
+              STRING - "luna"
+              $0
+        $2
+```
+
+One thing to observe is that we checked for whether the node's symbol is representing an auxiliary symbol.   This check will not be required with the fixes performed in the next section.
 
 ### Removing auxiliary prouctions
 
-As shown before the productions with $0, $1 are auto generated to allow more complex BNF specifications (eg optionals, inline repititions, inline groups etc).  It is really not fair for the author of the grammar to have to worry about cleaning these auxiliary productions from the parse tree.  Instead passing the removeAuxiliaryProductions flag to the newParser command will do the trick, eg:
+As shown before the productions with $0, $1 are auto generated to allow more complex BNF specifications (eg optionals, inline repititions, inline groups etc).  It is really not fair for the author of the grammar to have to worry about cleaning these auxiliary productions from the parse tree.  Do not worry there is an automatic feature flag that will do this for us.  However let us do this manually to get a handle on it.
+
+First a quick summary of the auxiliary symbols created for different purposes:
+
+1. Optionals:
+```
+X -> Y?
+```
+
+converts to:
+
+```
+X -> $0
+$0 -> Y | ;
+```
+
+2. 0 or more
+```
+X -> Y*
+```
+
+converts to:
+
+```
+X -> $0
+$0 -> $0 Y | ;
+```
+
+3. 1 or more
+```
+X -> Y+
+```
+
+converts to:
+
+```
+X -> $0
+$0 -> $0 Y | Y ;
+```
+
+To free the parse tree from these reductions, the onReduction handler can be used:
+
+```
+...
+parser.onReduction = (node, rule) => {
+  if (node.sym.isAuxiliary) {
+    // see 
+  }
+  return node;
+}
+```
+Instead passing the removeAuxiliaryProductions flag to the newParser command will do the trick, eg:
 
 ```
 const parser = LTB.newParser(grammar, {
@@ -181,36 +268,36 @@ const parser = LTB.newParser(grammar, {
 This would ensure our resultant parse tree would look like:
 
 ```
-Value - null
-  Dict - null
+Value
+  Dict
     "{" - {
-    $3 - null
-      Pair - null
+    $3
+      Pair
         STRING - "name"
         ":" - :
-        Value - null
+        Value
           STRING - "Earth"
-      $2 - null
+      $2
         "," - ,
-        Pair - null
+        Pair
           STRING - "age"
           ":" - :
-          Value - null
+          Value
             NUMBER - 4600000000
-        $2 - null
+        $2
           "," - ,
-          Pair - null
+          Pair
             STRING - "moons"
             ":" - :
-            Value - null
-              List - null
+            Value
+              List
                 "[" - [
-                $1 - null
-                  Value - null
+                $1
+                  Value
                     STRING - "luna"
-                  $0 - null
+                  $0
                 "]" - ]
-          $2 - null
+          $2
     "}" - }
 ```
 

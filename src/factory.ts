@@ -13,6 +13,7 @@ export function newParser(input: string, params: any = null): Parser {
   // remove all non parser params from them
   delete parserParams["grammarLoader"];
   delete parserParams["ptableMaker"];
+  delete parserParams["ebnfLoader"];
   delete parserParams["type"];
   delete parserParams["debug"];
   delete parserParams["tokenizer"];
@@ -24,7 +25,13 @@ export function newParser(input: string, params: any = null): Parser {
     parser.setGrammar(g);
   } else {
     g = new Grammar(params.grammar || {});
-    const eparser = new EBNFParser(input, { ...(params.ebnfParser || {}), grammar: g });
+    let eparser: EBNFParser;
+    const ebnfParser = params.ebnfParser;
+    if (ebnfParser && typeof ebnfParser === "function") {
+      eparser = params.ebnfParser(input, g);
+    } else {
+      eparser = new EBNFParser(input, { ...(ebnfParser || {}), grammar: g });
+    }
     g.augmentStartSymbol();
     parser.setGrammar(g).setTokenizer(eparser.generatedTokenizer.next.bind(eparser.generatedTokenizer));
     if (params.debug) {

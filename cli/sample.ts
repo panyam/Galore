@@ -26,37 +26,16 @@ parser.beforeAddingChildNode = (parent, child) => {
       child.sym.label != "true" &&
       child.sym.label != "false"
     ) {
-      return null;
+      return [];
     }
+  } else if (child.sym.isAuxiliary) {
+    return child.children;
   }
-  return child;
+  return [child];
 };
 parser.onReduction = (node: PTNode, rule: Rule) => {
-  const nt = node.sym;
-  if (nt.isAuxiliary) {
-    if (nt.auxType == "opt") {
-      // do nothing - include even if a place holder
-    } else if (nt.auxType == "atleast0" || nt.auxType == "atleast1") {
-      // right recursive
-      if (node.childCount > 0) {
-        const rightChild = node.childAt(-1);
-        TSU.assert(rightChild.sym == nt);
-        // append everthing from child to this node
-        node.children.pop();
-        for (const child of rightChild.children) {
-          node.add(child);
-        }
-      }
-    } else if (nt.auxType == "atleast0:left" || nt.auxType == "atleast1:left") {
-      // left recursive
-      if (node.childCount > 0) {
-        const rightChild = node.childAt(0);
-        TSU.assert(rightChild.sym == nt);
-        node.splice(0, 1, ...rightChild.children);
-      }
-    }
-  } else if (node.children.length == 1) {
-    // return node.children[0];
+  if (node.children.length == 1) {
+    return node.children[0];
   }
   return node;
 };
@@ -66,6 +45,7 @@ const result = parser.parse(
 );
 //const result = parser.parse(` {"a": 1, "b": "xyz", "c": false, "d": null} `);
 console.log("Parse Tree: ");
+// result?.reprString,
 const dVal = util.inspect(result?.debugValue(false), {
   showHidden: false,
   depth: null,
@@ -73,4 +53,3 @@ const dVal = util.inspect(result?.debugValue(false), {
   maxStringLength: null,
 });
 console.log(dVal);
-// result?.reprString,

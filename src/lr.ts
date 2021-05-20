@@ -524,10 +524,15 @@ export class Parser extends ParserBase {
         // from this
         let newNode = new PTNode(action.rule.nt);
         for (let i = ruleLen - 1; i >= 0; i--) {
-          let childNode: TSU.Nullable<PTNode> = stack.top(i)[1];
-          if (this.beforeAddingChildNode) childNode = this.beforeAddingChildNode(newNode, childNode);
-          if (childNode != null) {
-            newNode.add(childNode);
+          const childNode: TSU.Nullable<PTNode> = stack.top(i)[1];
+          if (this.beforeAddingChildNode) {
+            for (const node of this.beforeAddingChildNode(newNode, childNode)) {
+              newNode.add(node);
+            }
+          } else {
+            if (childNode != null) {
+              newNode.add(childNode);
+            }
           }
         }
         // Pop ruleLen number of items off the stack

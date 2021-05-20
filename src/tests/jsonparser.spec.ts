@@ -37,10 +37,7 @@ function testParsing(input: string, onParser: (p: Parser) => void, debug = false
 describe("JSON Parsing", () => {
   test("Basic Parsing", () => {
     const result = testParsing(`{"a": 1, "b": "xyz", "c": false, "d": null}`, (p: Parser) => {
-      p.onReduction = (node, rule) => {
-        if (!rule.nt.isAuxiliary) return node;
-        return node;
-      };
+      /* */
     });
     expect(result?.debugValue(true)).toEqual([
       "Value",
@@ -125,10 +122,10 @@ describe("JSON Parsing", () => {
             child.sym.label != "true" &&
             child.sym.label != "false"
           ) {
-            return null;
+            return [];
           }
         }
-        return child;
+        return [child];
       };
     });
     expect(result?.debugValue(true)).toEqual([
@@ -200,13 +197,15 @@ describe("JSON Parsing", () => {
             child.sym.label != "true" &&
             child.sym.label != "false"
           ) {
-            return null;
+            return [];
           }
         }
-        return child;
+        return [child];
       };
       p.onReduction = (node, rule) => {
-        if (node.children.length == 1) return node.children[0];
+        if (node.children.length == 1) {
+          return node.children[0];
+        }
         return node;
       };
     });
@@ -265,43 +264,60 @@ describe("JSON Parsing", () => {
               child.sym.label != "true" &&
               child.sym.label != "false"
             ) {
-              return null;
+              return [];
             }
+          } else if (child.sym.isAuxiliary) {
+            return child.children;
           }
-          return child;
+          return [child];
         };
         p.onReduction = (node, rule) => {
-          const nt = node.sym;
-          if (nt.isAuxiliary) {
-            if (nt.auxType == "opt") {
-              // do nothing - include even if a place holder
-            } else if (nt.auxType == "atleast0" || nt.auxType == "atleast1") {
-              // right recursive
-              if (node.childCount > 0) {
-                const rightChild = node.childAt(-1);
-                TSU.assert(rightChild.sym == nt);
-                // append everthing from child to this node
-                node.children.pop();
-                for (const child of rightChild.children) {
-                  node.add(child);
-                }
-              }
-            } else if (nt.auxType == "atleast0:left" || nt.auxType == "atleast1:left") {
-              // left recursive
-              if (node.childCount > 0) {
-                const rightChild = node.childAt(0);
-                TSU.assert(rightChild.sym == nt);
-                node.splice(0, 1, ...rightChild.children);
-              }
-            }
-          } else if (node.children.length == 1) {
+          if (node.children.length == 1) {
             return node.children[0];
           }
           return node;
         };
       },
-      true,
     );
-    expect(result?.debugValue(false)).toEqual([]);
+    expect(result?.debugValue()).toEqual([
+      "Dict",
+      [
+        [
+          "Pair",
+          [
+            ["STRING", '"name"'],
+            ["STRING", '"Milky Way"'],
+          ],
+        ],
+        [
+          "Pair",
+          [
+            ["STRING", '"age"'],
+            ["NUMBER", "4600000000"],
+          ],
+        ],
+        [
+          "Pair",
+          [
+            ["STRING", '"star"'],
+            ["STRING", '"sun"'],
+          ],
+        ],
+        [
+          "Pair",
+          [
+            ["STRING", '"planets"'],
+            [
+              "List",
+              [
+                ["STRING", '"Mercury"'],
+                ["STRING", '"Venus"'],
+                ["STRING", '"Earth"'],
+              ],
+            ],
+          ],
+        ],
+      ],
+    ]);
   });
 });

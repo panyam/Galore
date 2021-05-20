@@ -16,7 +16,7 @@ type Nullable<T> = TSU.Nullable<T>;
  * In order to filter out the node, return null.  Otherwise return a
  * PTNode instance for the actual node to be added to the parent.
  */
-export type BeforeAddingChildCallback = (parent: PTNode, child: PTNode) => TSU.Nullable<PTNode>;
+export type BeforeAddingChildCallback = (parent: PTNode, child: PTNode) => PTNode[];
 
 /**
  * This method is called when after a rule has been reduced.  At this time
@@ -83,7 +83,7 @@ export class PTNode {
 
   splice(index: number, numToDelete: number, ...nodes: PTNode[]): this {
     for (const node of nodes) node.parent = this;
-    this.children.splice(index, numToDelete, ...nodes)
+    this.children.splice(index, numToDelete, ...nodes);
     return this;
   }
 

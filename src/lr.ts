@@ -480,8 +480,6 @@ export class Parser extends ParserBase {
   initialize(parseTable: ParseTable, itemGraph: LRItemGraph): this {
     this.parseTable = parseTable;
     this.itemGraph = itemGraph;
-    this.stack = new ParseStack(this.grammar, this.parseTable);
-    this.stack.push(0, new PTNode(this.grammar.augStartRule.nt));
     return this;
   }
 
@@ -489,6 +487,8 @@ export class Parser extends ParserBase {
    * Parses the input and returns the resulting root Parse Tree node.
    */
   protected parseInput(input: TLEX.Tape): Nullable<PTNode> {
+    this.stack = new ParseStack(this.grammar, this.parseTable);
+    this.stack.push(0, new PTNode(this.grammar.augStartRule.nt));
     const tokenbuffer = this.tokenbuffer;
     const stack = this.stack;
     const g = this.grammar;
@@ -502,7 +502,6 @@ export class Parser extends ParserBase {
       const actions = this.parseTable.getActions(topState, nextSym);
       if (actions == null || actions.length == 0) {
         // TODO - use a error handler here
-        console.log("Stack: ", stack);
         throw new TLEX.ParseError(
           token?.start || 0,
           `Unexpected token at state (${topState}): ${token?.tag} ('${nextSym.label}')`,

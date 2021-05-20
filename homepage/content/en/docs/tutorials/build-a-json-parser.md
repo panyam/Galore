@@ -28,22 +28,24 @@ const grammar = `
 ```
 
 
-That is it.  LTB There are other ways to refactor and import common rules to avoid repetition as well as providing custom lexers.  We will come to those later.
+That is it.  LTB There are other ways to refactor and import common rules to avoid repetition as well as providing custom tokenizers.  We will come to those later.
 
 ## Testing the Parser
 
-Create the parser:
+Let us parse info about the best solar system ever:
 
 ```
 import * as LTB from "ltb"
 
 const parser = LTB.newParser(grammar);
-const ptree = parser.parse(`{
-  "name": "Earth",                                                                          
-  "age": 4600000000,                                                                        
-  "moons": [ "luna" ]
-}`);
-console.log(ptree?.debugValue);
+const payload = `{
+    "name": "Milky Way",
+    "age": 4600000000,
+    "star": "sun",
+    "planets": [ "Mercury", "Venus", "Earth" ]
+}`;
+const ptree = parser.parse(payload);
+console.log(ptree?.reprString);
 ```
 
 Resulting in:
@@ -57,28 +59,43 @@ Value
         STRING - "name"
         ":" - :
         Value
-          STRING - "Earth"
+          STRING - "Milky Way"
       $2
-        "," - ,
-        Pair
-          STRING - "age"
-          ":" - :
-          Value
-            NUMBER - 4600000000
         $2
+          $2
+            $2
+            "," - ,
+            Pair
+              STRING - "age"
+              ":" - :
+              Value
+                NUMBER - 4600000000
           "," - ,
           Pair
-            STRING - "moons"
+            STRING - "star"
             ":" - :
             Value
-              List
-                "[" - [
-                $1
-                  Value
-                    STRING - "luna"
+              STRING - "sun"
+        "," - ,
+        Pair
+          STRING - "planets"
+          ":" - :
+          Value
+            List
+              "[" - [
+              $1
+                Value
+                  STRING - "Mercury"
+                $0
                   $0
-                "]" - ]
-          $2
+                    $0
+                    "," - ,
+                    Value
+                      STRING - "Venus"
+                  "," - ,
+                  Value
+                    STRING - "Earth"
+              "]" - ]
     "}" - }
 ```
 
@@ -112,30 +129,24 @@ Our goal in this example is to return a valid JSON object from a given input.   
 The Parser object exposes three useful callbacks:
 
 * **`onNextToken(token: Token) => Nullable<Token>`**: This method is called as soon as the next token is received from the tokenizer.  This allows one to filter out tokens or even transform them based on any other context being maintained.
-* **`beforeAddingChildNode(parent: PTNode, child: PTNode) => Nullable<PTNode>`**: When a child node is created this method is called (along with the parent node) so that any filtering can be performed.  For example this method be used to filter out static terminals (like operators etc).
-* **`onReduction(node: PTNode, rule: Rule) => Nullable<PTNode>`**: This callback is invokved after a reduction of a rightmost derivation is performed on the parse stack.  This is an opportunity for any custom tranformations to be performed on the node (and its children) before the node is added back to the parse stack as the parsing continues.
+* **`beforeAddingChildNode(parent: PTNode, child: PTNode) => PTNode[]`**: When a child node is created this method is called (along with the parent node) so that any filtering can be performed.  For example this method be used to filter out static terminals (like operators etc).
+* **`onReduction(node: PTNode, rule: Rule) => PTNode`**: This callback is invokved after a reduction of a rightmost derivation is performed on the parse stack.  This is an opportunity for any custom tranformations to be performed on the node (and its children) before the node is added back to the parse stack as the parsing continues.
 
-### Removing useless tokens
+### Removing useless terminals
 
 The first cleanup we can do is to remove the "useless" tokens like "{", "[" etc.  This can be done with:
 
 ```
+// only allow true, false, string, number and null terminals
+const allowList = new Set(["STRING", "NUMBER", "Boolean", "null", "true", "false"]);
 const parser = LTB.newParser(grammar);
 parser.beforeAddingChildNode = (parent: PTNode, child: PTNode) => {
   if (child.sym.isTerminal) {
-      // only allow true, false, string, number and null terminals
-      if (
-        child.sym.label != "STRING" &&
-        child.sym.label != "NUMBER" &&
-        child.sym.label != "Boolean" &&
-        child.sym.label != "null" &&
-        child.sym.label != "true" &&
-        child.sym.label != "false"
-      ) {
-        return null;
-      }
+    if (!allowList.has(child.sym.label)) {
+      return [];
     }
-    return child;
+  }
+  return [child];
 }
 ```
 
@@ -150,61 +161,36 @@ Value
       Pair
         STRING - "name"
         Value
-          STRING - "Earth"
+          STRING - "Milky Way"
       $2
-        Pair
-          STRING - "age"
-          Value
-            NUMBER - 4600000000
         $2
-          Pair
-            STRING - "moons"
-            Value
-              List
-                $1
-                  Value
-                    STRING - "luna"
-                  $0
           $2
-```
-
-### Inlining productions
-
-Another cleanup that can be performed is inlining productions with single children.  For example Value -> STRING or Value -> List above.  This can be done with the onReduction rule:
-
-```
-const parser = LTB.newParser(grammar);
-parser.onReduction = (node, rule) => {
-  if (node.children.length == 1 && !node.children[0].sym.isAuxiliary) return node.children[0];
-  return node;
-};
-```
-
-With this our resultant now looks a lot more promising and closer to what a real JSON document might look like:
-
-```
-Dict
-  $3
-    Pair
-      STRING - "name"
-      STRING - "Earth"
-    $2
-      Pair
-        STRING - "age"
-        NUMBER - 4600000000
-      $2
+            $2
+            Pair
+              STRING - "age"
+              Value
+                NUMBER - 4600000000
+          Pair
+            STRING - "star"
+            Value
+              STRING - "sun"
         Pair
-          STRING - "moons"
-          List
-            $1
-              STRING - "luna"
-              $0
-        $2
+          STRING - "planets"
+          Value
+            List
+              $1
+                Value
+                  STRING - "Mercury"
+                $0
+                  $0
+                    $0
+                    Value
+                      STRING - "Venus"
+                  Value
+                    STRING - "Earth"
 ```
 
-One thing to observe is that we checked for whether the node's symbol is representing an auxiliary symbol.   This check will not be required with the fixes performed in the next section.
-
-### Removing auxiliary prouctions
+### Inlining auxiliary productions
 
 As shown before the productions with $0, $1 are auto generated to allow more complex BNF specifications (eg optionals, inline repititions, inline groups etc).  It is really not fair for the author of the grammar to have to worry about cleaning these auxiliary productions from the parse tree.  Do not worry there is an automatic feature flag that will do this for us.  However let us do this manually to get a handle on it.
 
@@ -246,23 +232,20 @@ X -> $0
 $0 -> $0 Y | Y ;
 ```
 
-To free the parse tree from these reductions, the onReduction handler can be used:
+To inline the auxiliary productions we can simply use the beforeAddingChildNode callback:
 
 ```
 ...
-parser.onReduction = (node, rule) => {
-  if (node.sym.isAuxiliary) {
-    // see 
+parser.beforeAddingChildNode = (parent, child) => {
+  if (child.sym.isTerminal) {
+    if (!allowList.has(child.sym.label)) {
+      return [];
+    }
+  } else if (child.sym.isAuxiliary) {
+    return child.children;
   }
-  return node;
-}
-```
-Instead passing the removeAuxiliaryProductions flag to the newParser command will do the trick, eg:
-
-```
-const parser = LTB.newParser(grammar, {
-  removeAuxilliaryProductions: true
-});
+  return [child];
+};
 ```
 
 This would ensure our resultant parse tree would look like:
@@ -270,58 +253,129 @@ This would ensure our resultant parse tree would look like:
 ```
 Value
   Dict
-    "{" - {
-    $3
-      Pair
-        STRING - "name"
-        ":" - :
-        Value
-          STRING - "Earth"
-      $2
-        "," - ,
-        Pair
-          STRING - "age"
-          ":" - :
+    Pair
+      STRING - "name"
+      Value
+        STRING - "Milky Way"
+    Pair
+      STRING - "age"
+      Value
+        NUMBER - 4600000000
+    Pair
+      STRING - "star"
+      Value
+        STRING - "sun"
+    Pair
+      STRING - "planets"
+      Value
+        List
           Value
-            NUMBER - 4600000000
-        $2
-          "," - ,
-          Pair
-            STRING - "moons"
-            ":" - :
-            Value
-              List
-                "[" - [
-                $1
-                  Value
-                    STRING - "luna"
-                  $0
-                "]" - ]
-          $2
-    "}" - }
+            STRING - "Mercury"
+          Value
+            STRING - "Venus"
+          Value
+            STRING - "Earth"
 ```
 
-T
-The same e
-just becaue up the parser tree  These productions can be removed with the help of tree callbacks (TL;DR - there are shortcut flags to the parser so that these do not have to be performed on every grammar!).
+Looking much better.  One more cleanup and we have a parse tree resembling the structure in the original JSON payload.
 
+### Inlining single child productions
 
-
-### Flattening single child nodes
-
-If a parent node in the parse tree contains a child with a single node, child's nodes are appended directly to the parent.
-
-To turn this on, simply set the "flatten" option to true in the newParser method, eg:
+Another cleanup that can be performed is inlining productions with single children.  For example Value -> STRING or Value -> List above.  This can be done with the onReduction callback:
 
 ```
-const parser = LTB.newParser(g, {
-  flatten: true
-});
-const ptree = parser.parse(`{
-  "name": "Earth",                                                                          
-  "age": 4600000000,                                                                        
-  "moons": [ "luna" ]
-}`);
-console.log(ptree?.debugValue);
+const parser = LTB.newParser(grammar);
+parser.onReduction = (node, rule) => {
+  if (node.children.length == 1) node = node.children[0];
+  return node;
+};
 ```
+
+With this our resultant now looks a lot more promising and closer to what a real JSON document might look like:
+
+```
+Dict
+  Pair
+    STRING - "name"
+    STRING - "Milky Way"
+  Pair
+    STRING - "age"
+    NUMBER - 4600000000
+  Pair
+    STRING - "star"
+    STRING - "sun"
+  Pair
+    STRING - "planets"
+    List
+      STRING - "Mercury"
+      STRING - "Venus"
+      STRING - "Earth"
+```
+
+## Creating the document
+
+So far we have a standardized parse tree.   Though this "looks like" a JSON object it is not quite there.   Each PTNode object has a "value" associated with it.  This allows the different callbacks to set semantic values to a parse tree node.
+
+Similarly we can use the onNextToken and onReduction callback to set these values on a parse.
+
+
+The onNextToken callback is called as soon as next token is fetched from the tokenizer.  This is a chance for us to set its semantic value.
+```
+parser.onNextToken = (token) => {
+  if (token.tag == "STRING") {
+    token.value = token.value.substring(1, token.value.length - 1);
+  } else if (token.tag == "NUMBER") {
+    token.value = parseFloat(token.value);
+  } else if (token.tag == '"true"') {
+    token.value = true;
+  } else if (token.tag == '"false"') {
+    token.value = false;
+  } else if (token.tag == '"null"') {
+    token.value = null;
+  }
+  return token;
+};
+```
+
+Similary the onReduction is called when a reduction is performed on N items on the parse stack.  This is a place to evaluate the semantic value of the non-terminal leading the production:
+
+```
+parser.onReduction = (node: PTNode, rule: Rule) => {
+  if (node.children.length == 1) {
+    node = node.children[0];
+  }
+  if (node.sym.label == "List") {
+    node.value = node.children.map((n) => n.value);
+  } else if (node.sym.label == "Dict") {
+    node.value = {};
+    for (const pair of node.children) {
+      // these *will* be Pair objects
+      TSU.assert(pair.sym.label == "Pair");
+      TSU.assert(pair.children.length == 2);
+      node.value[pair.children[0].value] = pair.children[1].value;
+    }
+  }
+  return node;
+};
+```
+
+With this our parse tree value (`result?.value`) is:
+
+```
+{
+  name: 'Milky Way',
+  age: 4600000000,
+  star: 'sun',
+  planets: [ 'Mercury', 'Venus', 'Earth' ],
+  hot: true,
+  x: null
+}
+```
+
+Not bad at all given a tokenizer and generated parser right out of the box.   There is still a lot of room for improvement.   We will explore these in further tutorials with custom tokenizers and amany more.
+
+## Performance
+
+Generated parsers can never get as fast as hand crafted parsers.  But how close can we get?
+
 

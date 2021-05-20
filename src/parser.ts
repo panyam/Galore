@@ -81,6 +81,12 @@ export class PTNode {
     return this;
   }
 
+  splice(index: number, numToDelete: number, ...nodes: PTNode[]): this {
+    for (const node of nodes) node.parent = this;
+    this.children.splice(index, numToDelete, ...nodes)
+    return this;
+  }
+
   debugValue(raw = true): any {
     if (raw) {
       const out: any = [this.sym.label];

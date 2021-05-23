@@ -3,7 +3,7 @@ import { mergedDebugValue } from "../debug";
 
 describe("LR ParseTable", () => {
   test("Test Basic", () => {
-    const parser = newParser(
+    const [parser, _] = newParser(
       `
         E -> E PLUS T | T ;
         T -> T STAR F | F ;

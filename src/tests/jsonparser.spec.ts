@@ -16,7 +16,7 @@ const g = `
 `;
 
 function testParsing(input: string, onParser: (p: Parser) => void, debug = false): any {
-  const parser = newParser(g, { type: "slr" });
+  const [parser, _] = newParser(g, { type: "slr" });
   onParser(parser);
 
   const result = parser.parse(input);

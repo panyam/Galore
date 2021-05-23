@@ -13,7 +13,7 @@ function tok(tag: any, value: any): TLEX.Token {
 }
 
 function testParsing(grammar: string, input: string, config: any = {}): TSU.Nullable<PTNode> {
-  const parser = newParser(grammar, config);
+  const [parser, _] = newParser(grammar, config);
   const result = parser.parse(input);
   if (config === true || config.debug) {
     // console.log(result?.reprString);

@@ -1,5 +1,5 @@
 baseURL = "/"
-title = "Language Toolbox"
+title = "Galore"
 
 enableRobotsTXT = true
 
@@ -53,8 +53,8 @@ id = "UA-00000000-0"
 
 [languages]
 [languages.en]
-title = "Language Toolbox"
-description = "Language Toolbox Homepage"
+title = "Galore"
+description = "Galore Homepage"
 languageName ="English"
 # Weight used for sorting.
 weight = 1

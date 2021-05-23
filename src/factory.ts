@@ -1,3 +1,5 @@
+import * as TSU from "@panyam/tsutils";
+import * as TLEX from "tlex";
 import { EBNFParser } from "./ebnf";
 import { makeSLRParseTable, makeLRParseTable } from "./ptables";
 import { Parser } from "./lr";
@@ -7,7 +9,7 @@ import { logParserDebug } from "./debug";
 /**
  * Helper to create a grammar, and its parser.
  */
-export function newParser(input: string, params: any = null): Parser {
+export function newParser(input: string, params: any = null): [Parser, TSU.Nullable<TLEX.NextTokenFunc>] {
   if (typeof params === "boolean") throw new Error("Config must be a dict");
   const parserParams = { ...params };
   // remove all non parser params from them
@@ -18,6 +20,7 @@ export function newParser(input: string, params: any = null): Parser {
   delete parserParams["debug"];
   delete parserParams["tokenizer"];
   const parser = params.builder ? params.builder(parserParams) : new Parser(parserParams || {});
+  let tokenFunc: TSU.Nullable<TLEX.NextTokenFunc> = null;
 
   let g: Grammar;
   if (params.grammarLoader) {
@@ -33,7 +36,8 @@ export function newParser(input: string, params: any = null): Parser {
       eparser = new EBNFParser(input, { ...(ebnfParser || {}), grammar: g });
     }
     g.augmentStartSymbol();
-    parser.setGrammar(g).setTokenizer(eparser.generatedTokenizer.next.bind(eparser.generatedTokenizer));
+    tokenFunc = eparser.generatedTokenizer.next.bind(eparser.generatedTokenizer);
+    parser.setGrammar(g).setTokenizer(tokenFunc);
     if (params.debug) {
       console.log("Prog: \n", `${eparser.generatedTokenizer.vm.prog.debugValue().join("\n")}`);
     }
@@ -54,5 +58,5 @@ export function newParser(input: string, params: any = null): Parser {
   if (params.debug) {
     logParserDebug(parser);
   }
-  return parser;
+  return [parser, tokenFunc];
 }

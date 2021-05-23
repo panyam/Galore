@@ -1,0 +1,8 @@
+{
+  "name": "Milky Way",
+  "age": 4600000000,
+  "star": "sun",
+  "planets": [ "Mercury", "Venus", "Earth" ],
+  "hot": true,
+  "x": null
+}

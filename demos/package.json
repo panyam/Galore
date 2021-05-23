@@ -1,0 +1,40 @@
+{
+  "name": "ltbdemos",
+  "version": "0.0.1",
+  "author": "Sriram Panyam",
+  "description": "LTB Demos.",
+  "homepage": "https://github.com/panyam/ltb#readme",
+  "license": "ISC",
+  "types": "lib/cjs/index.d.ts",
+  "main": "./lib/cjs/index.js",
+  "module": "./lib/esm/index.js",
+  "files": [
+    "lib/"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/panyam/ltb.git"
+  },
+  "keywords": [
+    "languages",
+    "parsing"
+  ],
+  "bugs": {
+    "url": "https://github.com/panyam/ltb/issues"
+  },
+  "pre-commit": [],
+  "scripts": {},
+  "devDependencies": {
+    "@babel/core": "^7.14.0",
+    "@babel/preset-env": "^7.14.1",
+    "autoprefixer": "^9.5.0",
+    "babel-loader": "^8.2.2",
+    "core-js": "^3.12.0",
+    "postcss-cli": "^5.0.1",
+    "webpack": "^5.36.2",
+    "webpack-cli": "^4.7.0"
+  },
+  "dependencies": {
+    "ltb": "file:.."
+  }
+}

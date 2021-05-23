@@ -378,4 +378,14 @@ Not bad at all given a tokenizer and generated parser right out of the box.   Th
 
 Generated parsers can never get as fast as hand crafted parsers.  But how close can we get?
 
+(TODO) Discuss:
 
+* Different sizes of grammars.
+* Tokenizer vs Parse time break down
+* Hook to custom parser.
+
+## Conclusion
+
+This simple tutorial shows how a parser can be constructed (for LR grammars).  The framework also generates a tokenizer for free so the DSL author can focus on the constructs of the language.
+
+In other tutorials and examples more advanced use cases will be explored.   If you have any feedback or suggestions on how this documentation (or LTB itself) can be improved I would love to hear it.  Please email me or raise an issue in the Github repo.

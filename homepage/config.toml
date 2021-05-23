@@ -67,7 +67,7 @@ section = ["HTML", "print"]
 
 [params]
 copyright = "Sriram Panyam"
-privacy_policy = "https://langtoolbox.appspot.com/privacy"
+privacy_policy = "https://galorium.appspot.com/privacy"
 
 # First one is picked as the Twitter card image if not set on page.
 # images = ["images/project-illustration.png"]
@@ -88,7 +88,7 @@ version = "0.0"
 
 # A link to latest version of the docs. Used in the "version-banner" partial to
 # point people to the main doc site.
-url_latest_version = "https://langtoolbox.appspot.com"
+url_latest_version = "https://galorium.appspot.com"
 
 # Repository configuration (URLs for in-page links to opening issues and suggesting changes)
 github_repo = "https://github.com/panyam/Galore"
@@ -147,12 +147,12 @@ enable = false
 # End user relevant links. These will show up on left side of footer and in the community page if you have one.
 [[params.links.user]]
 	name = "User mailing list"
-	url = "https://langtoolbox.appspot.com/mail"
+	url = "https://galorium.appspot.com/mail"
 	icon = "fa fa-envelope"
         desc = "Discussion and help from your fellow users"
 # [[params.links.user]]
 	# name ="Twitter"
-	# url = "https://langtoolbox.appspot.com/twitter"
+	# url = "https://galorium.appspot.com/twitter"
 	# icon = "fab fa-twitter"
         # desc = "Follow us on Twitter to get the latest news!"
 [[params.links.user]]
@@ -168,12 +168,12 @@ enable = false
         desc = "Development takes place here!"
 [[params.links.developer]]
 	name = "Slack"
-	url = "https://langtoolbox.appspot.com/slack"
+	url = "https://galorium.appspot.com/slack"
 	icon = "fab fa-slack"
         desc = "Chat with project developers"
 [[params.links.developer]]
 	name = "Developer mailing list"
-	url = "https://langtoolbox.appspot.com/mail"
+	url = "https://galorium.appspot.com/mail"
 	icon = "fa fa-envelope"
         desc = "Discuss development issues around the project"
 

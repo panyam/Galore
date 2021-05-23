@@ -72,7 +72,7 @@ describe("Jison tests", () => {
 
 describe("Sample Parse Tables", () => {
   test("Test1", () => {
-    const [parser,_] = newParser(
+    const [parser, _] = newParser(
       `
         E -> T X ;
         X -> PLUS E | ;

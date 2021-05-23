@@ -110,7 +110,7 @@ if (useMemSessions) {
 // And setup routes and error handlers
 
 import * as TSG from "@panyam/tsutils-gae";
-const indexRouter = require("./src/server/routes/index");
+const indexRouter = require("./src/server/routes");
 
 const ENV = app.get("env");
 

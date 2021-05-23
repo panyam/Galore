@@ -42,19 +42,19 @@
   "pre-commit": [
     "precommit-msg",
     "clean",
-    "buildbe",
+    "build",
     "lintfix",
     "test"
   ],
   "scripts": {
     "clean": "rm -Rf dist && jest --clearCache && rm -rf static/dist",
-    "buildsites": "(cd src/sites/blog ; hugo -D) && (cd src/sites/tutorial ; hugo -D)",
-    "buildbe": "tsc -p tsconfig.server.json &&  cp *.yaml ./dist/ && cp -r bin ./dist/ && cp package.json ./dist/ && cp -r src/views ./dist/src/",
+    "buildhp": "cd homepage ; hugo -D",
+    "build": "tsc -p tsconfig.server.json &&  cp *.yaml ./dist/ && cp -r bin ./dist/ && cp package.json ./dist/ && cp -r src/views ./dist/src/",
     "buildfeprod": "webpack --mode=production && npm run copystatic",
     "buildfe": "webpack --mode=development && npm run copystatic",
     "copystatic": "cp -r static/* ./dist/static/",
     "buildadmin": "tsc -p ./src/admin/tsconfig.json",
-    "buildall": "npm run buildsites && npm run buildadmin && npm run buildbe && npm run buildfe",
+    "buildall": "npm run buildhp && npm run buildadmin && npm run buildbe && npm run buildfe",
     "buildallprod": "npm run buildsites && npm run buildadmin && npm run buildbe && npm run buildfe",
     "test": "jest --coverage --runInBand",
     "start": "node ./bin/www",

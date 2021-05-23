@@ -1,7 +1,7 @@
 {
   "exclude": [
     "node_modules",
-    "src/sites",
+    "src/homepage",
     "src/pages",
     "dist"
   ],
@@ -29,7 +29,6 @@
   "include": [
     "./src/server/**/*.ts",
     "./src/entities/**/*.ts",
-    "tsutils/src/**/*.ts",
     "./app.ts"
   ]
 }

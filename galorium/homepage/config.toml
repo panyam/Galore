@@ -1,5 +1,6 @@
 baseURL = "/"
 title = "Galore"
+publishDir = "../dist/homepage/"
 
 enableRobotsTXT = true
 

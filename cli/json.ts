@@ -17,7 +17,7 @@ const g = `
 `;
 // only allow true, false, string, number and null terminals
 const allowList = new Set(["STRING", "NUMBER", "Boolean", '"null"', '"true"', '"false"']);
-const parser = newParser(g, { flatten: true, type: "slr", debug: false });
+const parser = newParser(g, { flatten: true, type: "slr", debug: true });
 parser.onNextToken = (token) => {
   if (token.tag == "STRING") {
     token.value = token.value.substring(1, token.value.length - 1);

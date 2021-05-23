@@ -4,14 +4,14 @@ date: 2021-05-08T11:10:00-07:00
 weight: 1
 draft: true
 description: >
-  An example showing how to build a fully functional JSON parser using the LTB.
+  An example showing how to build a fully functional JSON parser using the Galore.
 ---
 
-In this example we will build a JSON parser using LTB.
+In this example we will build a JSON parser using Galore.
 
 ## The Grammar
 
-Grammars in LTB are an extension of the Extended Backaus Naur Form (EBNF).   The EBNF grammar for JSON is:
+Grammars in Galore are an extension of the Extended Backaus Naur Form (EBNF).   The EBNF grammar for JSON is:
 
 ```
 const grammar = `
@@ -28,16 +28,16 @@ const grammar = `
 ```
 
 
-That is it.  LTB There are other ways to refactor and import common rules to avoid repetition as well as providing custom tokenizers.  We will come to those later.
+That is it.  Galore There are other ways to refactor and import common rules to avoid repetition as well as providing custom tokenizers.  We will come to those later.
 
 ## Testing the Parser
 
 Let us parse info about the best solar system ever:
 
 ```
-import * as LTB from "ltb"
+import * as Galore from "Galore"
 
-const parser = LTB.newParser(grammar);
+const parser = Galore.newParser(grammar);
 const payload = `{
     "name": "Milky Way",
     "age": 4600000000,
@@ -139,7 +139,7 @@ The first cleanup we can do is to remove the "useless" tokens like "{", "[" etc.
 ```
 // only allow true, false, string, number and null terminals
 const allowList = new Set(["STRING", "NUMBER", "Boolean", "null", "true", "false"]);
-const parser = LTB.newParser(grammar);
+const parser = Galore.newParser(grammar);
 parser.beforeAddingChildNode = (parent: PTNode, child: PTNode) => {
   if (child.sym.isTerminal) {
     if (!allowList.has(child.sym.label)) {
@@ -284,7 +284,7 @@ Looking much better.  One more cleanup and we have a parse tree resembling the s
 Another cleanup that can be performed is inlining productions with single children.  For example Value -> STRING or Value -> List above.  This can be done with the onReduction callback:
 
 ```
-const parser = LTB.newParser(grammar);
+const parser = Galore.newParser(grammar);
 parser.onReduction = (node, rule) => {
   if (node.children.length == 1) node = node.children[0];
   return node;
@@ -388,4 +388,4 @@ Generated parsers can never get as fast as hand crafted parsers.  But how close 
 
 This simple tutorial shows how a parser can be constructed (for LR grammars).  The framework also generates a tokenizer for free so the DSL author can focus on the constructs of the language.
 
-In other tutorials and examples more advanced use cases will be explored.   If you have any feedback or suggestions on how this documentation (or LTB itself) can be improved I would love to hear it.  Please email me or raise an issue in the Github repo.
+In other tutorials and examples more advanced use cases will be explored.   If you have any feedback or suggestions on how this documentation (or Galore itself) can be improved I would love to hear it.  Please email me or raise an issue in the Github repo.

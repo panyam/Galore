@@ -95,7 +95,7 @@ module.exports = (_env, options) => {
       path: path.resolve(__dirname, "dist/static/dist/"),
       publicPath: "/static/dist/",
       filename: "[name]-[hash:8].js",
-      library: ["ltbhome", "[name]"],
+      library: ["Galore", "[name]"],
       libraryTarget: "umd",
       umdNamedDefine: true,
       globalObject: "this",

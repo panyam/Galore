@@ -1,9 +1,9 @@
 {
-  "name": "ltbhome",
+  "name": "GaloreHome",
   "version": "0.0.1",
   "author": "Sriram Panyam",
-  "description": "LTB Homepage.",
-  "homepage": "https://github.com/panyam/ltb#readme",
+  "description": "Galore Homepage.",
+  "homepage": "https://github.com/panyam/Galore#readme",
   "license": "ISC",
   "types": "lib/cjs/index.d.ts",
   "main": "./lib/cjs/index.js",
@@ -13,14 +13,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/panyam/ltb.git"
+    "url": "git+https://github.com/panyam/Galore.git"
   },
   "keywords": [
     "languages",
     "parsing"
   ],
   "bugs": {
-    "url": "https://github.com/panyam/ltb/issues"
+    "url": "https://github.com/panyam/Galore/issues"
   },
   "pre-commit": [],
   "scripts": {},
@@ -35,6 +35,6 @@
     "webpack-cli": "^4.7.0"
   },
   "dependencies": {
-    "ltb": "file:.."
+    "Galore": "file:.."
   }
 }

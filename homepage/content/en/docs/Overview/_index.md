@@ -3,11 +3,11 @@ title: "Overview"
 linkTitle: "Overview"
 weight: 1
 description: >
-  LTB is a modern parsing toolkit adopting and implementing modern parsing, incremental update and error recovery strategies for use in editors and language analysis.
+  Galore is a modern parsing toolkit adopting and implementing modern parsing, incremental update and error recovery strategies for use in editors and language analysis.
 ---
 
 {{% pageinfo %}}
-LTB provides support for:
+Galore provides support for:
 * A flexible and extended grammar specification with EBNF.
 * Automatic and customizable parse tree generation.
 * Customised parser modes - SLR, LR, LALR, GLR and more to come.
@@ -20,7 +20,7 @@ LTB provides support for:
 ## Installation
 
 ```
-npm install ltb
+npm install Galore
 ```
 
 ## Syntax Highlighting

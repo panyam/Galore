@@ -9,6 +9,6 @@ menu:
 ---
 
 {{% pageinfo %}}
-Welcome to LTB's documentation.  LTB is a parser toolkit providing several strategies for parsing any context free grammar.
+Welcome to Galore's documentation.  Galore is a parser toolkit providing several strategies for parsing any context free grammar.
 {{% /pageinfo %}}
 

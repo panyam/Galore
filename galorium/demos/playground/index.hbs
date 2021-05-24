@@ -1,24 +1,32 @@
+
+{{#partial "header_tags" }}
+<title>Galore Playground</title>
+{{/partial}}
 {{#partial "header_block" }}
-  <h2 style="overflow-x: auto"><span id = "scoreTitleHeading">\{{ score.name }}</span></h2>
+  <h2 style="overflow-x: auto"><span id = "scoreTitleHeading">Galore Playground</span></h2>
 {{/partial}}
 
 {{#partial "center_block" }}
-  <div id = "editor" class = "vertical"></div>
-  <div id = "viewer" class = "vertical"></div>
+  <div id = "grammarArea">
+    <span>Choose Grammar: </span><select id = "grammarSelect">
+      <option value="json">JSON</option>
+      <option value="javascript">Javascript</option>
+      <option value="C">C</option>
+    </select>
+    <textarea id = "grammarTextArea"></textrea>
+  </div>
+  <div id = "ptreeArea" class = "vertical"></div>
+  <div id = "inputArea" class = "vertical">
+    <span>Enter Input to Parse:</span>
+    <textarea id = "inputTextArea"></textrea>
+  </div>
   <div id = "statusBar" class = "vertical">Welcome!</div>
-  <div id = "headerBar" class = "vertical">
+  <div id = "headerBar">
+    <button>Parse Table</button>
   </div>
 {{/partial}}
 
 {{#partial "nav_buttons_block" }}
-{{/partial}}
-
-{{#partial "footer_block" }}
-  <pre class = "scoreContentsPre">
-    <code contentSection = "header">\{{ contents.header }}</code>
-    <code contentSection = "main">\{{ contents.main }}</code>
-  </pre>
-  <input type = "hidden" id = "scoreIdInput" value = "\{{ score.id }}" />
 {{/partial}}
 
 {{>basepage}}

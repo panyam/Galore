@@ -6,54 +6,75 @@ h1 {
 }
 
 #scoreTitleHeading {
-  float: left;
+  float: center;
 }
 
-#editor.vertical {
-  position: absolute;
-  overflow: hidden;
-  left: 0px;
-  top: $header-bar-height;
-  bottom: $statusBarHeight;
-  width: 50%;
-  border: solid 1px darkgray;
-}
-
-#editor.horizontal {
-  border: solid 1px darkgray;
-  position: absolute;
-  overflow: hidden;
-  width: 100%;
-  left: 0px;
-  bottom: 0px;
-  height: 50%;
-}
-
-#viewer.vertical {
+#grammarArea {
   position: absolute;
   overflow: scroll;
   top: $header-bar-height;
-  width: 50%;
+  right: 50%;
+  left: 0px;
+  bottom: 50%;
+  border: solid 1px darkgray;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+#grammarSelect {
+  width: unset;
+  display: unset;
+}
+
+#grammarTextArea {
+  position: absolute;
+  overflow: scroll;
+  left: 0px;
   right: 0px;
-  bottom: $statusBarHeight;
-  border: solid 1px darkgray;
+  top: 30px;
+  bottom: 0px;
+  border: solid 1px green;
   padding-left: 20px;
   padding-right: 20px;
 }
 
-#viewer.horizontal {
+#inputArea {
   position: absolute;
   overflow: scroll;
-  width: 100%;
+  top: 50%;
+  bottom: $statusBarHeight;
+  right: 50%;
   left: 0px;
-  top: 0px;
-  height: 50%;
   border: solid 1px darkgray;
   padding-left: 20px;
   padding-right: 20px;
 }
 
-#statusBar.vertical {
+#inputTextArea {
+  position: absolute;
+  overflow: scroll;
+  left: 0px;
+  right: 0px;
+  top: 30px;
+  bottom: 0px;
+  border: solid 1px green;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+#ptreeArea {
+  position: absolute;
+  overflow: scroll;
+  top: $header-bar-height;
+  bottom: $statusBarHeight;
+  left: 50%;
+  right: 0px;
+  border: solid 1px darkgray;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+#statusBar {
   position: absolute;
   overflow: hidden;
   height: $statusBarHeight;
@@ -66,18 +87,6 @@ h1 {
   margin: 0;
 }
 
-#statusBar.horizontal {
-  position: absolute;
-  overflow: hidden;
-  height: $statusBarHeight;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
-  background-color: rgb(245, 245, 245);
-  color: gray;
-  padding: 0;
-  margin: 0;
-}
 
 .SnippetParentDiv {
   // border: solid 1px red;
@@ -103,47 +112,12 @@ h1 {
   border-bottom: solid 1px grey;
 }
 
-.scoreContentsPre,
-.scoreContentsPre code {
-  display: none;
-  visibility: hidden;
-  margin: 0px;
-  padding: 0px;
-  height: 0px;
-}
-
-#menubar_div {
-  position: absolute;
-  vertical-align: middle;
-  float: left;
-  border-top: solid 1px darkGray;
-  right: 0px;
-  left: 0px;
-  top: 0px;
-}
-
-#toolbar_div {
-  position: absolute;
-  border-top: solid 1px darkGray;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  right: 0px;
-  left: 0px;
-  bottom: 0px;
-}
-
-#headerBar.vertical {
+#headerBar {
   position: absolute;
   left: 0px;
   top: 0px;
   right: 0px;
+  padding-left: 20px;
   height: $header-bar-height;
 }
 
-#headerBar.horizontal {
-  position: absolute;
-  left: 0px;
-  top: 50% !important;
-  right: 0px;
-  height: $header-bar-height;
-}

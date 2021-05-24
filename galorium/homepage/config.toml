@@ -182,4 +182,4 @@ enable = false
 [[menu.main]]
     name = "Playground"
     weight = 50
-    url = "/playground/"
+    url = "/demos/playground/"

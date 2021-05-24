@@ -60,7 +60,7 @@ function readdir(path) {
   });
 }
 
-const pages = ["homepage"];
+const pages = ["playground"];
 
 module.exports = (_env, options) => {
   context: __dirname; // path.resolve(__dirname);
@@ -181,7 +181,7 @@ module.exports = (_env, options) => {
           new HtmlWebpackPlugin({
             chunks: [page],
             // inject: false,
-            filename: path.resolve(__dirname, `dist/static/dist/${page}/index.html`),
+            filename: path.resolve(__dirname, `../dist/demos/${page}/index.html`),
             template: path.resolve(__dirname, `${page}/index.hbs`),
             minify: { collapseWhitespace: false },
           }),

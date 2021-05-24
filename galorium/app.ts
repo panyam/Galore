@@ -65,8 +65,9 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.use("/blog", express.static(path.join(__dirname, "sites/blog")));
-app.use("/docs", express.static(path.join(__dirname, "sites/docs")));
+// app.use("/blog", express.static(path.join(__dirname, "sites/blog")));
+// app.use("/docs", express.static(path.join(__dirname, "sites/docs")));
+app.use("/demos", express.static(path.join(__dirname, "demos")));
 app.use("/", express.static(path.join(__dirname, "homepage")));
 
 /// Enable static sites for dev (and hence CORS)

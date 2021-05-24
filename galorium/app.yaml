@@ -7,6 +7,22 @@ handlers:
 - url: /static
   static_dir: static
 
+# To enable /demos *and* /demos/
+- url: /demos(/)?
+  static_files: demos/index.html
+  upload: demos/index.html
+
+# To enable index.html on a directory, eg: 
+# https://notations.appspot.com/demos/posts/my-first-post/
+- url: /demos/(.*)/
+  static_files: demos/\1/index.html
+  upload: demos/(.*)/index.html
+
+# All other non-folder files
+- url: /demos/(.*)
+  static_files: demos/\1
+  upload: demos/(.*)
+
 ## By default - goto "homepage" folder
 - url: (/)?
   static_files: homepage/index.html

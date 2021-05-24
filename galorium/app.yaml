@@ -7,40 +7,21 @@ handlers:
 - url: /static
   static_dir: static
 
-## Blog related URLs
-
-# To enable /blog *and* /blog/
-- url: /blog(/)?
-  static_files: sites/blog/index.html
-  upload: sites/blog/index.html
+## By default - goto "homepage" folder
+- url: (/)?
+  static_files: homepage/index.html
+  upload: homepage/index.html
 
 # To enable index.html on a directory, eg: 
 # https://galorium.appspot.com/blog/posts/my-first-post/
-- url: /blog/(.*)/
-  static_files: sites/blog/\1/index.html
-  upload: sites/blog/(.*)/index.html
+- url: /(.*)/
+  static_files: homepage/\1/index.html
+  upload: homepage/(.*)/index.html
 
 # All other non-folder files
-- url: /blog/(.*)
-  static_files: sites/blog/\1
-  upload: sites/blog/(.*)
-
-## docs related URLs
-# To enable /docs *and* /docs/
-- url: /docs(/)?
-  static_files: sites/docs/index.html
-  upload: sites/docs/index.html
-
-# To enable index.html on a directory, eg: 
-# https://galorium.appspot.com/docs/posts/my-first-post/
-- url: /docs/(.*)/
-  static_files: sites/docs/\1/index.html
-  upload: sites/docs/(.*)/index.html
-
-# All other non-folder files
-- url: /docs/(.*)
-  static_files: sites/docs/\1
-  upload: sites/docs/(.*)
+- url: /(.*)
+  static_files: homepage/\1
+  upload: homepage/(.*)
 
 - url: /.*
   secure: always

@@ -22,13 +22,11 @@ node_modules/
 *.ts
 
 # Exclude sites, admin and pages as these are just sources to generate stuff from
-src/sites
-src/admin
-src/pages
+/homepage/
 /demos/
+/src/server/
 /coverage/
-/scripts/
-/cli
+/bin/
 
 !sites
 

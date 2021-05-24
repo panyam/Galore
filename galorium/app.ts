@@ -1,4 +1,4 @@
-import createError from "http-errors";
+// import createError from "http-errors";
 import express = require("express");
 import path = require("path");
 import bodyParser = require("body-parser");
@@ -109,7 +109,6 @@ if (useMemSessions) {
 
 // And setup routes and error handlers
 
-import * as TSG from "@panyam/tsutils-gae";
 const indexRouter = require("./src/server/routes");
 
 const ENV = app.get("env");
@@ -118,9 +117,10 @@ app.use("/", indexRouter);
 
 // Iniitalise auth flows
 // TODO - finalise a naming convention for these
-TSG.Auth.initAuth2App(app);
+// TSG.Auth.initAuth2App(app);
 
 // catch 404 and forward to error handler
+/*
 app.use((req: any, res: any, next: any) => {
   next(createError(404));
 });
@@ -135,5 +135,6 @@ app.use((err: any, req: any, res: any, next: any) => {
   res.status(err.status || 500);
   res.render("error/index.html");
 });
+*/
 
 module.exports = app;

@@ -1,10 +1,6 @@
 {
   "exclude": [
     "node_modules",
-    "src/sites",
-    "src/admin",
-    "src/server",
-    "../src/test/",
     "dist"
   ],
   "compilerOptions": {
@@ -19,7 +15,7 @@
     "module": "ES2020",
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
-    "outDir": "./dist/static/dist/",
+    "outDir": "../dist/demos/",
     "plugins": [ { "name": "typescript-tslint-plugin" } ],
     "removeComments": true,
     "skipLibCheck": true,
@@ -30,8 +26,6 @@
     "target": "es5"
   },
   "include": [
-    "./src/lib/**/*.ts",
-    "./src/pages/**/*.ts",
-    "../src/**/*.ts"
+    "./**/*.ts"
   ]
 }

@@ -40,15 +40,9 @@ function setupHandlebarsEngine(engine, info) {
     const result = template({});
     return result;
   });
-  engine.registerPartial("basepage", fs.readFileSync("./src/pages/fecommon/partials/basePage.hbs").toString());
-  engine.registerPartial(
-    "commonHeaders",
-    fs.readFileSync("./src/pages/fecommon/partials/commonHeaders.hbs").toString(),
-  );
-  engine.registerPartial(
-    "commonFooters",
-    fs.readFileSync("./src/pages/fecommon/partials/commonFooters.hbs").toString(),
-  );
+  engine.registerPartial("basepage", fs.readFileSync("./fecommon/partials/basePage.hbs").toString());
+  engine.registerPartial("commonHeaders", fs.readFileSync("./fecommon/partials/commonHeaders.hbs").toString());
+  engine.registerPartial("commonFooters", fs.readFileSync("./fecommon/partials/commonFooters.hbs").toString());
 }
 
 // Read Samples first
@@ -66,17 +60,17 @@ function readdir(path) {
   });
 }
 
-const pages = ["homepage", "me", "composer", "viewer", "collection", "login", "error"];
+const pages = ["homepage"];
 
 module.exports = (_env, options) => {
-  context: path.resolve(__dirname, "src");
+  context: __dirname; // path.resolve(__dirname);
   const isDevelopment = options.mode == "development";
   const webpackConfigs = {
     devtool: "inline-source-map",
     devServer: {
       hot: true,
       serveIndex: true,
-      contentBase: path.join(__dirname, "dist/static/dist"),
+      contentBase: path.join(__dirname, "../dist/demos/"),
       before: function (app, server) {
         app.get(/\/dir\/.*/, function (req, res) {
           const path = "./" + req.path.substr(5);
@@ -92,10 +86,10 @@ module.exports = (_env, options) => {
       },
     },
     output: {
-      path: path.resolve(__dirname, "dist/static/dist/"),
-      publicPath: "/static/dist/",
+      path: path.resolve(__dirname, "../dist/demos/"),
+      publicPath: "/demos/",
       filename: "[name]-[hash:8].js",
-      library: ["notation", "[name]"],
+      library: ["galorium", "[name]"],
       libraryTarget: "umd",
       umdNamedDefine: true,
       globalObject: "this",
@@ -135,9 +129,7 @@ module.exports = (_env, options) => {
         {
           test: /\.ts$/,
           exclude: [path.resolve(__dirname, "node_modules"), path.resolve(__dirname, "dist")],
-          include: ["./src/pages/", "./src/entities", "./src/tsutils/src", "./src/lib"].map((x) =>
-            path.resolve(__dirname, x),
-          ),
+          include: ["./"].map((x) => path.resolve(__dirname, x)),
           use: [
             {
               loader: "ts-loader",
@@ -170,13 +162,7 @@ module.exports = (_env, options) => {
       ],
     },
     entry: {
-      composer: "./src/pages/composer/index.ts",
-      viewer: "./src/pages/viewer/index.ts",
-      collection: "./src/pages/collection/index.ts",
-      homepage: "./src/pages/homepage/index.ts",
-      error: "./src/pages/error/index.ts",
-      login: "./src/pages/login/index.ts",
-      me: "./src/pages/me/index.ts",
+      playground: "./playground/index.ts",
     },
     plugins: [
       new CleanWebpackPlugin(),
@@ -196,7 +182,7 @@ module.exports = (_env, options) => {
             chunks: [page],
             // inject: false,
             filename: path.resolve(__dirname, `dist/static/dist/${page}/index.html`),
-            template: path.resolve(__dirname, `src/pages/${page}/index.hbs`),
+            template: path.resolve(__dirname, `${page}/index.hbs`),
             minify: { collapseWhitespace: false },
           }),
       ),

@@ -1,0 +1,149 @@
+@import "../../fecommon/global";
+@import "./vars";
+
+h1 {
+  margin-top: 10px;
+}
+
+#scoreTitleHeading {
+  float: left;
+}
+
+#editor.vertical {
+  position: absolute;
+  overflow: hidden;
+  left: 0px;
+  top: $header-bar-height;
+  bottom: $statusBarHeight;
+  width: 50%;
+  border: solid 1px darkgray;
+}
+
+#editor.horizontal {
+  border: solid 1px darkgray;
+  position: absolute;
+  overflow: hidden;
+  width: 100%;
+  left: 0px;
+  bottom: 0px;
+  height: 50%;
+}
+
+#viewer.vertical {
+  position: absolute;
+  overflow: scroll;
+  top: $header-bar-height;
+  width: 50%;
+  right: 0px;
+  bottom: $statusBarHeight;
+  border: solid 1px darkgray;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+#viewer.horizontal {
+  position: absolute;
+  overflow: scroll;
+  width: 100%;
+  left: 0px;
+  top: 0px;
+  height: 50%;
+  border: solid 1px darkgray;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+#statusBar.vertical {
+  position: absolute;
+  overflow: hidden;
+  height: $statusBarHeight;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  background-color: rgb(245, 245, 245);
+  color: gray;
+  padding: 0;
+  margin: 0;
+}
+
+#statusBar.horizontal {
+  position: absolute;
+  overflow: hidden;
+  height: $statusBarHeight;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  background-color: rgb(245, 245, 245);
+  color: gray;
+  padding: 0;
+  margin: 0;
+}
+
+.SnippetParentDiv {
+  // border: solid 1px red;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  width: 100%;
+  /*
+  position: relative;
+  left: 0px;
+  right: 0px;
+  */
+}
+
+#scoreTitleHeading {
+  text-align: center;
+  overflow: auto;
+}
+
+#scoreTitleHeading:hover {
+  cursor: text;
+  border-bottom: solid 1px grey;
+}
+
+.scoreContentsPre,
+.scoreContentsPre code {
+  display: none;
+  visibility: hidden;
+  margin: 0px;
+  padding: 0px;
+  height: 0px;
+}
+
+#menubar_div {
+  position: absolute;
+  vertical-align: middle;
+  float: left;
+  border-top: solid 1px darkGray;
+  right: 0px;
+  left: 0px;
+  top: 0px;
+}
+
+#toolbar_div {
+  position: absolute;
+  border-top: solid 1px darkGray;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  right: 0px;
+  left: 0px;
+  bottom: 0px;
+}
+
+#headerBar.vertical {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  right: 0px;
+  height: $header-bar-height;
+}
+
+#headerBar.horizontal {
+  position: absolute;
+  left: 0px;
+  top: 50% !important;
+  right: 0px;
+  height: $header-bar-height;
+}

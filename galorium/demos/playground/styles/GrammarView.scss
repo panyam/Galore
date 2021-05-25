@@ -1,0 +1,21 @@
+$grammarHeaderHeight: 30px;
+
+.grammarHeaderArea {
+  position: absolute;
+  overflow: scroll;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  height: $grammarHeaderHeight;
+  border: solid 1px green;
+}
+
+.grammarEditorArea {
+  position: absolute;
+  overflow: scroll;
+  left: 0px;
+  right: 0px;
+  top: $grammarHeaderHeight;
+  bottom: 0px;
+  border: solid 1px green;
+}

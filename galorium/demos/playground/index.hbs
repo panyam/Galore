@@ -1,32 +1,45 @@
 
 {{#partial "header_tags" }}
 <title>Galore Playground</title>
+<link type="text/css" rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-base.css" />
+<link type="text/css" rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-dark-theme.css" />
 {{/partial}}
 {{#partial "header_block" }}
   <h2 style="overflow-x: auto"><span id = "scoreTitleHeading">Galore Playground</span></h2>
 {{/partial}}
 
 {{#partial "center_block" }}
-  <div id = "grammarArea">
-    <span>Choose Grammar: </span><select id = "grammarSelect">
+  <div id = "headerBar">
+    <span>Grammar: </span><select id = "grammarSelect">
       <option value="json">JSON</option>
       <option value="javascript">Javascript</option>
       <option value="C">C</option>
     </select>
-    <textarea id = "grammarTextArea"></textrea>
   </div>
-  <div id = "ptreeArea" class = "vertical"></div>
-  <div id = "inputArea" class = "vertical">
-    <span>Enter Input to Parse:</span>
-    <textarea id = "inputTextArea"></textrea>
-  </div>
-  <div id = "statusBar" class = "vertical">Welcome!</div>
-  <div id = "headerBar">
-    <button>Parse Table</button>
-  </div>
+  <div id = "desktopArea"></div>
+  <div id = "statusBar">Welcome!</div>
 {{/partial}}
 
 {{#partial "nav_buttons_block" }}
 {{/partial}}
 
+{{#partial "footer_block" }}
+  <div id = "grammarArea" class = "windowChild">
+    <div class = "grammarHeaderArea">
+      <button>Save</button>
+      <button>Save As</button>
+      <button>Compile</button>
+    </div>
+    <div class = "grammarEditorArea"></div>
+  </div>
+  <div id = "ptreeArea" class = "windowChild"></div>
+  <div id = "inputArea" class = "windowChild">
+    <div class = "inputHeaderArea">
+      <button>Parse</button>
+    </div>
+    <div class = "inputEditorArea"></div>
+  </div>
+  <div id = "ptableArea" class = "windowChild"></div>
+  <div id = "consoleArea" class = "windowChild"></div>
+{{/partial}}
 {{>basepage}}

@@ -5,73 +5,36 @@ h1 {
   margin-top: 10px;
 }
 
-#scoreTitleHeading {
-  float: center;
-}
-
-#grammarArea {
-  position: absolute;
-  overflow: scroll;
-  top: $header-bar-height;
-  right: 50%;
-  left: 0px;
-  bottom: 50%;
-  border: solid 1px darkgray;
-  padding-left: 20px;
-  padding-right: 20px;
-}
-
 #grammarSelect {
   width: unset;
   display: unset;
 }
 
-#grammarTextArea {
+.windowChild {
   position: absolute;
   overflow: scroll;
-  left: 0px;
+  top: 0px;
   right: 0px;
-  top: 30px;
-  bottom: 0px;
-  border: solid 1px green;
-  padding-left: 20px;
-  padding-right: 20px;
-}
-
-#inputArea {
-  position: absolute;
-  overflow: scroll;
-  top: 50%;
-  bottom: $statusBarHeight;
-  right: 50%;
   left: 0px;
+  bottom: 0px;
   border: solid 1px darkgray;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding: 10px;
 }
 
-#inputTextArea {
+#headerBar {
   position: absolute;
-  overflow: scroll;
   left: 0px;
+  top: 0px;
   right: 0px;
-  top: 30px;
-  bottom: 0px;
-  border: solid 1px green;
-  padding-left: 20px;
-  padding-right: 20px;
+  height: $header-bar-height;
 }
 
-#ptreeArea {
+#desktopArea {
   position: absolute;
-  overflow: scroll;
+  left: 0px;
   top: $header-bar-height;
   bottom: $statusBarHeight;
-  left: 50%;
   right: 0px;
-  border: solid 1px darkgray;
-  padding-left: 20px;
-  padding-right: 20px;
 }
 
 #statusBar {
@@ -85,39 +48,5 @@ h1 {
   color: gray;
   padding: 0;
   margin: 0;
-}
-
-
-.SnippetParentDiv {
-  // border: solid 1px red;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-top: 20px;
-  padding-bottom: 20px;
-  width: 100%;
-  /*
-  position: relative;
-  left: 0px;
-  right: 0px;
-  */
-}
-
-#scoreTitleHeading {
-  text-align: center;
-  overflow: auto;
-}
-
-#scoreTitleHeading:hover {
-  cursor: text;
-  border-bottom: solid 1px grey;
-}
-
-#headerBar {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  right: 0px;
-  padding-left: 20px;
-  height: $header-bar-height;
 }
 

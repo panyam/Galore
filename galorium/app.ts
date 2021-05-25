@@ -32,19 +32,11 @@ const copsHeader = [
   ["img-src", ["'self'", "https://www.fillmurray.com", "data:"]],
   [
     "script-src",
-    [
-      "'self'",
-      "https://unpkg.com/ace-builds@1.4.12/src-noconflict/",
-      "https://unpkg.com/ace-builds@1.4.12/src-noconflict/",
-    ],
+    ["'self'", "https://unpkg.com/ace-builds@1.4.12/src-noconflict/", "http://code.jquery.com/jquery-1.11.1.min.js"],
   ],
   [
     "script-src-elem",
-    [
-      "'self'",
-      "https://unpkg.com/ace-builds@1.4.12/src-noconflict/",
-      "https://unpkg.com/ace-builds@1.4.12/src-noconflict/",
-    ],
+    ["'self'", "https://unpkg.com/ace-builds@1.4.12/src-noconflict/", "http://code.jquery.com/jquery-1.11.1.min.js"],
   ],
   [
     "style-src",
@@ -53,6 +45,8 @@ const copsHeader = [
       "'unsafe-inline'",
       "https://fonts.googleapis.com/icon",
       "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css",
+      "https://golden-layout.com/files/latest/css/goldenlayout-base.css",
+      "https://golden-layout.com/files/latest/css/goldenlayout-dark-theme.css",
     ],
   ],
   ["frame-src", ["'self'"]],

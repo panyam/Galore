@@ -18,46 +18,13 @@
     "@handlebars/allow-prototype-access": "^1.0.3",
     "@panyam/tsutils": "*",
     "@panyam/tsutils-ui": "*",
-    "@types/express": "^4.17.11",
-    "@types/morgan": "^1.9.2",
-    "@types/node": "^14.14.26",
-    "@typescript-eslint/parser": "^4.15.0",
-    "express": "^4.17.1",
-    "express-handlebars": "^5.2.0",
-    "express-session": "^1.17.1",
-    "express-validator": "^6.9.2",
+    "ace-builds": "^1.4.12",
     "galore": "*",
-    "http-errors": "~1.8.0",
-    "js-yaml": "^4.0.0",
+    "golden-layout": "^2.2.0",
     "tlex": "",
     "uuid": "^8.3.2",
     "uuid-v4-validator": "^2.0.0",
     "uuidv4": "^6.2.6"
-  },
-  "bugs": {
-    "url": "https://github.com/panyam/galore/issues"
-  },
-  "pre-commit": [
-    "precommit-msg",
-    "clean",
-    "buildbe",
-    "lintfix",
-    "test"
-  ],
-  "scripts": {
-    "clean": "rm -Rf dist && jest --clearCache && rm -rf static/dist",
-    "buildprod": "webpack --mode=production",
-    "build": "webpack --mode=development",
-    "test": "jest --coverage --runInBand",
-    "start": "node ./bin/www",
-    "wpstart": "webpack-dev-server --mode=development",
-    "wpdev": "webpack-dev-server --mode=development",
-    "wpdebug": "webpack-dev-server --config ./webpack.config.js --mode=development --debug=true",
-    "lint": "eslint './' --quiet --ext .ts --resolve-plugins-relative-to .",
-    "lintfix": "eslint './**/*.ts' --quiet --fix --resolve-plugins-relative-to .",
-    "precommit-msg": "echo 'Pre-commit checks...' && exit 0",
-    "copy-config": "cp src/config/config.yml ../dist/src/config",
-    "tsc": "./node_modules/typescript/bin/tsc; npm run copy-config && npm run copy-static"
   },
   "devDependencies": {
     "@babel/core": "^7.14.0",
@@ -66,6 +33,7 @@
     "@babel/preset-env": "^7.14.1",
     "@babel/preset-flow": "^7.12.13",
     "@babel/preset-typescript": "^7.12.16",
+    "@types/ace": "^0.0.44",
     "@types/fs-extra": "^9.0.7",
     "@types/jest": "^26.0.22",
     "@types/js-yaml": "^4.0.0",
@@ -121,5 +89,30 @@
     "webpack-bundle-analyzer": "^4.4.0",
     "webpack-cli": "^4.7.0",
     "webpack-dev-server": "^3.11.2"
+  },
+  "bugs": {
+    "url": "https://github.com/panyam/galore/issues"
+  },
+  "pre-commit": [
+    "precommit-msg",
+    "clean",
+    "buildbe",
+    "lintfix",
+    "test"
+  ],
+  "scripts": {
+    "clean": "rm -Rf dist && jest --clearCache && rm -rf static/dist",
+    "buildprod": "webpack --mode=production",
+    "build": "webpack --mode=development",
+    "test": "jest --coverage --runInBand",
+    "start": "node ./bin/www",
+    "wpstart": "webpack-dev-server --mode=development",
+    "wpdev": "webpack-dev-server --mode=development",
+    "wpdebug": "webpack-dev-server --config ./webpack.config.js --mode=development --debug=true",
+    "lint": "eslint './' --quiet --ext .ts --resolve-plugins-relative-to .",
+    "lintfix": "eslint './**/*.ts' --quiet --fix --resolve-plugins-relative-to .",
+    "precommit-msg": "echo 'Pre-commit checks...' && exit 0",
+    "copy-config": "cp src/config/config.yml ../dist/src/config",
+    "tsc": "./node_modules/typescript/bin/tsc; npm run copy-config && npm run copy-static"
   }
 }

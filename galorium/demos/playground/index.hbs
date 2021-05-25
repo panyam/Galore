@@ -26,9 +26,13 @@
 {{#partial "footer_block" }}
   <div id = "grammarArea" class = "windowChild">
     <div class = "grammarHeaderArea">
-      <button>Save</button>
-      <button>Save As</button>
-      <button>Compile</button>
+      <button class = "saveButton">Save</button>
+      <button class = "saveAsButton">Save As</button>
+      <button class = "compileButton">Compile</button>
+      <span>Type: </span><select class = "parserTypeSelect">
+        <option value="slr">SLR</option>
+        <option value="lr1">LR1</option>
+      </select>
     </div>
     <div class = "grammarEditorArea"></div>
   </div>

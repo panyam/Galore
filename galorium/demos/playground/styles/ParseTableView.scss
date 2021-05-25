@@ -1,26 +1,21 @@
-$grammarHeaderHeight: 30px;
+$inputHeaderHeight: 30px;
 
-.parserTypeSelect {
-  width: unset;
-  display: unset;
-}
-
-.grammarHeaderArea {
+.inputHeaderArea {
   position: absolute;
   overflow: scroll;
   left: 0px;
   right: 0px;
   top: 0px;
-  height: $grammarHeaderHeight;
+  height: $inputHeaderHeight;
   border: solid 1px green;
 }
 
-.grammarEditorArea {
+.inputEditorArea {
   position: absolute;
   overflow: scroll;
   left: 0px;
   right: 0px;
-  top: $grammarHeaderHeight;
+  top: $inputHeaderHeight;
   bottom: 0px;
   border: solid 1px green;
 }

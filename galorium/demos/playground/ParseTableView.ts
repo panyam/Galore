@@ -1,11 +1,12 @@
-import "./styles/InputView.scss";
+import "./styles/ParseTableView.scss";
 
 import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
 import { App } from "./app";
 import * as ace from "ace-builds";
+import * as events from "./events";
 
-export class InputView extends TSV.View {
+export class ParseTableView extends TSV.View {
   readonly app: App;
   codeEditor: ace.Ace.Editor;
   headerElement: HTMLDivElement;
@@ -19,8 +20,8 @@ export class InputView extends TSV.View {
   protected loadChildViews(): void {
     super.loadChildViews();
     ace.config.set("basePath", "https://unpkg.com/ace-builds@1.4.12/src-noconflict");
-    this.headerElement= this.find(".inputHeaderArea") as HTMLDivElement;
-    this.editorElement= this.find(".inputEditorArea") as HTMLDivElement;
+    this.headerElement = this.find(".inputHeaderArea") as HTMLDivElement;
+    this.editorElement = this.find(".inputEditorArea") as HTMLDivElement;
     this.codeEditor = ace.edit(this.editorElement);
     this.codeEditor.setTheme("ace/theme/monokai");
     this.codeEditor.session.setMode("ace/mode/markdown");
@@ -49,5 +50,12 @@ export class InputView extends TSV.View {
   setContents(val: any): void {
     this.codeEditor.setValue(val);
     this.codeEditor.clearSelection();
+  }
+
+  eventHubChanged(): void {
+    console.log("here: ", this.eventHub);
+    this.eventHub?.on(events.ParserCompiled, (evt) => {
+      console.log("Parser compiled", evt);
+    });
   }
 }

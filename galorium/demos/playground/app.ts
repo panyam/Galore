@@ -3,22 +3,45 @@ import * as TSV from "@panyam/tsutils-ui";
 import "./styles/composer.scss";
 import * as GL from "golden-layout";
 import { InputView } from "./InputView";
+import { ParseTableView } from "./ParseTableView";
 import { GrammarView } from "./GrammarView";
+import * as configs from "./configs";
 
 /**
  * The app that drives the viewer and the editor.
  */
 export class App {
+  grammarView: GrammarView;
+  inputView: InputView;
+  parseTableView: ParseTableView;
+  grammarSelect: HTMLSelectElement;
+  eventHub: TSU.Events.EventHub;
+
   constructor() {
+    this.eventHub = new TSU.Events.EventHub();
     const desktopDiv = document.querySelector("#desktopArea") as HTMLDivElement;
     const grammarAreaDiv = document.querySelector("#grammarArea") as HTMLElement;
+    const inputAreaDiv = document.querySelector("#inputArea") as HTMLElement;
     const ptreeAreaDiv = document.querySelector("#ptreeArea") as HTMLElement;
     const ptableAreaDiv = document.querySelector("#ptableArea") as HTMLElement;
     const consoleAreaDiv = document.querySelector("#consoleArea") as HTMLElement;
-    const inputAreaDiv = document.querySelector("#inputArea") as HTMLElement;
+
+    this.grammarView = new GrammarView(grammarAreaDiv, this);
+    this.grammarView.eventHub = this.eventHub;
+
+    this.inputView = new InputView(inputAreaDiv, this);
+    this.inputView.eventHub = this.eventHub;
+
+    this.parseTableView = new ParseTableView(ptableAreaDiv, this);
+    this.parseTableView.eventHub = this.eventHub;
+
+    this.grammarSelect = document.querySelector("#grammarSelect") as HTMLSelectElement;
 
     const savedState = localStorage.getItem("savedState");
-    const myLayout = new GL.GoldenLayout(savedState == null ? defaultGLConfig : JSON.parse(savedState), desktopDiv);
+    const myLayout = new GL.GoldenLayout(
+      savedState == null ? configs.defaultGLConfig : JSON.parse(savedState),
+      desktopDiv,
+    );
     const resizeObserver = new ResizeObserver(() => {
       (myLayout as any).updateSize();
     });
@@ -26,12 +49,10 @@ export class App {
     myLayout.registerComponent("grammarArea", (container, componentState) => {
       const elem = container.getElement();
       elem.appendChild(grammarAreaDiv);
-      new GrammarView(grammarAreaDiv, this);
     });
     myLayout.registerComponent("inputArea", (container, componentState) => {
       const elem = container.getElement();
       elem.appendChild(inputAreaDiv);
-      new InputView(inputAreaDiv, this);
     });
     myLayout.registerComponent("ptreeArea", (container, componentState) => {
       const elem = container.getElement();
@@ -51,66 +72,27 @@ export class App {
       console.log("Saving State: ", state);
     });
     myLayout.init();
+
+    this.populateGrammars();
+  }
+
+  populateGrammars(): void {
+    let html = "";
+    let defaultGrammar = null;
+    for (const g of configs.builtinGrammars) {
+      if (g.selected) {
+        html += `<option selected='true' value="${g.name}">${g.label}</option>`;
+      } else {
+        html += `<option value="${g.name}">${g.label}</option>`;
+      }
+    }
+    this.grammarSelect.innerHTML = html;
+    this.onGrammarChanged();
+  }
+
+  onGrammarChanged(): void {
+    const gname = this.grammarSelect.value;
+    const g = configs.builtinGrammars.find((x) => x.name == gname);
+    this.grammarView.setContents(g?.grammar);
   }
 }
-
-//
-const defaultGLConfig: any = {
-  content: [
-    {
-      type: "row",
-      content: [
-        {
-          type: "column",
-          content: [
-            {
-              type: "component",
-              componentName: "grammarArea",
-              title: "Grammar",
-            },
-            {
-              type: "component",
-              componentName: "inputArea",
-              title: "Input",
-            },
-          ],
-        },
-        {
-          type: "column",
-          content: [
-            {
-              type: "column",
-              content: [
-                {
-                  type: "row",
-                  content: [
-                    {
-                      type: "component",
-                      componentName: "ptreeArea",
-                      title: "Parse Tree",
-                    },
-                    {
-                      type: "component",
-                      componentName: "ptableArea",
-                      title: "Parse Table",
-                    },
-                  ],
-                },
-                {
-                  type: "stack",
-                  content: [
-                    {
-                      title: "Console",
-                      type: "component",
-                      componentName: "consoleArea",
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-  ],
-};

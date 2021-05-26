@@ -28,7 +28,6 @@ export class GrammarView extends TSV.View {
     ace.config.set("basePath", "https://unpkg.com/ace-builds@1.4.12/src-noconflict");
     this.saveButton = this.find(".saveButton") as HTMLButtonElement;
     this.saveAsButton = this.find(".saveAsButton") as HTMLButtonElement;
-    this.compileButton = this.find(".compileButton") as HTMLButtonElement;
     this.headerElement = this.find(".grammarHeaderArea") as HTMLDivElement;
     this.editorElement = this.find(".grammarEditorArea") as HTMLDivElement;
     this.parserTypeSelect = this.find(".parserTypeSelect") as HTMLSelectElement;
@@ -36,8 +35,8 @@ export class GrammarView extends TSV.View {
     this.codeEditor.setTheme("ace/theme/monokai");
     this.codeEditor.session.setMode("ace/mode/markdown");
 
-    this.compileButton.addEventListener("click", (evt) => { 
-      alert("here");
+    this.compileButton = this.find(".compileButton") as HTMLButtonElement;
+    this.compileButton.addEventListener("click", (evt) => {
       this.compile();
     });
 
@@ -75,6 +74,6 @@ export class GrammarView extends TSV.View {
     const g = this.codeEditor.getValue();
     const [parser, tokenizer] = G.newParser(g, { flatten: true, type: this.parserType });
     this.parser = parser;
-    this.eventHub?.dispatchEvent(new TSU.Events.TEvent(events.ParserCompiled, this, parser));
+    this.eventHub?.emit(events.ParserCompiled, this, parser);
   }
 }

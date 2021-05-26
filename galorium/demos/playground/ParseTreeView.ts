@@ -1,11 +1,11 @@
-import "./styles/ParseTableView.scss";
+import "./styles/ParseTreeView.scss";
 
 import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
 import { App } from "./app";
 import * as events from "./events";
 
-export class ParseTableView extends TSV.View {
+export class ParseTreeView extends TSV.View {
   readonly app: App;
   headerElement: HTMLDivElement;
 
@@ -21,8 +21,8 @@ export class ParseTableView extends TSV.View {
 
   eventHubChanged(): void {
     console.log("here: ", this.eventHub);
-    this.eventHub?.on(events.ParserCompiled, (evt) => {
-      console.log("Parser compiled", evt);
+    this.eventHub?.on(events.InputParsed, (evt) => {
+      console.log("Input Parsed", evt);
     });
   }
 }

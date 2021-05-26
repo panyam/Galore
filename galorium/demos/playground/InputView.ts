@@ -4,12 +4,16 @@ import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
 import { App } from "./app";
 import * as ace from "ace-builds";
+import * as events from "./events";
+import * as G from "galore";
 
 export class InputView extends TSV.View {
   readonly app: App;
   codeEditor: ace.Ace.Editor;
   headerElement: HTMLDivElement;
   editorElement: HTMLDivElement;
+  parser: G.LR.Parser;
+  parseButton: HTMLButtonElement;
 
   constructor(rootElement: HTMLElement, app: App, config?: TSV.ViewParams) {
     super(rootElement, config);
@@ -24,6 +28,11 @@ export class InputView extends TSV.View {
     this.codeEditor = ace.edit(this.editorElement);
     this.codeEditor.setTheme("ace/theme/monokai");
     this.codeEditor.session.setMode("ace/mode/markdown");
+
+    this.parseButton = this.find(".parseButton") as HTMLButtonElement;
+    this.parseButton.addEventListener("click", (evt) => {
+      this.parse();
+    });
 
     this.codeEditor.on("change", (data: any) => {
       // Called on change - invoke incremental parsing here
@@ -41,7 +50,7 @@ export class InputView extends TSV.View {
       name: "compileGrammar",
       bindKey: { win: "Ctrl-enter", mac: "Command-enter" },
       exec: (editor: ace.Ace.Editor) => {
-        alert("TODO - Parsing Grammar");
+        this.parse();
       },
     });
   }
@@ -49,5 +58,19 @@ export class InputView extends TSV.View {
   setContents(val: any): void {
     this.codeEditor.setValue(val);
     this.codeEditor.clearSelection();
+  }
+
+  eventHubChanged(): void {
+    console.log("here: ", this.eventHub);
+    this.eventHub?.on(events.ParserCompiled, (evt) => {
+      this.parser = evt.payload;
+      console.log("Parser compiled", evt);
+    });
+  }
+
+  parse(): void {
+    const input = this.codeEditor.getValue();
+    const ptree = this.parser.parse(input);
+    this.eventHub?.emit(events.InputParsed, this, ptree);
   }
 }

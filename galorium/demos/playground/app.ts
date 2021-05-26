@@ -4,6 +4,7 @@ import "./styles/composer.scss";
 import * as GL from "golden-layout";
 import { InputView } from "./InputView";
 import { ParseTableView } from "./ParseTableView";
+import { ParseTreeView } from "./ParseTreeView";
 import { GrammarView } from "./GrammarView";
 import * as configs from "./configs";
 
@@ -14,6 +15,7 @@ export class App {
   grammarView: GrammarView;
   inputView: InputView;
   parseTableView: ParseTableView;
+  parseTreeView: ParseTreeView;
   grammarSelect: HTMLSelectElement;
   eventHub: TSU.Events.EventHub;
 
@@ -35,11 +37,15 @@ export class App {
     this.parseTableView = new ParseTableView(ptableAreaDiv, this);
     this.parseTableView.eventHub = this.eventHub;
 
+    this.parseTreeView = new ParseTreeView(ptreeAreaDiv, this);
+    this.parseTreeView.eventHub = this.eventHub;
+
     this.grammarSelect = document.querySelector("#grammarSelect") as HTMLSelectElement;
 
     const savedState = localStorage.getItem("savedState");
     const myLayout = new GL.GoldenLayout(
-      savedState == null ? configs.defaultGLConfig : JSON.parse(savedState),
+      configs.defaultGLConfig,
+      // savedState == null ? configs.defaultGLConfig : JSON.parse(savedState),
       desktopDiv,
     );
     const resizeObserver = new ResizeObserver(() => {

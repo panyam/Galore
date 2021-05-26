@@ -1,4 +1,3 @@
-
 // Supported grammars for different langauges
 export const builtinGrammars = [
   {
@@ -18,6 +17,17 @@ export const builtinGrammars = [
     `,
   },
 ];
+/*
+  settings: {
+    popoutWholeStack: true,
+    blockedPopoutsThrowError: true,
+    closePopoutsOnUnload: true,
+    hasHeaders: true,
+    showPopoutIcon: true,
+    showMaximiseIcon: true,
+    showMinimiseIcon: true,
+  },
+ */
 
 // Default config for golden-layout windows
 export const defaultGLConfig: any = {
@@ -58,6 +68,8 @@ export const defaultGLConfig: any = {
                       type: "component",
                       componentName: "ptableArea",
                       title: "Parse Table",
+                      showPopoutIcon: true,
+                      showMaximiseIcon: true,
                     },
                   ],
                 },

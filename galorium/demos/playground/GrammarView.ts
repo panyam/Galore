@@ -64,6 +64,7 @@ export class GrammarView extends TSV.View {
   setContents(val: any): void {
     this.codeEditor.setValue(val);
     this.codeEditor.clearSelection();
+    this.compile();
   }
 
   get parserType(): string {
@@ -72,7 +73,13 @@ export class GrammarView extends TSV.View {
 
   compile(): void {
     const g = this.codeEditor.getValue();
-    const [parser, tokenizer] = G.newParser(g, { flatten: true, type: this.parserType });
+    const [parser, tokenizer] = G.newParser(g, {
+      flatten: true,
+      type: this.parserType,
+      onGrammarParsed: (grammar: G.Grammar) => {
+        this.eventHub?.emit(events.GrammarChanged, this, grammar);
+      },
+    });
     this.parser = parser;
     this.eventHub?.emit(events.ParserCompiled, this, parser);
   }

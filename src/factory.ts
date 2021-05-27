@@ -14,6 +14,7 @@ export function newParser(input: string, params: any = null): [Parser, TSU.Nulla
   const parserParams = { ...params };
   // remove all non parser params from them
   delete parserParams["grammarLoader"];
+  delete parserParams["onGrammarParsed"];
   delete parserParams["ptableMaker"];
   delete parserParams["ebnfLoader"];
   delete parserParams["type"];
@@ -36,6 +37,7 @@ export function newParser(input: string, params: any = null): [Parser, TSU.Nulla
       eparser = new EBNFParser(input, { ...(ebnfParser || {}), grammar: g });
     }
     g.augmentStartSymbol();
+    if (params.onGrammarParsed) params.onGrammarParsed(g);
     tokenFunc = eparser.generatedTokenizer.next.bind(eparser.generatedTokenizer);
     parser.setGrammar(g).setTokenizer(tokenFunc);
     if (params.debug) {

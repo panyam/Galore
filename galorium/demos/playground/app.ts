@@ -6,6 +6,7 @@ import { InputView } from "./InputView";
 import { ParseTableView } from "./ParseTableView";
 import { ParseTreeView } from "./ParseTreeView";
 import { GrammarView } from "./GrammarView";
+import { NormalizedGrammarView } from "./NormalizedGrammarView";
 import * as configs from "./configs";
 
 /**
@@ -13,6 +14,7 @@ import * as configs from "./configs";
  */
 export class App {
   grammarView: GrammarView;
+  normalizedGrammarView: NormalizedGrammarView;
   inputView: InputView;
   parseTableView: ParseTableView;
   parseTreeView: ParseTreeView;
@@ -23,6 +25,7 @@ export class App {
     this.eventHub = new TSU.Events.EventHub();
     const desktopDiv = document.querySelector("#desktopArea") as HTMLDivElement;
     const grammarAreaDiv = document.querySelector("#grammarArea") as HTMLElement;
+    const normalizedGrammarAreaDiv = document.querySelector("#normalizedGrammarArea") as HTMLElement;
     const inputAreaDiv = document.querySelector("#inputArea") as HTMLElement;
     const ptreeAreaDiv = document.querySelector("#ptreeArea") as HTMLElement;
     const ptableAreaDiv = document.querySelector("#ptableArea") as HTMLElement;
@@ -30,6 +33,9 @@ export class App {
 
     this.grammarView = new GrammarView(grammarAreaDiv, this);
     this.grammarView.eventHub = this.eventHub;
+
+    this.normalizedGrammarView = new NormalizedGrammarView(normalizedGrammarAreaDiv, this);
+    this.normalizedGrammarView.eventHub = this.eventHub;
 
     this.inputView = new InputView(inputAreaDiv, this);
     this.inputView.eventHub = this.eventHub;
@@ -55,6 +61,10 @@ export class App {
     myLayout.registerComponent("grammarArea", (container, componentState) => {
       const elem = container.getElement();
       elem.appendChild(grammarAreaDiv);
+    });
+    myLayout.registerComponent("normalizedGrammarArea", (container, componentState) => {
+      const elem = container.getElement();
+      elem.appendChild(normalizedGrammarAreaDiv);
     });
     myLayout.registerComponent("inputArea", (container, componentState) => {
       const elem = container.getElement();

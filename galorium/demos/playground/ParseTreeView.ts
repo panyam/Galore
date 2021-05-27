@@ -22,7 +22,7 @@ export class ParseTreeView extends TSV.View {
   eventHubChanged(): void {
     console.log("here: ", this.eventHub);
     this.eventHub?.on(events.InputParsed, (evt) => {
-      console.log("Input Parsed", evt);
+      console.log("Parsed Tree Result: ", evt.payload);
     });
   }
 }

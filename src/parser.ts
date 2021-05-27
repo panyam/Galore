@@ -35,6 +35,8 @@ export type RuleReductionCallback = (node: PTNode, rule: Rule) => PTNode;
 export type NextTokenCallback = (token: TLEX.Token) => TSU.Nullable<TLEX.Token>;
 
 export class PTNode {
+  static idCounter = 1;
+  readonly id = PTNode.idCounter++;
   readonly sym: Sym;
   parent: Nullable<PTNode> = null;
   value: any;

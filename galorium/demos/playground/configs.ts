@@ -53,7 +53,8 @@ export const defaultGLConfig: any = {
                 reorderEnabled: true,
                 title: "Grammar",
                 componentType: "grammarArea",
-                componentState: {},
+                componentState: {
+                },
               },
               {
                 type: "component",
@@ -135,7 +136,18 @@ export const defaultGLConfig: any = {
                 reorderEnabled: true,
                 title: "Input",
                 componentType: "inputArea",
-                componentState: {},
+                componentState: {
+                  "contents2": `{"a":"b"}`,
+                  "contents": `{
+  "name": "Milky Way",
+  "age": 4600000000,
+  "star": "sun",
+  "planets": [ "Mercury", "Venus", "Earth" ],
+  "hot": true,
+  "x": null
+}
+`
+                },
               },
             ],
             width: 50,

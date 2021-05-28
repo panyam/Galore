@@ -49,6 +49,7 @@ export class App {
     this.grammarSelect = document.querySelector("#grammarSelect") as HTMLSelectElement;
 
     const savedState = localStorage.getItem("savedState");
+    let inputContents = "";
     const myLayout = new GL.GoldenLayout(
       configs.defaultGLConfig,
       // savedState == null ? configs.defaultGLConfig : JSON.parse(savedState),
@@ -58,7 +59,7 @@ export class App {
       (myLayout as any).updateSize();
     });
     resizeObserver.observe(desktopDiv);
-    myLayout.registerComponent("grammarArea", (container, componentState) => {
+    myLayout.registerComponent("grammarArea", (container, componentState: any) => {
       const elem = container.getElement();
       elem.appendChild(grammarAreaDiv);
     });
@@ -66,9 +67,10 @@ export class App {
       const elem = container.getElement();
       elem.appendChild(normalizedGrammarAreaDiv);
     });
-    myLayout.registerComponent("inputArea", (container, componentState) => {
+    myLayout.registerComponent("inputArea", (container, componentState: any) => {
       const elem = container.getElement();
       elem.appendChild(inputAreaDiv);
+      inputContents = componentState["contents"] || "";
     });
     myLayout.registerComponent("ptreeArea", (container, componentState) => {
       const elem = container.getElement();
@@ -90,6 +92,7 @@ export class App {
     myLayout.init();
 
     this.populateGrammars();
+    this.inputView.setContents(inputContents);
   }
 
   populateGrammars(): void {

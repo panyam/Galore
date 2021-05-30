@@ -117,7 +117,7 @@ class PTNodeView {
     this.textElem.setAttribute("y", "" + this.padding);
     const textElemBBox = this.textElem.getBBox();
     this.headerBorderElem.setAttribute("width", "" + (textElemBBox.width + this.p2));
-    this.headerBorderElem.setAttribute("height", "" + (textElemBBox.height + this.p2));
+    this.headerBorderElem.setAttribute("height", "" + (textElemBBox.height + this.padding));
     this.headerBorderElem.setAttribute("rx", "5");
     this.headerBorderElem.setAttribute("ry", "5");
 
@@ -125,7 +125,7 @@ class PTNodeView {
     this.childViews = node.children.map((childNode) => new PTNodeView(childNode, this.rootElem, this));
     this.linesToChildren = node.children.map((childNode) => {
       return TSU.DOM.createSVGNode("path", {
-        attrs: { class: "lineToParent", stroke: this.lineColor, nodeId: childNode.id },
+        attrs: { class: "lineToParent", fill: "none", stroke: this.lineColor, nodeId: childNode.id },
         parent: this.rootElem,
       });
     });
@@ -165,7 +165,7 @@ class PTNodeView {
         const bbox = childView.rootElem.getBBox();
         maxWidth = Math.max(maxWidth, bbox.height);
         childView.rootElem.setAttribute("x", "" + childX);
-        this.totalChildHeight += this.p2;
+        this.totalChildHeight += this.padding;
         childView.rootElem.setAttribute("y", "" + this.totalChildHeight);
         this.totalChildHeight += bbox.height;
       }
@@ -190,14 +190,14 @@ class PTNodeView {
     const headerBCR = this.headerElem.getBoundingClientRect();
     const childBCR = childView.rootElem.getBoundingClientRect();
     const childHeaderBCR = childView.headerElem.getBoundingClientRect();
+    const headerX = headerBCR.x - bcr.x;
+    const headerY = headerBCR.y - bcr.y;
+    const childX = childBCR.x - bcr.x;
+    const childY = childBCR.y - bcr.y;
+    const childHeaderX = childHeaderBCR.x - bcr.x;
+    const childHeaderY = childHeaderBCR.y - bcr.y;
 
     if (this.layoutHorizontal) {
-      const headerX = headerBCR.x - bcr.x;
-      const headerY = headerBCR.y - bcr.y;
-      const childX = childBCR.x - bcr.x;
-      const childY = childBCR.y - bcr.y;
-      const childHeaderX = childHeaderBCR.x - bcr.x;
-      const childHeaderY = childHeaderBCR.y - bcr.y;
       const childWidth = childBCR.width;
       const childHeaderWidth = childHeaderBCR.width;
       const pathComps = [
@@ -207,6 +207,14 @@ class PTNodeView {
       ];
       lineToChild.setAttribute("d", pathComps.join(" "));
     } else {
+      const childHeight = childBCR.height;
+      const childHeaderHeight = childHeaderBCR.height;
+      const pathComps = [
+        `M ${headerX + this.childIndent / 2} ${headerY + headerBCR.height}`,
+        `V ${childY + childHeaderHeight / 2}`,
+        `h ${this.childIndent / 2}`,
+      ];
+      lineToChild.setAttribute("d", pathComps.join(" "));
     }
   }
 

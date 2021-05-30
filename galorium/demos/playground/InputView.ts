@@ -23,8 +23,8 @@ export class InputView extends TSV.View {
   protected loadChildViews(): void {
     super.loadChildViews();
     ace.config.set("basePath", "https://unpkg.com/ace-builds@1.4.12/src-noconflict");
-    this.headerElement= this.find(".inputHeaderArea") as HTMLDivElement;
-    this.editorElement= this.find(".inputEditorArea") as HTMLDivElement;
+    this.headerElement = this.find(".inputHeaderArea") as HTMLDivElement;
+    this.editorElement = this.find(".inputEditorArea") as HTMLDivElement;
     this.codeEditor = ace.edit(this.editorElement);
     this.codeEditor.setTheme("ace/theme/monokai");
     this.codeEditor.session.setMode("ace/mode/markdown");
@@ -70,7 +70,10 @@ export class InputView extends TSV.View {
 
   parse(): void {
     const input = this.codeEditor.getValue();
+    const startTime = performance.now();
     const ptree = this.parser.parse(input);
+    const endTime = performance.now();
+    this.eventHub?.emit(events.Log, this, "Input Parsed in " + (endTime - startTime) + "ms");
     this.eventHub?.emit(events.InputParsed, this, ptree);
   }
 }

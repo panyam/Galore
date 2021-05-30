@@ -3,6 +3,7 @@ import * as TSV from "@panyam/tsutils-ui";
 import "./styles/composer.scss";
 import * as GL from "golden-layout";
 import { InputView } from "./InputView";
+import { ConsoleView } from "./ConsoleView";
 import { ParseTableView } from "./ParseTableView";
 import { ParseTreeView } from "./ParseTreeView";
 import { GrammarView } from "./GrammarView";
@@ -16,6 +17,7 @@ export class App {
   grammarView: GrammarView;
   normalizedGrammarView: NormalizedGrammarView;
   inputView: InputView;
+  consoleView: ConsoleView;
   parseTableView: ParseTableView;
   parseTreeView: ParseTreeView;
   grammarSelect: HTMLSelectElement;
@@ -39,6 +41,9 @@ export class App {
 
     this.inputView = new InputView(inputAreaDiv, this);
     this.inputView.eventHub = this.eventHub;
+
+    this.consoleView = new ConsoleView(consoleAreaDiv, this);
+    this.consoleView.eventHub = this.eventHub;
 
     this.parseTableView = new ParseTableView(ptableAreaDiv, this);
     this.parseTableView.eventHub = this.eventHub;

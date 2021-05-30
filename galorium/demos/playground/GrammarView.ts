@@ -73,6 +73,7 @@ export class GrammarView extends TSV.View {
 
   compile(): void {
     const g = this.codeEditor.getValue();
+    const startTime = performance.now();
     const [parser, tokenizer] = G.newParser(g, {
       flatten: true,
       type: this.parserType,
@@ -80,7 +81,9 @@ export class GrammarView extends TSV.View {
         this.eventHub?.emit(events.GrammarChanged, this, grammar);
       },
     });
+    const endTime = performance.now();
     this.parser = parser;
+    this.eventHub?.emit(events.Log, this, "Parser Compiled in " + (endTime - startTime) + "ms");
     this.eventHub?.emit(events.ParserCompiled, this, parser);
   }
 }

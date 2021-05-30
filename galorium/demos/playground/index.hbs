@@ -9,13 +9,7 @@
 {{/partial}}
 
 {{#partial "center_block" }}
-  <div id = "headerBar">
-    <span>Grammar: </span><select id = "grammarSelect">
-      <option value="json">JSON</option>
-      <option value="javascript">Javascript</option>
-      <option value="C">C</option>
-    </select>
-  </div>
+  <!--<div id = "headerBar"></div>-->
   <div id = "desktopArea"></div>
   <div id = "statusBar">Welcome!</div>
 {{/partial}}
@@ -29,9 +23,14 @@
       <button class = "saveButton">Save</button>
       <button class = "saveAsButton">Save As</button>
       <button class = "compileButton">Compile</button>
-      <span>Type: </span><select class = "parserTypeSelect">
+      <span style="color: white">Type: </span><select class = "parserTypeSelect">
         <option value="slr">SLR</option>
         <option value="lr1">LR1</option>
+      </select>
+      <span style="color: white">Grammar: </span><select id = "grammarSelect">
+        <option value="json">JSON</option>
+        <option value="javascript">Javascript</option>
+        <option value="C">C</option>
       </select>
     </div>
     <div class = "grammarEditorArea"></div>

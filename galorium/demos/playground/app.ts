@@ -20,7 +20,6 @@ export class App {
   consoleView: ConsoleView;
   parseTableView: ParseTableView;
   parseTreeView: ParseTreeView;
-  grammarSelect: HTMLSelectElement;
   eventHub: TSU.Events.EventHub;
 
   constructor() {
@@ -50,8 +49,6 @@ export class App {
 
     this.parseTreeView = new ParseTreeView(ptreeAreaDiv, this);
     this.parseTreeView.eventHub = this.eventHub;
-
-    this.grammarSelect = document.querySelector("#grammarSelect") as HTMLSelectElement;
 
     const savedState = localStorage.getItem("savedState");
     let inputContents = "";
@@ -96,27 +93,6 @@ export class App {
     });
     myLayout.init();
 
-    this.populateGrammars();
     this.inputView.setContents(inputContents);
-  }
-
-  populateGrammars(): void {
-    let html = "";
-    let defaultGrammar = null;
-    for (const g of configs.builtinGrammars) {
-      if (g.selected) {
-        html += `<option selected='true' value="${g.name}">${g.label}</option>`;
-      } else {
-        html += `<option value="${g.name}">${g.label}</option>`;
-      }
-    }
-    this.grammarSelect.innerHTML = html;
-    this.onGrammarChanged();
-  }
-
-  onGrammarChanged(): void {
-    const gname = this.grammarSelect.value;
-    const g = configs.builtinGrammars.find((x) => x.name == gname);
-    this.grammarView.setContents(g?.grammar);
   }
 }

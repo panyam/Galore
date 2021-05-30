@@ -6,6 +6,7 @@ import * as G from "galore";
 import { App } from "./app";
 import * as ace from "ace-builds";
 import * as events from "./events";
+import * as configs from "./configs";
 
 export class GrammarView extends TSV.View {
   readonly app: App;
@@ -16,6 +17,7 @@ export class GrammarView extends TSV.View {
   saveButton: HTMLButtonElement;
   saveAsButton: HTMLButtonElement;
   compileButton: HTMLButtonElement;
+  grammarSelect: HTMLSelectElement;
   parser: G.LR.Parser;
 
   constructor(rootElement: HTMLElement, app: App, config?: TSV.ViewParams) {
@@ -31,6 +33,7 @@ export class GrammarView extends TSV.View {
     this.headerElement = this.find(".grammarHeaderArea") as HTMLDivElement;
     this.editorElement = this.find(".grammarEditorArea") as HTMLDivElement;
     this.parserTypeSelect = this.find(".parserTypeSelect") as HTMLSelectElement;
+    this.grammarSelect = this.find("#grammarSelect") as HTMLSelectElement;
     this.codeEditor = ace.edit(this.editorElement);
     this.codeEditor.setTheme("ace/theme/monokai");
     this.codeEditor.session.setMode("ace/mode/markdown");
@@ -59,10 +62,27 @@ export class GrammarView extends TSV.View {
         this.compile();
       },
     });
+    setTimeout(() => this.populateGrammars(), 0);
+  }
+
+  populateGrammars(): void {
+    let html = "";
+    let defaultGrammar = null;
+    for (const g of configs.builtinGrammars) {
+      if (g.selected) {
+        html += `<option selected='true' value="${g.name}">${g.label}</option>`;
+      } else {
+        html += `<option value="${g.name}">${g.label}</option>`;
+      }
+    }
+    this.grammarSelect.innerHTML = html;
+    this.grammarSelect.addEventListener("change", this.onGrammarChanged.bind(this));
+    this.onGrammarChanged();
   }
 
   setContents(val: any): void {
-    this.codeEditor.setValue(val);
+    const lines = val.trim().split("\n").map((l: string) => l.trim());
+    this.codeEditor.setValue(lines.join("\n"));
     this.codeEditor.clearSelection();
     this.compile();
   }
@@ -85,5 +105,11 @@ export class GrammarView extends TSV.View {
     this.parser = parser;
     this.eventHub?.emit(events.Log, this, "Parser Compiled in " + (endTime - startTime) + "ms");
     this.eventHub?.emit(events.ParserCompiled, this, parser);
+  }
+
+  onGrammarChanged(): void {
+    const gname = this.grammarSelect.value;
+    const g = configs.builtinGrammars.find((x) => x.name == gname);
+    this.setContents(g?.grammar);
   }
 }

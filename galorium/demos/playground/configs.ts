@@ -3,7 +3,6 @@ export const builtinGrammars = [
   {
     name: "JSON",
     label: "JSON",
-    selected: true,
     grammar: `
         %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
         %token STRING /".*?(?<!\\\\)"/
@@ -14,6 +13,67 @@ export const builtinGrammars = [
         Dict -> "{" [ Pair ("," Pair)* ] "}" ;
         Pair -> STRING ":" Value ;
         Boolean -> "true" | "false" ;
+    `,
+  },
+  {
+    name: "FarshiG3",
+    label: "Farshi G3",
+    selected: true,
+    grammar: `
+        %token b "b"
+        %token x "x"
+        %skip /[ \\t\\n\\f\\r]+/
+
+        S -> A S b ;
+        S -> x ;
+        A -> ;
+    `,
+  },
+  {
+    name: "FarshiG4",
+    label: "Farshi G4",
+    grammar: `
+        %token b "b"
+        %token x "x"
+        %skip /[ \\t\\n\\f\\r]+/
+
+        S -> M | N ;
+        M -> A M b ;
+        M -> x ;
+        N -> A N b ;
+        N -> x ;
+        A -> ;
+    `,
+  },
+  {
+    name: "FarshiG5",
+    label: "Farshi G5",
+    grammar: `
+        %token b "b"
+        %token x "x"
+        %token t "t"
+        %skip /[ \\t\\n\\f\\r]+/
+
+        S -> A S b ;
+        S -> x ;
+        A -> t ;
+        A -> ;
+    `,
+  },
+  {
+    name: "FarshiG6",
+    label: "Farshi G6",
+    grammar: `
+        %token b "b"
+        %token x "x"
+        %skip /[ \\t\\n\\f\\r]+/
+
+        S -> M N ;
+        M -> A M b ;
+        M -> x ;
+        N -> b N A ;
+        N -> x ;
+        A -> ;
     `,
   },
 ];
@@ -32,10 +92,38 @@ export const builtinGrammars = [
 // Default config for golden-layout windows
 export const defaultGLConfig: any = {
   root: {
-    type: "column",
+    type: "row",
     content: [
       {
-        type: "row",
+        type: "stack",
+        content: [
+          {
+            type: "component",
+            content: [],
+            width: 50,
+            minWidth: 0,
+            height: 50,
+            minHeight: 0,
+            id: "",
+            maximised: false,
+            isClosable: true,
+            reorderEnabled: true,
+            title: "Parse Tree",
+            componentType: "ptreeArea",
+            componentState: {},
+          },
+        ],
+        width: 26.42860403592672,
+        minWidth: 0,
+        height: 50,
+        minHeight: 0,
+        id: "",
+        isClosable: true,
+        maximised: false,
+        activeItemIndex: 0,
+      },
+      {
+        type: "column",
         content: [
           {
             type: "stack",
@@ -53,8 +141,7 @@ export const defaultGLConfig: any = {
                 reorderEnabled: true,
                 title: "Grammar",
                 componentType: "grammarArea",
-                componentState: {
-                },
+                componentState: {},
               },
               {
                 type: "component",
@@ -95,64 +182,18 @@ export const defaultGLConfig: any = {
                 maximised: false,
                 isClosable: true,
                 reorderEnabled: true,
-                title: "Parse Table",
-                componentType: "ptableArea",
-                componentState: {},
-              },
-            ],
-            width: 49.99999999999999,
-            minWidth: 0,
-            height: 50,
-            minHeight: 0,
-            id: "",
-            isClosable: true,
-            maximised: false,
-            activeItemIndex: 0,
-          },
-        ],
-        width: 50,
-        minWidth: 0,
-        height: 36.88840024819328,
-        minHeight: 0,
-        id: "",
-        isClosable: true,
-      },
-      {
-        type: "row",
-        content: [
-          {
-            type: "stack",
-            content: [
-              {
-                type: "component",
-                content: [],
-                width: 50,
-                minWidth: 0,
-                height: 50,
-                minHeight: 0,
-                id: "",
-                maximised: false,
-                isClosable: true,
-                reorderEnabled: true,
                 title: "Input",
                 componentType: "inputArea",
                 componentState: {
-                  "contents2": `{"a":"b"}`,
-                  "contents": `{
-  "name": "Milky Way",
-  "age": 4600000000,
-  "star": "sun",
-  "planets": [ "Mercury", "Venus", "Earth" ],
-  "hot": true,
-  "x": null
-}
-`
+                  contents2: '{"a":"b"}',
+                  contents:
+                    '{\n  "name": "Milky Way",\n  "age": 4600000000,\n  "star": "sun",\n  "planets": [ "Mercury", "Venus", "Earth" ],\n  "hot": true,\n  "x": null\n}\n',
                 },
               },
             ],
             width: 50,
             minWidth: 0,
-            height: 50,
+            height: 25,
             minHeight: 0,
             id: "",
             isClosable: true,
@@ -173,14 +214,14 @@ export const defaultGLConfig: any = {
                 maximised: false,
                 isClosable: true,
                 reorderEnabled: true,
-                title: "Parse Tree",
-                componentType: "ptreeArea",
+                title: "Console",
+                componentType: "consoleArea",
                 componentState: {},
               },
             ],
             width: 50,
             minWidth: 0,
-            height: 50,
+            height: 25,
             minHeight: 0,
             id: "",
             isClosable: true,
@@ -188,9 +229,9 @@ export const defaultGLConfig: any = {
             activeItemIndex: 0,
           },
         ],
-        width: 50,
+        width: 38.606004410776265,
         minWidth: 0,
-        height: 39.12151503605394,
+        height: 50,
         minHeight: 0,
         id: "",
         isClosable: true,
@@ -209,14 +250,14 @@ export const defaultGLConfig: any = {
             maximised: false,
             isClosable: true,
             reorderEnabled: true,
-            title: "Console",
-            componentType: "consoleArea",
+            title: "Parse Table",
+            componentType: "ptableArea",
             componentState: {},
           },
         ],
-        width: 50,
+        width: 34.96539155329698,
         minWidth: 0,
-        height: 23.990084715752772,
+        height: 50,
         minHeight: 0,
         id: "",
         isClosable: true,

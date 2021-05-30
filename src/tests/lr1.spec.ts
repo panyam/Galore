@@ -1,5 +1,6 @@
-import { EBNFParser } from "../ebnf";
+import { newParser } from "../factory";
 
+/*
 const g3 = new EBNFParser(`
   S -> C C ;
   C -> c C | d ;
@@ -16,9 +17,16 @@ const g4 = new EBNFParser(`
   X -> X x ;
   X -> ;
 `);
+*/
+
+const farshiG3 = `
+  S -> A S b ;
+  S -> x ;
+  A -> ;
+`;
 
 describe("Non Amgiguous Grammar without Conflicts", () => {
   test("Test1", () => {
-    //
+    const P = newParser(farshiG3, { debug: true });
   });
 });

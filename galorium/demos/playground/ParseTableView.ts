@@ -58,8 +58,8 @@ export class ParseTableView extends TSV.View {
         if (actions.length == 0) {
           cellClass += " emptyActions";
         } else {
-          if (actions.length >= 0) {
-            cellClass += "multipleActions";
+          if (actions.length > 1) {
+            cellClass += " multipleActions";
           }
         }
         out += `<td class = "${cellClass}" stateId = ${i} symID = "${sym.id}">`;

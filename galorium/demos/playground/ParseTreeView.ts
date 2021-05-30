@@ -68,6 +68,7 @@ class PTNodeView {
   textBGColor = "pink";
   lineColor = "white";
   lineWidth = 2;
+  layoutHorizontal = false;
   constructor(
     public readonly node: G.PTNode,
     public readonly container: SVGGraphicsElement,
@@ -133,25 +134,43 @@ class PTNodeView {
   }
 
   totalChildWidth = 0;
+  totalChildHeight = 0;
+  childIndent = 30;
   refreshLayout(): void {
     this.totalChildWidth = 0;
-    let maxHeight = 0;
-    let prevChild: SVGGraphicsElement;
+    this.totalChildHeight = 0;
     const headerBBox = this.headerElem.getBBox();
-    const childY = this.headerY + this.childYGap + headerBBox.height;
-    for (let i = 0; i < this.childViews.length; i++) {
-      const childView = this.childViews[i];
-      const bbox = childView.rootElem.getBBox();
-      maxHeight = Math.max(maxHeight, bbox.height);
-      childView.rootElem.setAttribute("y", "" + childY);
-      if (i > 0) this.totalChildWidth += this.p2;
-      childView.rootElem.setAttribute("x", "" + this.totalChildWidth);
-      this.totalChildWidth += bbox.width;
+    if (this.layoutHorizontal) {
+      const childY = this.headerY + this.childYGap + headerBBox.height;
+      let maxHeight = 0;
+      for (let i = 0; i < this.childViews.length; i++) {
+        const childView = this.childViews[i];
+        const bbox = childView.rootElem.getBBox();
+        maxHeight = Math.max(maxHeight, bbox.height);
+        childView.rootElem.setAttribute("y", "" + childY);
+        if (i > 0) this.totalChildWidth += this.p2;
+        childView.rootElem.setAttribute("x", "" + this.totalChildWidth);
+        this.totalChildWidth += bbox.width;
+      }
+      // layout headerElem in the middle
+      const headerX = Math.max(0, (this.totalChildWidth - headerBBox.width) / 2);
+      this.headerElem.setAttribute("x", "" + headerX);
+      this.headerElem.setAttribute("y", "" + this.headerY);
+    } else {
+      let maxWidth = 0;
+      const childX = this.childIndent;
+      this.totalChildHeight = headerBBox.height;
+      for (let i = 0; i < this.childViews.length; i++) {
+        const childView = this.childViews[i];
+        const bbox = childView.rootElem.getBBox();
+        maxWidth = Math.max(maxWidth, bbox.height);
+        childView.rootElem.setAttribute("x", "" + childX);
+        this.totalChildHeight += this.p2;
+        childView.rootElem.setAttribute("y", "" + this.totalChildHeight);
+        this.totalChildHeight += bbox.height;
+      }
+      // this.headerElem.setAttribute("y", "" + this.headerY);
     }
-    // layout headerElem in the middle
-    const headerX = Math.max(0, (this.totalChildWidth - headerBBox.width) / 2);
-    this.headerElem.setAttribute("x", "" + headerX);
-    this.headerElem.setAttribute("y", "" + this.headerY);
     for (let i = 0; i < this.childViews.length; i++) {
       this.updateLineToChild(i);
     }
@@ -172,20 +191,23 @@ class PTNodeView {
     const childBCR = childView.rootElem.getBoundingClientRect();
     const childHeaderBCR = childView.headerElem.getBoundingClientRect();
 
-    const headerX = headerBCR.x - bcr.x;
-    const headerY = headerBCR.y - bcr.y;
-    const childX = childBCR.x - bcr.x;
-    const childY = childBCR.y - bcr.y;
-    const childHeaderX = childHeaderBCR.x - bcr.x;
-    const childHeaderY = childHeaderBCR.y - bcr.y;
-    const childWidth = childBCR.width;
-    const childHeaderWidth = childHeaderBCR.width;
-    const pathComps = [
-      `M ${headerX + headerBCR.width / 2} ${headerY + headerBCR.height}`,
-      `L ${childHeaderX + childHeaderWidth / 2} ${childY}`,
-      `V ${childHeaderY}`,
-    ];
-    lineToChild.setAttribute("d", pathComps.join(" "));
+    if (this.layoutHorizontal) {
+      const headerX = headerBCR.x - bcr.x;
+      const headerY = headerBCR.y - bcr.y;
+      const childX = childBCR.x - bcr.x;
+      const childY = childBCR.y - bcr.y;
+      const childHeaderX = childHeaderBCR.x - bcr.x;
+      const childHeaderY = childHeaderBCR.y - bcr.y;
+      const childWidth = childBCR.width;
+      const childHeaderWidth = childHeaderBCR.width;
+      const pathComps = [
+        `M ${headerX + headerBCR.width / 2} ${headerY + headerBCR.height}`,
+        `L ${childHeaderX + childHeaderWidth / 2} ${childY}`,
+        `V ${childHeaderY}`,
+      ];
+      lineToChild.setAttribute("d", pathComps.join(" "));
+    } else {
+    }
   }
 
   get headerBBox(): SVGRect {

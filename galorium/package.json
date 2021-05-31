@@ -25,6 +25,7 @@
     "express-handlebars": "^5.2.0",
     "express-session": "^1.17.1",
     "express-validator": "^6.9.2",
+    "galore": "file:..",
     "http-errors": "~1.8.0",
     "js-yaml": "^4.0.0",
     "uuid": "^8.3.2",

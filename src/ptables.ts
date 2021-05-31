@@ -1,6 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import { Grammar } from "./grammar";
-import { LRAction, ParseTable, LRItem, LR1ItemSet, LR0ItemGraph, LR1ItemGraph } from "./lr";
+import { LRAction, ParseTable } from "./lr";
+import { LRItem, LR1ItemSet, LR0ItemGraph, LR1ItemGraph } from "./lritems";
 
 export function makeSLRParseTable(grammar: Grammar, igConfig: any = null): [ParseTable, LR0ItemGraph] {
   igConfig = igConfig || {};

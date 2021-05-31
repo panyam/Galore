@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { EBNFParser } from "../ebnf";
-import { LRItemSet, LRItem, LR0ItemGraph } from "../lritems";
+import { LRItemSet, LRItem, LR0ItemGraph } from "../lr";
 import { Grammar } from "../grammar";
 import { verifyItemGraphs } from "./utils";
 

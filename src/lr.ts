@@ -8,6 +8,7 @@ import {
   RuleReductionCallback,
   NextTokenCallback,
 } from "./parser";
+import { IDSet } from "./sets";
 
 type Nullable<T> = TSU.Nullable<T>;
 type NumMap<T> = TSU.NumMap<T>;

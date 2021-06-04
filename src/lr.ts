@@ -3,7 +3,7 @@ import * as TLEX from "tlex";
 import { Sym, Grammar, Rule } from "./grammar";
 import {
   PTNode,
-  Parser as ParserBase,
+  SimpleParser as ParserBase,
   BeforeAddingChildCallback,
   RuleReductionCallback,
   NextTokenCallback,
@@ -215,8 +215,9 @@ export class Parser extends ParserBase {
    * Parses the input and returns the resulting root Parse Tree node.
    */
   protected parseInput(input: TLEX.Tape): Nullable<PTNode> {
+    let idCounter = 0;
     this.stack = new ParseStack(this.grammar, this.parseTable);
-    this.stack.push(0, new PTNode(this.grammar.augStartRule.nt));
+    this.stack.push(0, new PTNode(idCounter++, this.grammar.augStartRule.nt, null));
     const tokenbuffer = this.tokenbuffer;
     const stack = this.stack;
     const g = this.grammar;
@@ -241,7 +242,7 @@ export class Parser extends ParserBase {
         break;
       } else if (action.tag == LRActionType.SHIFT) {
         tokenbuffer.next(input);
-        const newNode = new PTNode(nextSym, nextValue);
+        const newNode = new PTNode(idCounter++, nextSym, nextValue);
         stack.push(action.gotoState!, newNode);
       } else {
         // reduce
@@ -249,7 +250,7 @@ export class Parser extends ParserBase {
         const ruleLen = action.rule.rhs.length;
         // pop this many items off the stack and create a node
         // from this
-        let newNode = new PTNode(action.rule.nt);
+        let newNode = new PTNode(idCounter++, action.rule.nt, null);
         for (let i = ruleLen - 1; i >= 0; i--) {
           const childNode: TSU.Nullable<PTNode> = stack.top(i)[1];
           if (this.beforeAddingChildNode) {

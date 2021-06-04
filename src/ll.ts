@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
 import { Sym, Grammar, Rule } from "./grammar";
-import { PTNode, Parser as ParserBase } from "./parser";
+import { PTNode, SimpleParser as ParserBase } from "./parser";
 import { printGrammar } from "./utils";
 
 type StringMap<T> = TSU.StringMap<T>;
@@ -126,12 +126,13 @@ export class ParseStack {
   readonly stack: [Sym, PTNode][];
   readonly docNode: PTNode;
   readonly rootNode: PTNode;
+  protected idCounter = 0;
   constructor(g: Grammar, parseTable: ParseTable) {
     this.grammar = g;
     this.parseTable = parseTable;
     this.stack = [];
     TSU.assert(g.startSymbol != null, "Start symbol not selected");
-    this.docNode = this.push(g.Eof, new PTNode(new Sym(g, "<DOC>", false)));
+    this.docNode = this.push(g.Eof, new PTNode(this.idCounter++, new Sym(g, "<DOC>", false), null));
     this.rootNode = this.push(g.startSymbol);
     this.docNode.add(this.rootNode);
   }
@@ -141,7 +142,7 @@ export class ParseStack {
   }
 
   push(sym: Sym, node: Nullable<PTNode> = null): PTNode {
-    if (!node) node = new PTNode(sym);
+    if (!node) node = new PTNode(this.idCounter++, sym, null);
     this.stack.push([sym, node]);
     return node;
   }

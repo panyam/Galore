@@ -34,26 +34,40 @@ export type RuleReductionCallback = (node: PTNode, rule: Rule) => PTNode;
  */
 export type NextTokenCallback = (token: TLEX.Token) => TSU.Nullable<TLEX.Token>;
 
-export class PTNode {
-  static idCounter = 1;
-  readonly id = PTNode.idCounter++;
-  readonly sym: Sym;
-  parent: Nullable<PTNode> = null;
-  value: any;
-  readonly children: PTNode[];
-  constructor(sym: Sym, value: any = null, ...children: PTNode[]) {
-    this.sym = sym;
-    this.value = value;
-    this.children = children || [];
+export class PFNode {
+  children: this[] = [];
+  constructor(public readonly id: number, public readonly sym: Sym, public value: any, ...children: PFNode[]) {
+    this.children = (children as this[]) || [];
   }
 
   get childCount(): number {
     return this.children.length;
   }
 
-  childAt(index: number): PTNode {
-    if (index < 0) return this.children[this.children.length + index];
-    return this.children[index];
+  childAt(index: number): this {
+    if (index < 0) return this.children[this.children.length + index] as this;
+    return this.children[index] as this;
+  }
+
+  get isTerminal(): boolean {
+    return this.sym.isTerminal;
+  }
+
+  add(node: this, index = -1): this {
+    if (this.isTerminal) {
+      throw new Error(`Cannot add children (${node.sym.label}) to a terminal node: ${this.sym.label}`);
+    }
+    if (index < 0) {
+      this.children.push(node);
+    } else {
+      this.children.splice(index, 0, node);
+    }
+    return this;
+  }
+
+  splice(index: number, numToDelete: number, ...nodes: this[]): this {
+    this.children.splice(index, numToDelete, ...nodes);
+    return this;
   }
 
   get reprString(): string {
@@ -64,29 +78,6 @@ export class PTNode {
     return out;
     */
     return this.debugValue(false).join("\n");
-  }
-
-  get isTerminal(): boolean {
-    return this.sym.isTerminal;
-  }
-
-  add(node: PTNode, index = -1): this {
-    if (this.isTerminal) {
-      throw new Error(`Cannot add children (${node.sym.label}) to a terminal node: ${this.sym.label}`);
-    }
-    node.parent = this;
-    if (index < 0) {
-      this.children.push(node);
-    } else {
-      this.children.splice(index, 0, node);
-    }
-    return this;
-  }
-
-  splice(index: number, numToDelete: number, ...nodes: PTNode[]): this {
-    for (const node of nodes) node.parent = this;
-    this.children.splice(index, numToDelete, ...nodes);
-    return this;
   }
 
   debugValue(raw = true): any {
@@ -102,6 +93,21 @@ export class PTNode {
       this.children.forEach((node) => (node.debugValue(raw) as string[]).forEach((l) => out.push("  " + l)));
       return out;
     }
+  }
+}
+
+export class PTNode extends PFNode {
+  parent: Nullable<PTNode> = null;
+
+  add(node: this, index = -1): this {
+    super.add(node, index);
+    node.parent = this;
+    return this;
+  }
+
+  splice(index: number, numToDelete: number, ...nodes: this[]): this {
+    for (const node of nodes) node.parent = this;
+    return super.splice(index, numToDelete, ...nodes);
   }
 }
 
@@ -130,7 +136,9 @@ export abstract class Parser {
     }
     return out;
   }
+}
 
+export abstract class SimpleParser extends Parser {
   parse(input: string | TLEX.Tape): Nullable<PTNode> {
     if (typeof input === "string") {
       input = new TLEX.Tape(input);
@@ -142,4 +150,18 @@ export abstract class Parser {
    * Parses the input and returns the resulting root Parse Tree node.
    */
   protected abstract parseInput(input: TLEX.Tape): Nullable<PTNode>;
+}
+
+export abstract class ParallelParser extends Parser {
+  parse(input: string | TLEX.Tape): PFNode[] {
+    if (typeof input === "string") {
+      input = new TLEX.Tape(input);
+    }
+    return this.parseInput(input);
+  }
+
+  /**
+   * Parses the input and returns the resulting root Parse Tree node.
+   */
+  protected abstract parseInput(input: TLEX.Tape): PFNode[];
 }

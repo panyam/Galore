@@ -3,10 +3,9 @@ import { Grammar } from "./grammar";
 import { LRAction, ParseTable } from "./lr";
 import { LRItem, LR1ItemSet, LR0ItemGraph, LR1ItemGraph } from "./lr";
 
-export function makeSLRParseTable(grammar: Grammar, igConfig: any = null): [ParseTable, LR0ItemGraph] {
-  igConfig = igConfig || {};
-  const ig = new LR0ItemGraph(grammar, igConfig).refresh();
-  const parseTable = new ParseTable(grammar);
+export function makeSLRParseTable(grammar: Grammar): ParseTable {
+  const ig = new LR0ItemGraph(grammar).refresh();
+  const parseTable = new ParseTable(ig);
   for (const itemSet of ig.itemSets.entries) {
     // Look for transitions from this set
     for (const itemId of itemSet.values) {
@@ -46,16 +45,15 @@ export function makeSLRParseTable(grammar: Grammar, igConfig: any = null): [Pars
       parseTable.addAction(itemSet.id, grammar.Eof, LRAction.Accept());
     }
   }
-  return [parseTable, ig];
+  return parseTable;
 }
 
 /**
  * A canonical LR1 parse table maker.
  */
-export function makeLRParseTable(grammar: Grammar, igConfig: any = null): [ParseTable, LR1ItemGraph] {
-  igConfig = igConfig || {};
-  const ig = new LR1ItemGraph(grammar, igConfig).refresh();
-  const parseTable = new ParseTable(grammar);
+export function makeLRParseTable(grammar: Grammar): ParseTable {
+  const ig = new LR1ItemGraph(grammar).refresh();
+  const parseTable = new ParseTable(ig);
   for (const itemSet of ig.itemSets.entries) {
     // Look for transitions from this set
     for (const itemId of itemSet.values) {
@@ -96,5 +94,5 @@ export function makeLRParseTable(grammar: Grammar, igConfig: any = null): [Parse
       parseTable.addAction(itemSet.id, grammar.Eof, LRAction.Accept());
     }
   }
-  return [parseTable, ig];
+  return parseTable;
 }

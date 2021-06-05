@@ -121,16 +121,15 @@ export class ParseTable {
 }
 
 export class ParseStack {
-  readonly grammar: Grammar;
   readonly parseTable: ParseTable;
   readonly stack: [Sym, PTNode][];
   readonly docNode: PTNode;
   readonly rootNode: PTNode;
   protected idCounter = 0;
-  constructor(g: Grammar, parseTable: ParseTable) {
-    this.grammar = g;
+  constructor(parseTable: ParseTable) {
     this.parseTable = parseTable;
     this.stack = [];
+    const g = parseTable.grammar;
     TSU.assert(g.startSymbol != null, "Start symbol not selected");
     this.docNode = this.push(g.Eof, new PTNode(this.idCounter++, new Sym(g, "<DOC>", false), null));
     this.rootNode = this.push(g.startSymbol);
@@ -164,25 +163,22 @@ export class ParseStack {
 }
 
 export class Parser extends ParserBase {
-  parseTable: ParseTable;
   stack: ParseStack;
 
-  setGrammar(grammar: Grammar): this {
-    super.setGrammar(grammar);
-    this.initialize();
-    return this;
+  constructor(public readonly parseTable: ParseTable) {
+    super();
+    TSU.assert(parseTable.grammar.startSymbol != null, "Start symbol not selected");
   }
 
-  initialize(parseTable?: ParseTable): this {
-    this.parseTable = parseTable || new ParseTable(this.grammar);
-    this.stack = new ParseStack(this.grammar, this.parseTable);
-    return this;
+  get grammar(): Grammar {
+    return this.parseTable.grammar;
   }
 
   /**
    * Parses the input and returns the resulting root Parse Tree node.
    */
   protected parseInput(input: TLEX.Tape): Nullable<PTNode> {
+    this.stack = new ParseStack(this.parseTable);
     const tokenbuffer = this.tokenbuffer;
     const stack = this.stack;
     const g = this.grammar;

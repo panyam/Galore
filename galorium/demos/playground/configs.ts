@@ -3,6 +3,7 @@ export const builtinGrammars = [
   {
     name: "JSON",
     label: "JSON",
+    selected: true,
     grammar: `
         %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
         %token STRING /".*?(?<!\\\\)"/
@@ -14,11 +15,12 @@ export const builtinGrammars = [
         Pair -> STRING ":" Value ;
         Boolean -> "true" | "false" ;
     `,
+    sampleInput:
+      '{\n  "name": "Milky Way",\n  "age": 4600000000,\n  "star": "sun",\n  "planets": [ "Mercury", "Venus", "Earth" ],\n  "hot": true,\n  "x": null\n}\n',
   },
   {
     name: "FarshiG3",
     label: "Farshi G3",
-    selected: true,
     grammar: `
         %token b "b"
         %token x "x"
@@ -184,11 +186,7 @@ export const defaultGLConfig: any = {
                 reorderEnabled: true,
                 title: "Input",
                 componentType: "inputArea",
-                componentState: {
-                  contents2: '{"a":"b"}',
-                  contents:
-                    '{\n  "name": "Milky Way",\n  "age": 4600000000,\n  "star": "sun",\n  "planets": [ "Mercury", "Venus", "Earth" ],\n  "hot": true,\n  "x": null\n}\n',
-                },
+                componentState: {},
               },
             ],
             width: 50,

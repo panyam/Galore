@@ -30,7 +30,7 @@ export class NormalizedGrammarView extends TSV.View {
 
   eventHubChanged(): void {
     console.log("here: ", this.eventHub);
-    this.eventHub?.on(events.GrammarChanged, (evt) => {
+    this.eventHub?.on(events.GrammarParsed, (evt) => {
       this.grammar = evt.payload;
       this.codeEditor.setValue(this.grammar.debugValue.join("\n"));
     });

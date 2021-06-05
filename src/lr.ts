@@ -78,7 +78,6 @@ export class LRAction {
  * A parsing table for LR parsers.
  */
 export class ParseTable {
-  readonly grammar: Grammar;
   // Records which actions have conflicts
   conflictActions: NumMap<StringMap<boolean>> = {};
 
@@ -87,8 +86,10 @@ export class ParseTable {
    */
   actions: NumMap<NumMap<LRAction[]>> = {};
 
-  constructor(grammar: Grammar) {
-    this.grammar = grammar;
+  constructor(public readonly itemGraph: LRItemGraph) {}
+
+  get grammar(): Grammar {
+    return this.itemGraph.grammar;
   }
 
   /**
@@ -128,7 +129,7 @@ export class ParseTable {
     for (const fromId in this.actions) {
       out[fromId] = {};
       for (const symId in this.actions[fromId]) {
-        const sym = this.grammar.getSymById(symId as any)!;
+        const sym = this.itemGraph.grammar.getSymById(symId as any)!;
         const actions = this.actions[fromId][sym.id] || [];
         if (actions.length > 0) {
           out[fromId][sym.label] = actions.map((a) => a.toString());
@@ -146,9 +147,9 @@ export class ParseStack {
   // false => isSymbolId
   readonly stateStack: number[] = [];
   readonly nodeStack: PTNode[] = [];
-  constructor(g: Grammar, parseTable: ParseTable) {
+  constructor(parseTable: ParseTable) {
     this.parseTable = parseTable;
-    TSU.assert(g.startSymbol != null, "Start symbol not selected");
+    TSU.assert(parseTable.grammar.startSymbol != null, "Start symbol not selected");
   }
 
   push(state: number, node: PTNode): void {
@@ -185,9 +186,7 @@ export class ParseStack {
 }
 
 export class Parser extends ParserBase {
-  parseTable: ParseTable;
   stack: ParseStack;
-  itemGraph: LRItemGraph;
 
   /**
    * Whether to flatten parse tree nodes with a single child.
@@ -197,7 +196,7 @@ export class Parser extends ParserBase {
   onReduction: RuleReductionCallback;
   onNextToken: NextTokenCallback;
 
-  constructor(config: any = {}) {
+  constructor(public readonly parseTable: ParseTable, config: any = {}) {
     super();
     this.flatten = config.flatten || false;
     this.beforeAddingChildNode = config.beforeAddingChildNode;
@@ -205,10 +204,8 @@ export class Parser extends ParserBase {
     this.onNextToken = config.onNextToken;
   }
 
-  initialize(parseTable: ParseTable, itemGraph: LRItemGraph): this {
-    this.parseTable = parseTable;
-    this.itemGraph = itemGraph;
-    return this;
+  get grammar(): Grammar {
+    return this.parseTable.grammar;
   }
 
   /**
@@ -216,7 +213,7 @@ export class Parser extends ParserBase {
    */
   protected parseInput(input: TLEX.Tape): Nullable<PTNode> {
     let idCounter = 0;
-    this.stack = new ParseStack(this.grammar, this.parseTable);
+    this.stack = new ParseStack(this.parseTable);
     this.stack.push(0, new PTNode(idCounter++, this.grammar.augStartRule.nt, null));
     const tokenbuffer = this.tokenbuffer;
     const stack = this.stack;
@@ -406,10 +403,6 @@ export class LR1ItemSet extends LRItemSet {
 }
 
 export abstract class LRItemGraph {
-  readonly grammar: Grammar;
-
-  gotoSymbolSorter: null | ((s1: Sym, s2: Sym) => number) = null;
-
   // List of all unique LRItems that can be used in this item graph.
   // Note that since the same Item can reside in multiple sets only
   // one is created via the newItem method and it is referred
@@ -429,10 +422,7 @@ export abstract class LRItemGraph {
   abstract closure(itemSet: LRItemSet): LRItemSet;
   abstract startSet(): LRItemSet;
 
-  constructor(grammar: Grammar, config: any = null) {
-    config = config || {};
-    this.gotoSymbolSorter = config.gotoSymbolSorter || null;
-    this.grammar = grammar;
+  constructor(public readonly grammar: Grammar) {
     this.items = new IDSet();
     this.itemSets = new IDSet();
   }
@@ -468,11 +458,7 @@ export abstract class LRItemGraph {
       const currSet = out.get(i);
       // This will also include the null symbol since Grammar
       // adds Null and Eof symbols automatically
-      let allSymbols = this.grammar.allSymbols;
-      if (this.gotoSymbolSorter) {
-        allSymbols = allSymbols.map((x) => x).sort(this.gotoSymbolSorter);
-      }
-      for (const sym of allSymbols) {
+      for (const sym of this.grammar.allSymbols) {
         if (sym != this.grammar.Null) {
           const gotoSet = this.goto(currSet, sym);
           if (gotoSet.size > 0) {

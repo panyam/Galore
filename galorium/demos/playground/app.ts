@@ -72,7 +72,6 @@ export class App {
     myLayout.registerComponent("inputArea", (container, componentState: any) => {
       const elem = container.getElement();
       elem.appendChild(inputAreaDiv);
-      inputContents = componentState["contents"] || "";
     });
     myLayout.registerComponent("ptreeArea", (container, componentState) => {
       const elem = container.getElement();

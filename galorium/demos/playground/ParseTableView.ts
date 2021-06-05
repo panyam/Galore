@@ -37,7 +37,7 @@ export class ParseTableView extends TSV.View {
   };
 
   updateViews(): void {
-    const itemGraph = this.parser.itemGraph;
+    const itemGraph = this.parser.parseTable.itemGraph;
     let symbols = [...this.parser.grammar.allSymbols].sort(this.gotoSymbolSorter);
     let out = "<table border = 1 class = 'parseTable'>";
     // add header row showing symbols
@@ -47,7 +47,7 @@ export class ParseTableView extends TSV.View {
     }
 
     // now each row in the parse table
-    const numStates = this.parser.itemGraph.itemSets.size;
+    const numStates = this.parser.parseTable.itemGraph.itemSets.size;
     for (let i = 0; i < numStates; i++) {
       out += "<tr>";
       out += `<td class = "stateHeaderCell" stateID = "${i}">${i}</td>`;

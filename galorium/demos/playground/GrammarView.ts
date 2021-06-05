@@ -97,13 +97,11 @@ export class GrammarView extends TSV.View {
     const [parser, tokenizer] = G.newParser(g, {
       flatten: true,
       type: this.parserType,
-      onGrammarParsed: (grammar: G.Grammar) => {
-        this.eventHub?.emit(events.GrammarChanged, this, grammar);
-      },
     });
     const endTime = performance.now();
-    this.parser = parser;
     this.eventHub?.emit(events.Log, this, "Parser Compiled in " + (endTime - startTime) + "ms");
+    this.eventHub?.emit(events.GrammarParsed, this, parser.grammar);
+    this.parser = parser;
     this.eventHub?.emit(events.ParserCompiled, this, parser);
   }
 
@@ -111,5 +109,6 @@ export class GrammarView extends TSV.View {
     const gname = this.grammarSelect.value;
     const g = configs.builtinGrammars.find((x) => x.name == gname);
     this.setContents(g?.grammar);
+    this.eventHub?.emit(events.GrammarSelected, this, {name: gname, grammar: this.parser.grammar});
   }
 }

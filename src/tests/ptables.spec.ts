@@ -81,7 +81,7 @@ describe("Sample Parse Tables", () => {
       `,
       { type: "slr" },
     );
-    const v = mergedDebugValue(parser.parseTable, parser.itemGraph);
+    const v = mergedDebugValue(parser.parseTable);
     expect(v).toEqual({
       "0": {
         items: ["0  -  $accept ->  • E", "1  -  E ->  • T X", "4  -  T ->  • int Y", "5  -  T ->  • OPEN E CLOSE"],

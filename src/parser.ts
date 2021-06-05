@@ -112,19 +112,14 @@ export class PTNode extends PFNode {
 }
 
 export abstract class Parser {
-  grammar: Grammar;
   tokenbuffer: TLEX.TokenBuffer;
-
-  setGrammar(grammar: Grammar): this {
-    TSU.assert((grammar.augStartRule || null) != null, "Grammar's start symbol has not been augmented");
-    this.grammar = grammar;
-    return this;
-  }
 
   setTokenizer(tokenizer: TLEX.NextTokenFunc): this {
     this.tokenbuffer = new TLEX.TokenBuffer(tokenizer);
     return this;
   }
+
+  abstract get grammar(): Grammar;
 
   /**
    * Converts the token to a Terminal based on the tag value.

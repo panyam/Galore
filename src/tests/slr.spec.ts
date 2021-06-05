@@ -11,7 +11,7 @@ describe("LR ParseTable", () => {
       `,
       { type: "slr" },
     );
-    const v = mergedDebugValue(parser.parseTable, parser.itemGraph);
+    const v = mergedDebugValue(parser.parseTable);
     expect(v).toEqual({
       "0": {
         items: [

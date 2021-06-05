@@ -91,9 +91,6 @@ export class GSS {
 }
 
 export class Parser extends ParserBase {
-  parseTable: ParseTable;
-  itemGraph: LRItemGraph;
-
   /**
    * Whether to flatten parse tree nodes with a single child.
    */
@@ -101,20 +98,6 @@ export class Parser extends ParserBase {
   beforeAddingChildNode: BeforeAddingChildCallback;
   onReduction: RuleReductionCallback;
   onNextToken: NextTokenCallback;
-
-  constructor(config: any = {}) {
-    super();
-    this.flatten = config.flatten || false;
-    this.beforeAddingChildNode = config.beforeAddingChildNode;
-    this.onReduction = config.onReduction;
-    this.onNextToken = config.onNextToken;
-  }
-
-  initialize(parseTable: ParseTable, itemGraph: LRItemGraph): this {
-    this.parseTable = parseTable;
-    this.itemGraph = itemGraph;
-    return this;
-  }
 
   /**
    * Parses the input and returns the resulting root Parse Tree node.
@@ -127,8 +110,35 @@ export class Parser extends ParserBase {
   Unext: GSSVertex[];
   R: [GSSVertex, Rule, GSSVertex[]][];
   Q: [GSSVertex, number][];
+
+  constructor(public readonly parseTable: ParseTable, config: any = {}) {
+    super();
+    this.flatten = config.flatten || false;
+    this.beforeAddingChildNode = config.beforeAddingChildNode;
+    this.onReduction = config.onReduction;
+    this.onNextToken = config.onNextToken;
+  }
+
+  get grammar(): Grammar {
+    return this.parseTable.grammar;
+  }
+
   protected parseInput(input: TLEX.Tape): PFNode[] {
-    const tokenbuffer = this.tokenbuffer;
+    this.reset();
+    while (this.tokenbuffer.peek(input) != null) {
+      let token = this.tokenbuffer.peek(input);
+      if (token && this.onNextToken) {
+        token = this.onNextToken(token);
+      }
+      if (token != null) {
+        this.processToken(token);
+      }
+    }
+    // TODO - Assemble all parse trees here
+    return [];
+  }
+
+  reset(): void {
     this.gss = new GSS();
     this.sppf = new SPPF();
     const v0 = this.gss.addVertex(0); // Start vertex
@@ -137,17 +147,6 @@ export class Parser extends ParserBase {
     this.Unext = [];
     this.R = [];
     this.Q = [];
-    while (tokenbuffer.peek(input) != null) {
-      let token = tokenbuffer.peek(input);
-      if (token && this.onNextToken) {
-        token = this.onNextToken(token);
-      }
-      if (token != null) {
-        this.processToken(token);
-      }
-    }
-    // It is possible that here no reductions have been done!
-    return [];
   }
 
   processToken(token: null | TLEX.Token): void {

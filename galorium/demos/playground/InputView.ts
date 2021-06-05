@@ -6,6 +6,7 @@ import { App } from "./app";
 import * as ace from "ace-builds";
 import * as events from "./events";
 import * as G from "galore";
+import * as configs from "./configs";
 
 export class InputView extends TSV.View {
   readonly app: App;
@@ -65,6 +66,11 @@ export class InputView extends TSV.View {
     this.eventHub?.on(events.ParserCompiled, (evt) => {
       this.parser = evt.payload;
       console.log("Parser compiled", evt);
+    });
+    this.eventHub?.on(events.GrammarSelected, (evt) => {
+      const name = evt.payload.name;
+      const g = configs.builtinGrammars.find((x) => x.name == name);
+      this.setContents(g?.sampleInput || "");
     });
   }
 

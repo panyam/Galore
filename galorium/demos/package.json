@@ -20,7 +20,7 @@
     "@panyam/tsutils-ui": "*",
     "ace-builds": "^1.4.12",
     "galore": "file:../..",
-    "golden-layout": "^2.2.0",
+    "golden-layout": "^2.2.1",
     "tlex": "",
     "uuid": "^8.3.2",
     "uuid-v4-validator": "^2.0.0",

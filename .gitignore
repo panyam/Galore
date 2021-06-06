@@ -34,3 +34,4 @@ samples/gen
 .cache
 *.code-workspace
 .env
+galorium/homepage/resources/_gen

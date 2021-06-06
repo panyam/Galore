@@ -35,3 +35,4 @@ samples/gen
 *.code-workspace
 .env
 homepage/themes
+homepage/resources/_gen

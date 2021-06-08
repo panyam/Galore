@@ -70,6 +70,6 @@
   },
   "dependencies": {
     "@panyam/tsutils": "^0.0.24",
-    "tlex": "*"
+    "tlex": "^0.0.26"
   }
 }

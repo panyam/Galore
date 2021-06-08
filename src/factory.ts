@@ -26,6 +26,7 @@ export function genParseTable(g: Grammar, type = "lr1"): ParseTable {
  * Helper to create a grammar, and its parser.
  */
 export function newParser(input: string, params: any = null): [Parser, TSU.Nullable<TLEX.NextTokenFunc>] {
+  params = params || {};
   const [g, tokenFunc] = loadGrammar(input, params);
   const ptable = genParseTable(g, params.type);
   const parser = new Parser(ptable);

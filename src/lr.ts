@@ -188,17 +188,12 @@ export class ParseStack {
 export class Parser extends ParserBase {
   stack: ParseStack;
 
-  /**
-   * Whether to flatten parse tree nodes with a single child.
-   */
-  flatten: boolean;
   beforeAddingChildNode: BeforeAddingChildCallback;
   onReduction: RuleReductionCallback;
   onNextToken: NextTokenCallback;
 
   constructor(public readonly parseTable: ParseTable, config: any = {}) {
     super();
-    this.flatten = config.flatten || false;
     this.beforeAddingChildNode = config.beforeAddingChildNode;
     this.onReduction = config.onReduction;
     this.onNextToken = config.onNextToken;

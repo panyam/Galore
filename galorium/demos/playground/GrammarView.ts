@@ -1,7 +1,6 @@
 import "./styles/GrammarView.scss";
 import * as TSU from "@panyam/tsutils";
 import * as TSV from "@panyam/tsutils-ui";
-import * as TLEX from "tlex";
 import * as G from "galore";
 import { App } from "./app";
 import * as ace from "ace-builds";
@@ -81,7 +80,10 @@ export class GrammarView extends TSV.View {
   }
 
   setContents(val: any): void {
-    const lines = val.trim().split("\n").map((l: string) => l.trim());
+    const lines = val
+      .trim()
+      .split("\n")
+      .map((l: string) => l.trim());
     this.codeEditor.setValue(lines.join("\n"));
     this.codeEditor.clearSelection();
     this.compile();
@@ -109,6 +111,6 @@ export class GrammarView extends TSV.View {
     const gname = this.grammarSelect.value;
     const g = configs.builtinGrammars.find((x) => x.name == gname);
     this.setContents(g?.grammar);
-    this.eventHub?.emit(events.GrammarSelected, this, {name: gname, grammar: this.parser.grammar});
+    this.eventHub?.emit(events.GrammarSelected, this, { name: gname, grammar: this.parser.grammar });
   }
 }

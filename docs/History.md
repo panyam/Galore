@@ -1,8 +1,7 @@
 
 How did LTB start?
 
-Parser tooling is very fun.  It is also very hard.  I love Indian Carnatic Music.  I had been working on (very partially) on a music notation editor for
-carnatic music for several years and finally got serious during the COVID lockdown.   You can checkout the editor here[Notations.Appspot].  
+Parser tooling is very fun.  It is also very hard.  I love Indian Carnatic Music.  I had been working on (very partially) a music notation editor for carnatic music for several years and finally got serious during the COVID lockdown.   You can checkout the editor here[Notations.Appspot].  
 
 What does this have to do with parser tools?  As you can see from the Notation editor, I needed a document format for storing musical scores.  I did not want to invent a new scheme and wanted existing syntax as much as possible.  So I had settled on using markdown with inline code blocks for storing notationl elements that would be rendered (in a side-by-side editor fashion).
 

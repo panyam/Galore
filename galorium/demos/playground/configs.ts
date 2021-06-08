@@ -1,5 +1,10 @@
+import c11 from "./grammars/c11";
+
 // Supported grammars for different langauges
 export const builtinGrammars = [
+  {
+    ...c11,
+  },
   {
     name: "JSON",
     label: "JSON",

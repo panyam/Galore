@@ -27,11 +27,14 @@ export enum TokenType {
   CLOSE_SQ = "CLOSE_SQ",
   COMMENT = "COMMENT",
   ARROW = "ARROW",
+  COLCOLHYPHEN = "COLCOLHYPHEN",
+  COLON = "COLON",
   SEMI_COLON = "SEMI_COLON",
 }
 
 export function EBNFTokenizer(): TLEX.Tokenizer {
   const lexer = new TLEX.Tokenizer();
+  lexer.add(/->/, { tag: TokenType.ARROW });
   lexer.add(/\[/, { tag: TokenType.OPEN_SQ });
   lexer.add(/\]/, { tag: TokenType.CLOSE_SQ });
   lexer.add(/\(/, { tag: TokenType.OPEN_PAREN });
@@ -42,6 +45,7 @@ export function EBNFTokenizer(): TLEX.Tokenizer {
   lexer.add(/\+/, { tag: TokenType.PLUS });
   lexer.add(/\?/, { tag: TokenType.QMARK });
   lexer.add(/;/, { tag: TokenType.SEMI_COLON });
+  lexer.add(/:/, { tag: TokenType.COLON });
   lexer.add(/\|/, { tag: TokenType.PIPE });
   lexer.add(/\s+/m, { tag: TokenType.SPACES }, () => null);
   lexer.add(/\/\*.*?\*\//, { tag: TokenType.COMMENT }, () => null);
@@ -58,7 +62,6 @@ export function EBNFTokenizer(): TLEX.Tokenizer {
     token.value = tape.substring(token.start + 1, token.end - 1);
     return token;
   });
-  lexer.add(/->/, { tag: TokenType.ARROW });
   lexer.add(/\d+/, { tag: TokenType.NUMBER });
   lexer.add(/%([\w][\w\d_]*)/, { tag: TokenType.PCT_IDENT }, (rule, tape, token) => {
     token.value = tape.substring(token.start + 1, token.end);
@@ -205,23 +208,29 @@ export class EBNFParser {
           const next = this.tokenizer.expectToken(tape, TokenType.STRING, TokenType.REGEX);
           const pattern = next.tag == TokenType.STRING ? str2regex(next.value) : next.value;
           const label = "/" + next.value + "/";
-          const rule = new TLEX.Rule(pattern, { tag: label, priority: 30 });
+          const rule = TLEX.Builder.build(pattern, { tag: label, priority: 30 });
           this.generatedTokenizer.addRule(rule, () => null);
-        } else if (peeked.value == "token") {
+        } else if (peeked.value == "token" || peeked.value == "define") {
+          const isDef = peeked.value == "define";
           const tokName = this.tokenizer.expectToken(tape, TokenType.IDENT);
           const tokPattern = this.tokenizer.expectToken(tape, TokenType.STRING, TokenType.REGEX);
           let rule: TLEX.Rule;
           if (tokPattern.tag == TokenType.STRING || tokPattern.tag == TokenType.NUMBER) {
             const pattern = str2regex(tokPattern.value);
-            rule = new TLEX.Rule(pattern, { tag: tokName.value, priority: 20 });
+            rule = TLEX.Builder.build(pattern, { tag: tokName.value, priority: 20 });
           } else if (tokPattern.tag == TokenType.REGEX) {
-            rule = new TLEX.Rule(tokPattern.value, { tag: tokName.value, priority: 10 });
+            rule = TLEX.Builder.build(tokPattern.value, { tag: tokName.value, priority: 10 });
           } else {
             throw new TLEX.UnexpectedTokenError(tokPattern);
           }
-          this.generatedTokenizer.addRule(rule);
-          // register it
-          this.ensureSymbol(tokName.value, true);
+          if (isDef) {
+            // Define a "reusable" regex that is not a token on its own
+            this.generatedTokenizer.addVar(tokName.value, rule.expr);
+          } else {
+            this.generatedTokenizer.addRule(rule);
+            // register it
+            this.ensureSymbol(tokName.value, true);
+          }
         } else {
           throw new Error("Invalid directive: " + peeked.value);
         }
@@ -232,7 +241,7 @@ export class EBNFParser {
 
   parseDecl(tape: Tape): void {
     const ident = this.tokenizer.expectToken(tape, TokenType.IDENT);
-    if (this.tokenizer.consumeIf(tape, TokenType.ARROW)) {
+    if (this.tokenizer.consumeIf(tape, TokenType.ARROW, TokenType.COLON)) {
       const nt = this.ensureSymbol(ident.value as string, false);
       if (nt.isTerminal) {
         // it is a terminal so mark it as a non-term now that we
@@ -309,11 +318,11 @@ export class EBNFParser {
         if (token.tag == TokenType.STRING || token.tag == TokenType.NUMBER) {
           label = '"' + token.value + '"';
           const pattern = str2regex(token.value);
-          const rule = new TLEX.Rule(pattern, { tag: label, priority: 20 });
+          const rule = TLEX.Builder.build(pattern, { tag: label, priority: 20 });
           this.generatedTokenizer.addRule(rule);
         } else if (token.tag == TokenType.REGEX) {
           label = "/" + token.value + "/";
-          const rule = new TLEX.Rule(token.value, { tag: label, priority: 10 });
+          const rule = TLEX.Builder.build(token.value, { tag: label, priority: 10 });
           this.generatedTokenizer.addRule(rule);
         } else {
           // Normal

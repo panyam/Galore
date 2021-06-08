@@ -2,23 +2,14 @@ import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
 const fs = require("fs");
 const util = require("util");
-import { newParser } from "../src/factory";
 import { PTNode } from "../src/parser";
 import { Rule, Sym } from "../src/grammar";
-const g = `
-        %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
-        %token STRING /".*?(?<!\\\\)"/
-        %skip /[ \\t\\n\\f\\r]+/
+import * as json from "./samples/grammars/json";
 
-        Value -> Dict | List | STRING | NUMBER | Boolean | "null" ;
-        List -> "[" [ Value ( "," Value ) * ] "]" ;
-        Dict -> "{" [ Pair ("," Pair)* ] "}" ;
-        Pair -> STRING ":" Value ;
-        Boolean -> "true" | "false" ;
-`;
+const [parser, tokenizer] = json.newParser();
+
 // only allow true, false, string, number and null terminals
 const allowList = new Set(["STRING", "NUMBER", "Boolean", '"null"', '"true"', '"false"']);
-const [parser, tokenizer] = newParser(g, { flatten: true, type: "slr", debug: true });
 parser.onNextToken = (token) => {
   if (token.tag == "STRING") {
     token.value = token.value.substring(1, token.value.length - 1);
@@ -61,48 +52,14 @@ parser.onReduction = (node: PTNode, rule: Rule) => {
   return node;
 };
 
-function tokenizeAll(tokenFunc: TLEX.NextTokenFunc, tape: TLEX.Tape): TLEX.Token[] {
-  const out = [];
-  let next = tokenFunc(tape);
-  while (next) {
-    out.push(next);
-    next = tokenFunc(tape);
-  }
-  return out;
-}
-
 const args = process.argv.slice(2);
 const payloadPath = args[0];
 const payload = fs.readFileSync(payloadPath, "utf8");
-const printResults = false;
 // result of just tokenize
-const tokenizerStartTime = Date.now();
-const tokens = tokenizeAll(tokenizer!, new TLEX.Tape(payload));
-const tokenizerEndTime = Date.now();
-console.log(`Tokenizer Time (${tokens.length} tokens): ${tokenizerEndTime - tokenizerStartTime}`);
+
 const parseStartTime = Date.now();
 const result = parser.parse(payload);
 const parseEndTime = Date.now();
-if (printResults) {
-  console.log("Parse Tree: ");
-  const dVal = util.inspect(result?.debugValue(true), {
-    showHidden: false,
-    depth: null,
-    maxArrayLength: null,
-    maxStringLength: null,
-  });
-  console.log(dVal);
-  console.log(result?.reprString);
-  console.log(
-    "Value: ",
-    util.inspect(result?.value, {
-      showHidden: false,
-      depth: null,
-      maxArrayLength: null,
-      maxStringLength: null,
-    }),
-  );
-}
 console.log("Time with parser.parse: ", parseEndTime - parseStartTime);
 
 const jsonParseStartTime = Date.now();

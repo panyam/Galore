@@ -1,23 +1,22 @@
 import { LRActionType, ParseTable as LRParseTable } from "./lr";
 
 export function parseTableToHtml(parseTable: LRParseTable, config: any = {}): string {
-  const itemGraph = parseTable.itemGraph;
-  const classPrefix = config.classPrefix || "";
+  const parseTableClass = config.parseTableClass || "parseTable";
   const symbols = config.gotoSymbolSorter
     ? [...parseTable.grammar.allSymbols].sort(config.gotoSymbolSorter)
     : parseTable.grammar.allSymbols;
-  let out = "<table border = 1 class = '${classPrefix}parseTable'>";
+  let out = `<table border = 1 class = '${parseTableClass}'>`;
   // add header row showing symbols
   out += "<thead><td></td>";
   for (const sym of symbols) {
-    out += `<td class = "${classPrefix}symHeaderCell" symID = "${sym.id}">${sym.label}</td>`;
+    out += `<td class = "symHeaderCell" symID = "${sym.id}">${sym.label}</td>`;
   }
 
   // now each row in the parse table
   const numStates = parseTable.itemGraph.itemSets.size;
   for (let i = 0; i < numStates; i++) {
     out += "<tr>";
-    out += `<td class = "${classPrefix}stateHeaderCell" stateID = "${i}">${i}</td>`;
+    out += `<td class = "stateHeaderCell" stateID = "${i}">${i}</td>`;
     for (const sym of symbols) {
       // Add action here
       const actions = parseTable.getActions(i, sym);
@@ -29,17 +28,17 @@ export function parseTableToHtml(parseTable: LRParseTable, config: any = {}): st
           cellClass += " multipleActions";
         }
       }
-      out += `<td class = "${classPrefix}${cellClass}" stateId = ${i} symID = "${sym.id}">`;
+      out += `<td class = "${cellClass}" stateId = ${i} symID = "${sym.id}">`;
       const lines: string[] = [];
       for (const action of actions) {
         if (action.tag == LRActionType.GOTO) {
-          lines.push(`<div class = "${classPrefix}gotoActionCell">${action.gotoState}</div>`);
+          lines.push(`<div class = "gotoActionCell">${action.gotoState}</div>`);
         } else if (action.tag == LRActionType.ACCEPT) {
-          lines.push(`<div class = "${classPrefix}acceptActionCell">ACCEPT</div>`);
+          lines.push(`<div class = "acceptActionCell">ACCEPT</div>`);
         } else if (action.tag == LRActionType.SHIFT) {
-          lines.push(`<div class = "${classPrefix}shiftActionCell">S${action.gotoState}</div>`);
+          lines.push(`<div class = "shiftActionCell">S${action.gotoState}</div>`);
         } else if (action.tag == LRActionType.REDUCE) {
-          lines.push(`<div class = "${classPrefix}reduceActionCell">R${action.rule!.id}</div>`);
+          lines.push(`<div class = "reduceActionCell">R${action.rule!.id}</div>`);
         }
       }
       out += lines.join("\n");

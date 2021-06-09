@@ -204,7 +204,11 @@ export class EBNFParser {
       } else if (peeked.tag == TokenType.PCT_IDENT) {
         // Some kind of directive
         this.tokenizer.next(tape);
-        if (peeked.value == "skip") {
+        if (peeked.value == "start") {
+          // override start directive
+          const next = this.tokenizer.expectToken(tape, TokenType.IDENT);
+          this.grammar.startSymbol = this.ensureSymbol(next.value as string, false);
+        } else if (peeked.value == "skip") {
           const next = this.tokenizer.expectToken(tape, TokenType.STRING, TokenType.REGEX);
           const pattern = next.tag == TokenType.STRING ? str2regex(next.value) : next.value;
           const label = "/" + next.value + "/";

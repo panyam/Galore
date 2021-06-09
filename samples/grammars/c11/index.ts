@@ -3,6 +3,22 @@ import { newParser as newLRParser } from "../../../src/factory";
 import { Parser } from "../../../src/lr";
 
 export const GRAMMAR = `
+  %define O   /[0-7]/
+  %define D   /[0-9]/
+  %define NZ  /[1-9]/
+  %define L   /[a-zA-Z_]/
+  %define A   /[a-zA-Z_0-9]/
+  %define H   /[a-fA-F0-9]/
+  %define HP  /(0[xX])/
+  %define E   /([Ee][+-]?{D}+)/
+  %define P   /([Pp][+-]?{D}+)/
+  %define FS  /(f|F|l|L)/
+  %define IS  /(((u|U)(l|L|ll|LL)?)|((l|L|ll|LL)(u|U)?))/
+  %define CP  /(u|U|L)/
+  %define SP  /(u8|u|U|L)/
+  %define ES  /(\\\\(['"\\\?\\\\abfnrtv]|[0-7]{1,3}|x[a-fA-F0-9]+))/
+  %define WS  /[ \\t\\v\\n\\f]/
+
   %token    AUTO              "auto"
   %token    BREAK             "break"
   %token    CASE              "case"
@@ -49,12 +65,12 @@ export const GRAMMAR = `
   %token    THREAD_LOCAL      "_Thread_local"
   %token    FUNC_NAME         "__func__"
 
-  %token    IDENTIFIER        {L}{A}*					
+  %token    IDENTIFIER        /{L}{A}*/
 
   %token    I_CONSTANT        /{HP}{H}+{IS}?/
   %token    I_CONSTANT        /{NZ}{D}*{IS}?/
-  %token    I_CONSTANT        /"0"{O}*{IS}?/
-  %token    I_CONSTANT        /{CP}?'([^'\\\n]|{ES})+'/
+  %token    I_CONSTANT        /0{O}*{IS}?/
+  %token    I_CONSTANT        /{CP}?'([^'\\\\\\n]|{ES})+'/
 
   %token    F_CONSTANT      /{D}+{E}{FS}?/
   %token    F_CONSTANT      /{D}*\\.{D}+{E}?{FS}?/
@@ -63,7 +79,7 @@ export const GRAMMAR = `
   %token    F_CONSTANT      /{HP}{H}*\\.{H}+{P}{FS}?/
   %token    F_CONSTANT      /{HP}{H}+\\.{P}{FS}?/
 
-  %token    STRING_LITERAL  /({SP}?\"([^"\\\n]|{ES})*\"{WS}*)+/
+  %token    STRING_LITERAL  /({SP}?\\\"([^"\\\\\\n]|{ES})*\\"{WS}*)+/
   %token    ELLIPSIS        "..."
   %token    RIGHT_ASSIGN    ">>="
   %token    LEFT_ASSIGN     "<<="

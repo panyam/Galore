@@ -4,6 +4,7 @@ const yargs = require("yargs");
 import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
 import { newParser } from "../src/factory";
+import { mergedDebugValue } from "../src/debug";
 import { PTNode } from "../src/parser";
 import { Parser } from "../src/lr";
 import { parseTableToHtml } from "../src/printers";
@@ -41,6 +42,24 @@ function measureTime(log: string, method: any): [any, number] {
 function writeResults(outDir: string, parser: Parser, result?: PTNode): void {
   outDir = (outDir || ".").trim();
   if (outDir != ".") fs.mkdirSync(outDir, { recursive: true });
+  const ptableJsonPath = outDir + "/" + "ptable.json";
+  console.log("Writing parse table to: ", ptableJsonPath);
+  fs.writeFileSync(
+    ptableJsonPath,
+    `Parse Table: ${util.inspect(mergedDebugValue(parser.parseTable), {
+      showHidden: false,
+      depth: null,
+      maxArrayLength: null,
+      maxStringLength: null,
+    })},
+    Parse Table Conflicts: ${util.inspect(parser.parseTable.conflictActions, {
+      showHidden: false,
+      depth: null,
+      maxArrayLength: null,
+      maxStringLength: null,
+    })}`,
+  );
+
   const ptablePath = outDir + "/" + "ptable.html";
   console.log("Writing parse table to: ", ptablePath);
   fs.writeFileSync(
@@ -126,6 +145,7 @@ const argv = yargs(process.argv.slice(2))
       const [[parser, tokenizer], t0] = loadParser(argv.language, argv.grammarFile, argv.ptableType);
       const [tokens, t1] = measureTime("Tokenizer Time: ", () => tokenizeAll(tokenizer!, new TLEX.Tape(payload)));
       console.log("Num Tokens: ", tokens.length);
+      console.log("Tokens: ", tokens);
     },
   )
   .command(

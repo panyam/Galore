@@ -4,6 +4,9 @@ const yargs = require("yargs");
 import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
 import { newParser } from "../src/factory";
+import { PTNode } from "../src/parser";
+import { Parser } from "../src/lr";
+import { parseTableToHtml } from "../src/printers";
 import Grammars from "./samples/grammars";
 
 function loadParser(lang: string, grammarFile?: string, ptype = "lr1") {
@@ -35,6 +38,37 @@ function measureTime(log: string, method: any): [any, number] {
   return [result, delta];
 }
 
+function writeResults(outDir: string, result: PTNode, parser: Parser): void {
+  outDir = (outDir || ".").trim();
+  if (outDir != ".") fs.mkdirSync(outDir, { recursive: true });
+  const ptablePath = outDir + "/" + "ptable.html";
+  console.log("Writing parse table to: ", ptablePath);
+  fs.writeFileSync(
+    ptablePath,
+    `
+    <html><head><title>Parse Table</title></head>
+    <body>
+      <h2><center>Parse Table</center></h2>
+      <div>${parseTableToHtml(parser.parseTable)}</div>
+    </body>
+    </html>
+    `,
+  );
+  const ptreePath = outDir + "/" + "ptree.out";
+  console.log("Writing parse tree (pretty) to: ", ptreePath);
+  fs.writeFileSync(ptreePath, result?.reprString);
+
+  const ptreeJsonPath = outDir + "/" + "ptree.json";
+  const dVal = util.inspect(result?.debugValue(true), {
+    showHidden: false,
+    depth: null,
+    maxArrayLength: null,
+    maxStringLength: null,
+  });
+  console.log("Writing parse tree (json) to: ", ptreeJsonPath);
+  fs.writeFileSync(ptreeJsonPath, dVal);
+}
+
 const debugOption = {
   alias: "debug",
   describe: "Whether to print extra debug information",
@@ -51,8 +85,8 @@ const grammarFileOption = {
     "File containing the grammar and tokenizer spec.  Only needed if a custom grammar beyond the language flag is required.",
   type: "string",
 };
-const outputDirOption = {
-  alias: "outputDir",
+const outDirOption = {
+  alias: "outDir",
   describe: "Output directory where all artifacts are written to",
   type: "string",
 };
@@ -74,7 +108,7 @@ const argv = yargs(process.argv.slice(2))
         .option("d", debugOption)
         .positional("inputFile", inputFileOption)
         .positional("l", languageOption)
-        .positional("o", outputDirOption)
+        .positional("o", outDirOption)
         .positional("g", grammarFileOption)
         .help("help");
     },
@@ -94,7 +128,7 @@ const argv = yargs(process.argv.slice(2))
         .option("d", debugOption)
         .positional("inputFile", inputFileOption)
         .positional("l", languageOption)
-        .positional("o", outputDirOption)
+        .positional("o", outDirOption)
         .positional("g", grammarFileOption)
         .help("help");
     },
@@ -103,26 +137,7 @@ const argv = yargs(process.argv.slice(2))
       const payload = fs.readFileSync(argv.inputFile, "utf8");
       const [[parser, tokenizer], t0] = loadParser(argv.language, argv.grammarFile, argv.parserType);
       const [result, t2] = measureTime("Parse Time: ", () => parser.parse(payload));
-      if (true) {
-        console.log("Parse Tree: ");
-        const dVal = util.inspect(result?.debugValue(true), {
-          showHidden: false,
-          depth: null,
-          maxArrayLength: null,
-          maxStringLength: null,
-        });
-        console.log(dVal);
-        console.log(result?.reprString);
-        console.log(
-          "Value: ",
-          util.inspect(result?.value, {
-            showHidden: false,
-            depth: null,
-            maxArrayLength: null,
-            maxStringLength: null,
-          }),
-        );
-      }
+      writeResults(argv.outDir, result, parser);
     },
   )
   .help("help")

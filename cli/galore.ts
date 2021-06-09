@@ -10,7 +10,7 @@ import { parseTableToHtml } from "../src/printers";
 import Grammars from "./samples/grammars";
 
 function loadParser(lang: string, grammarFile?: string, ptype = "lr1") {
-  return measureTime("Parser Creation Time: ", () => {
+  return measureTime(`Parser Creation Time (type = ${ptype}): `, () => {
     if (lang) {
       return (Grammars as any)[lang].newParser({ type: ptype });
     } else {
@@ -38,7 +38,7 @@ function measureTime(log: string, method: any): [any, number] {
   return [result, delta];
 }
 
-function writeResults(outDir: string, result: PTNode, parser: Parser): void {
+function writeResults(outDir: string, parser: Parser, result?: PTNode): void {
   outDir = (outDir || ".").trim();
   if (outDir != ".") fs.mkdirSync(outDir, { recursive: true });
   const ptablePath = outDir + "/" + "ptable.html";
@@ -54,21 +54,30 @@ function writeResults(outDir: string, result: PTNode, parser: Parser): void {
     </html>
     `,
   );
-  const ptreePath = outDir + "/" + "ptree.out";
-  console.log("Writing parse tree (pretty) to: ", ptreePath);
-  fs.writeFileSync(ptreePath, result?.reprString);
+  if (result) {
+    const ptreePath = outDir + "/" + "ptree.out";
+    console.log("Writing parse tree (pretty) to: ", ptreePath);
+    fs.writeFileSync(ptreePath, result?.reprString);
 
-  const ptreeJsonPath = outDir + "/" + "ptree.json";
-  const dVal = util.inspect(result?.debugValue(true), {
-    showHidden: false,
-    depth: null,
-    maxArrayLength: null,
-    maxStringLength: null,
-  });
-  console.log("Writing parse tree (json) to: ", ptreeJsonPath);
-  fs.writeFileSync(ptreeJsonPath, dVal);
+    const ptreeJsonPath = outDir + "/" + "ptree.json";
+    const dVal = util.inspect(result?.debugValue(true), {
+      showHidden: false,
+      depth: null,
+      maxArrayLength: null,
+      maxStringLength: null,
+    });
+    console.log("Writing parse tree (json) to: ", ptreeJsonPath);
+    fs.writeFileSync(ptreeJsonPath, dVal);
+  }
 }
 
+const ptableTypeOption = {
+  alias: "ptableType",
+  describe: "Type of parse table to generate",
+  default: "lr1",
+  type: "string",
+  choices: ["lr1", "slr"],
+};
 const debugOption = {
   alias: "debug",
   describe: "Whether to print extra debug information",
@@ -108,16 +117,33 @@ const argv = yargs(process.argv.slice(2))
         .option("d", debugOption)
         .positional("inputFile", inputFileOption)
         .positional("l", languageOption)
-        .positional("o", outDirOption)
         .positional("g", grammarFileOption)
         .help("help");
     },
     (argv: any) => {
       console.log("Argv: ", argv);
       const payload = fs.readFileSync(argv.inputFile, "utf8");
-      const [[parser, tokenizer], t0] = loadParser(argv.language, argv.grammarFile, argv.parserType);
+      const [[parser, tokenizer], t0] = loadParser(argv.language, argv.grammarFile, argv.ptableType);
       const [tokens, t1] = measureTime("Tokenizer Time: ", () => tokenizeAll(tokenizer!, new TLEX.Tape(payload)));
       console.log("Num Tokens: ", tokens.length);
+    },
+  )
+  .command(
+    "ptable",
+    "Generate parse tables for a given grammar",
+    (yargs: any) => {
+      yargs
+        .option("d", debugOption)
+        .positional("l", languageOption)
+        .positional("o", outDirOption)
+        .positional("g", grammarFileOption)
+        .positional("t", ptableTypeOption)
+        .help("help");
+    },
+    (argv: any) => {
+      console.log("Argv: ", argv);
+      const [[parser, tokenizer], t0] = loadParser(argv.language, argv.grammarFile, argv.ptableType);
+      writeResults(argv.outDir, parser);
     },
   )
   .command(
@@ -130,14 +156,15 @@ const argv = yargs(process.argv.slice(2))
         .positional("l", languageOption)
         .positional("o", outDirOption)
         .positional("g", grammarFileOption)
+        .positional("t", ptableTypeOption)
         .help("help");
     },
     (argv: any) => {
       console.log("Argv: ", argv);
       const payload = fs.readFileSync(argv.inputFile, "utf8");
-      const [[parser, tokenizer], t0] = loadParser(argv.language, argv.grammarFile, argv.parserType);
+      const [[parser, tokenizer], t0] = loadParser(argv.language, argv.grammarFile, argv.ptableType);
       const [result, t2] = measureTime("Parse Time: ", () => parser.parse(payload));
-      writeResults(argv.outDir, result, parser);
+      writeResults(argv.outDir, parser, result);
     },
   )
   .help("help")

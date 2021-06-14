@@ -1,9 +1,13 @@
-import c11 from "./grammars/c11";
+import * as c11 from "../../../samples/grammars/c11";
 
 // Supported grammars for different langauges
 export const builtinGrammars = [
   {
-    ...c11,
+    name: "C11",
+    label: "C11",
+    grammar: c11.GRAMMAR,
+    sampleInput: `
+    `,
   },
   {
     name: "JSON",

@@ -1,30 +1,26 @@
 {
-  "name": "galore",
-  "version": "0.0.28",
+  "name": "galoresamples",
+  "version": "0.0.1",
   "author": "Sriram Panyam",
-  "description": "A toolbox for languages analyzers and parser generators.",
-  "homepage": "https://github.com/panyam/Galore#readme",
+  "description": "Sample grammars and parsers in Galore",
+  "homepage": "https://github.com/panyam/galore#readme",
   "license": "ISC",
   "types": "lib/cjs/index.d.ts",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
-  "files": [
-    "lib/"
-  ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/panyam/Galore.git"
+    "url": "git+https://github.com/panyam/galore.git"
   },
   "keywords": [
     "languages",
     "parsing"
   ],
   "bugs": {
-    "url": "https://github.com/panyam/Galore/issues"
+    "url": "https://github.com/panyam/galore/issues"
   },
   "dependencies": {
-    "@panyam/tsutils": "*",
-    "tlex": "^0.0.28"
+    "galore": "file:../.."
   },
   "devDependencies": {
     "@types/jest": "^26.0.20",

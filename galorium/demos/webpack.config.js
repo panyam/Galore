@@ -129,7 +129,7 @@ module.exports = (_env, options) => {
         {
           test: /\.ts$/,
           exclude: [path.resolve(__dirname, "node_modules"), path.resolve(__dirname, "dist")],
-          include: ["./"].map((x) => path.resolve(__dirname, x)),
+          include: ["./", "../../samples/grammars"].map((x) => { console.log("TSL Path: ", x); return path.resolve(__dirname, x) }),
           use: [
             {
               loader: "ts-loader",

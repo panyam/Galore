@@ -13,7 +13,7 @@ import Grammars from "./samples/grammars";
 function loadParser(lang: string, grammarFile?: string, ptype = "lr1") {
   return measureTime(`Parser Creation Time (type = ${ptype}): `, () => {
     if (lang) {
-      return (Grammars as any)[lang].newParser({ type: ptype });
+      return newParser((Grammars as any)[lang].GRAMMAR, { type: ptype });
     } else {
       return newParser(fs.readFileSync(grammarFile, "utf8"), { type: ptype });
     }

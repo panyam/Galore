@@ -132,6 +132,11 @@ export class EBNFParser {
   private newSymbolCallback: TSU.Nullable<(label: string, assumedTerminal: boolean) => Sym | void>;
   private symbolsByLabel: TSU.StringMap<Sym>;
 
+  /**
+   * Allowed regex syntaxes - js or flex
+   */
+  private regexSyntax = "js";
+
   constructor(input: string, config: any = {}) {
     this.symbolsByLabel = {};
     this.grammar = config.grammar || new Grammar();
@@ -195,6 +200,37 @@ export class EBNFParser {
     this.parseGrammar(new TLEX.Tape(input));
   }
 
+  parseRule(tape: TLEX.Tape, tag?: string, priority = 0): TLEX.Rule {
+    if (this.regexSyntax == "js") {
+      const tokPattern = this.tokenizer.expectToken(tape, TokenType.STRING, TokenType.NUMBER, TokenType.REGEX);
+      let rule: TLEX.Rule;
+      if (!tag || tag.length == 0) {
+        tag = "/" + tokPattern.value + "/";
+      }
+      if (tokPattern.tag == TokenType.STRING || tokPattern.tag == TokenType.NUMBER) {
+        const pattern = str2regex(tokPattern.value);
+        rule = TLEX.Builder.build(pattern, { tag: tag, priority: priority + 20 });
+      } else if (tokPattern.tag == TokenType.REGEX) {
+        rule = TLEX.Builder.build(tokPattern.value, { tag: tag, priority: priority + 10 });
+      } else {
+        throw new TLEX.UnexpectedTokenError(tokPattern);
+      }
+      return rule;
+    } else {
+      // Flex style RE - no delimiters - just read until end of line and strip spaces
+      let patternStr = "";
+      while (tape.hasMore && tape.currCh != "\n") {
+        patternStr += tape.currCh;
+        tape.advance();
+      }
+      patternStr = patternStr.trim();
+      if (!tag || tag.length == 0) {
+        tag = "/" + patternStr + "/";
+      }
+      return TLEX.Builder.fromFlexRE(patternStr, { tag: tag, priority: priority });
+    }
+  }
+
   parseGrammar(tape: TLEX.Tape): void {
     let peeked = this.tokenizer.peek(tape);
     while (peeked != null) {
@@ -208,25 +244,20 @@ export class EBNFParser {
           // override start directive
           const next = this.tokenizer.expectToken(tape, TokenType.IDENT);
           this.grammar.startSymbol = this.ensureSymbol(next.value as string, false);
+        } else if (peeked.value == "resyntax") {
+          // override start directive
+          const next = this.tokenizer.expectToken(tape, TokenType.IDENT);
+          if (next.value != "js" && next.value != "flex") {
+            throw new SyntaxError("Invalid regex syntax: " + next.value);
+          }
+          this.regexSyntax = next.value;
         } else if (peeked.value == "skip") {
-          const next = this.tokenizer.expectToken(tape, TokenType.STRING, TokenType.REGEX);
-          const pattern = next.tag == TokenType.STRING ? str2regex(next.value) : next.value;
-          const label = "/" + next.value + "/";
-          const rule = TLEX.Builder.build(pattern, { tag: label, priority: 30 });
+          const rule = this.parseRule(tape, "", 30);
           this.generatedTokenizer.addRule(rule, () => null);
         } else if (peeked.value == "token" || peeked.value == "define") {
           const isDef = peeked.value == "define";
           const tokName = this.tokenizer.expectToken(tape, TokenType.IDENT);
-          const tokPattern = this.tokenizer.expectToken(tape, TokenType.STRING, TokenType.REGEX);
-          let rule: TLEX.Rule;
-          if (tokPattern.tag == TokenType.STRING || tokPattern.tag == TokenType.NUMBER) {
-            const pattern = str2regex(tokPattern.value);
-            rule = TLEX.Builder.build(pattern, { tag: tokName.value, priority: 20 });
-          } else if (tokPattern.tag == TokenType.REGEX) {
-            rule = TLEX.Builder.build(tokPattern.value, { tag: tokName.value, priority: 10 });
-          } else {
-            throw new TLEX.UnexpectedTokenError(tokPattern);
-          }
+          const rule = this.parseRule(tape, tokName.value);
           if (isDef) {
             // Define a "reusable" regex that is not a token on its own
             this.generatedTokenizer.addVar(tokName.value, rule.expr);

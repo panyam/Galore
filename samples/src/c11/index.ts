@@ -650,7 +650,4 @@ export const GRAMMAR = String.raw`
     ;
 `;
 
-// -import { newParser as newLRParser } from "../../../src/factory";
-// -import { Parser } from "../../../src/lr";
-// export const newParser = (params?: any): [G.LR.Parser, null | TLEX.NextTokenFunc] => G.newParser(GRAMMAR, params);
-
+export const newParser = (params?: any): [G.LR.Parser, null | TLEX.NextTokenFunc] => G.newLRParser(GRAMMAR, params);

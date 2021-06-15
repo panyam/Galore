@@ -1,5 +1,5 @@
 import { testParseTable } from "./utils";
-import { newParser } from "../factory";
+import { newLRParser as newParser } from "../factory";
 import { mergedDebugValue } from "../debug";
 
 describe("LR ParseTable", () => {

@@ -1,3 +1,6 @@
+import * as TLEX from "tlex";
+import * as G from "galore";
+
 export const GRAMMAR = `
     %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
     %token STRING /".*?(?<!\\\\)"/
@@ -9,3 +12,5 @@ export const GRAMMAR = `
     Pair -> STRING ":" Value ;
     Boolean -> "true" | "false" ;
 `;
+
+export const newParser = (params?: any): [G.LR.Parser, null | TLEX.NextTokenFunc] => G.newLRParser(GRAMMAR, params);

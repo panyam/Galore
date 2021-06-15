@@ -8,3 +8,4 @@ export * as Analyzer from "./analyzer";
 export * as LL from "./ll";
 export * as LR from "./lr";
 export * as Printers from "./printers";
+export * from "./factory";

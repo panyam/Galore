@@ -1,4 +1,3 @@
-import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
 import { load as loadGrammar } from "./dsl";
 import { newParseTable } from "./ptables";
@@ -8,7 +7,7 @@ import { logParserDebug } from "./debug";
 /**
  * Helper to create a grammar, and its parser.
  */
-export function newParser(input: string, params: any = null): [Parser, TSU.Nullable<TLEX.NextTokenFunc>] {
+export function newLRParser(input: string, params: any = null): [Parser, null | TLEX.NextTokenFunc] {
   params = params || {};
   const [g, tokenFunc] = loadGrammar(input, params);
   g.augmentStartSymbol();

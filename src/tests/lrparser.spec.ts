@@ -4,7 +4,7 @@ import * as TLEX from "tlex";
 import { PTNode } from "../parser";
 import { mockTokenizer } from "./mocks";
 import { Sym } from "../Grammar";
-import { newParser } from "../factory";
+import { newLRParser as newParser } from "../factory";
 
 function tok(tag: any, value: any): TLEX.Token {
   const out = new TLEX.Token(tag, 0, 0, 0);

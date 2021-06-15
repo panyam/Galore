@@ -1,4 +1,4 @@
-import { newParser } from "../factory";
+import { newLRParser as newParser } from "../factory";
 
 /*
 const g3 = new EBNFParser(`

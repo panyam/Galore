@@ -5,9 +5,9 @@ import * as TSU from "@panyam/tsutils";
 import { Str, Grammar, Rule } from "../grammar";
 import { FirstSets, NullableSet, FollowSets } from "../sets";
 import { ParseTable as LLParseTable } from "../ll";
-import { Parser, LRAction, ParseTable, LRItemGraph } from "../lr";
-import { newParser } from "../factory";
-import { logParserDebug, mergedDebugValue } from "../debug";
+import { LRAction, LRItemGraph } from "../lr";
+import { newLRParser as newParser } from "../factory";
+import { mergedDebugValue } from "../debug";
 
 type StringMap<T> = TSU.StringMap<T>;
 

@@ -1,6 +1,6 @@
 const util = require("util");
 import * as TSU from "@panyam/tsutils";
-import { newParser } from "../factory";
+import { newLRParser as newParser } from "../factory";
 import { Parser } from "../lr";
 
 const g = `

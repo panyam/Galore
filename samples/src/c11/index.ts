@@ -1,4 +1,5 @@
 import * as TLEX from "tlex";
+import * as G from "galore";
 
 export const LEXER = String.raw`
   %resyntax   flex
@@ -648,3 +649,8 @@ export const GRAMMAR = String.raw`
     | declaration_list declaration
     ;
 `;
+
+// -import { newParser as newLRParser } from "../../../src/factory";
+// -import { Parser } from "../../../src/lr";
+// export const newParser = (params?: any): [G.LR.Parser, null | TLEX.NextTokenFunc] => G.newParser(GRAMMAR, params);
+

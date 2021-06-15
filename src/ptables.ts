@@ -3,6 +3,11 @@ import { Grammar } from "./grammar";
 import { LRAction, ParseTable } from "./lr";
 import { LRItem, LR1ItemSet, LR0ItemGraph, LR1ItemGraph } from "./lr";
 
+export function newParseTable(g: Grammar, type = "lr1"): ParseTable {
+  const ptMaker = type == "lr1" ? makeLRParseTable : makeSLRParseTable;
+  return ptMaker(g);
+}
+
 export function makeSLRParseTable(grammar: Grammar): ParseTable {
   const ig = new LR0ItemGraph(grammar).refresh();
   const parseTable = new ParseTable(ig);

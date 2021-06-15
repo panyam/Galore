@@ -1,7 +1,6 @@
-import { EBNFParser } from "../ebnf";
+import * as dsl from "../dsl";
 import { Str, Grammar } from "../grammar";
 import { Cardinality, multiplyCardinalities as MC } from "../cardinality";
-import { printGrammar } from "../utils";
 
 describe("Grammar Tests", () => {
   test("Cardinalities", () => {
@@ -31,12 +30,12 @@ describe("Grammar Tests", () => {
   });
 
   test("Constructor", () => {
-    const g = new EBNFParser(`
+    const [g, _] = dsl.load(`
       S -> A B | C ;
       A -> 0 B | C ;
       B -> 1 | A 0 ;
       C -> A C | C;
-    `).grammar;
+    `);
 
     expect(g.terminals.length).toBe(4);
     expect(() => g.newTerm("A")).toThrowError();
@@ -97,13 +96,13 @@ describe("Auxilliary Rules", () => {
   });
 
   test("Removing Symbols", () => {
-    const g = new EBNFParser(`
+    const [g, _] = dsl.load(`
       A -> A B C ;
       B -> a b c ;
       C -> d e f ;
       D -> A f D ;
       D -> b ;
-    `).grammar;
+    `);
     g.removeSymbols((s) => s.label == "A");
     expect(g.debugValue).toEqual(["B -> a b c", "C -> d e f", "D -> f D", "D -> b"]);
   });

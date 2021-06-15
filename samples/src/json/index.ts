@@ -1,4 +1,3 @@
-
 export const GRAMMAR = `
     %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
     %token STRING /".*?(?<!\\\\)"/

@@ -1,19 +1,16 @@
 import * as TLEX from "tlex";
-const util = require("util");
-import { EBNFParser } from "../ebnf";
+import * as dsl from "../dsl";
 import { ParseTable, Parser } from "../ll";
-import { PTNode } from "../parser";
 import { verifyLLParseTable } from "./utils";
 import Samples from "./samples";
-import { mockTokenizer } from "./mocks";
 
 describe("ParseTable Tests", () => {
   test("Tests 1", () => {
-    const g = new EBNFParser(`
+    const [g, _] = dsl.load(`
       S -> i E t S S1 | a;
       S1 -> e S | ;
       E -> b ;
-    `).grammar;
+    `);
 
     const ns = g.nullables;
     const fs = g.firstSets;
@@ -28,7 +25,7 @@ describe("ParseTable Tests", () => {
   });
 
   test("Tests 2", () => {
-    const g = new EBNFParser(Samples.expr2).grammar;
+    const [g, _] = dsl.load(Samples.expr2);
 
     const ns = g.nullables;
     const fs = g.firstSets;
@@ -62,7 +59,7 @@ function tok(tag: any, value: any): TLEX.Token {
  * Helper to create a grammar, and its parser.
  */
 export function newParser(input: string, debug = false): Parser {
-  const eparser = new EBNFParser(input);
+  const eparser = new dsl.Parser(input);
   const g = eparser.grammar.augmentStartSymbol();
   const parser = new Parser(new ParseTable(g));
   const tokenizer = eparser.generatedTokenizer;

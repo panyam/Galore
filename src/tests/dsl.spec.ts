@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Grammar, Str, Sym } from "../grammar";
-import { EBNFTokenizer, EBNFParser } from "../ebnf";
+import { Tokenizer as EBNFTokenizer, Parser as EBNFParser } from "../dsl";
 import { expectRules } from "./utils";
 import { printGrammar } from "../utils";
 

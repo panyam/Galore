@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { EBNFParser } from "../ebnf";
+import * as dsl from "../dsl";
 import { LRItemSet, LRItem, LR0ItemGraph } from "../lr";
 import { Grammar } from "../grammar";
 import { verifyItemGraphs } from "./utils";
@@ -20,11 +20,15 @@ export function expectItemSet(g: Grammar, set: LRItemSet, entries: [string, numb
   }
 }
 
-const g1 = new EBNFParser(`
+const g1 = dsl
+  .load(
+    `
   E -> E PLUS T | T ;
   T -> T STAR F | F ;
   F -> OPEN E CLOSE | id ;
-`).grammar.augmentStartSymbol("E1");
+`,
+  )[0]
+  .augmentStartSymbol("E1");
 
 describe("LRItem", () => {
   test("Test Equality", () => {

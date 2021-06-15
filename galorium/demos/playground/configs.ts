@@ -1,11 +1,11 @@
-import * as c11 from "../../../samples/grammars/c11";
+import GS from "galoresamples";
 
 // Supported grammars for different langauges
 export const builtinGrammars = [
   {
     name: "C11",
     label: "C11",
-    grammar: c11.GRAMMAR,
+    grammar: GS.c11.GRAMMAR,
     sampleInput: `
     `,
   },

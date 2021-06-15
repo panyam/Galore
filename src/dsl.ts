@@ -32,7 +32,7 @@ export enum TokenType {
   SEMI_COLON = "SEMI_COLON",
 }
 
-export function EBNFTokenizer(): TLEX.Tokenizer {
+export function Tokenizer(): TLEX.Tokenizer {
   const lexer = new TLEX.Tokenizer();
   lexer.add(/->/, { tag: TokenType.ARROW });
   lexer.add(/\[/, { tag: TokenType.OPEN_SQ });
@@ -112,7 +112,7 @@ export enum NodeType {
  *
  * optional_prod -> "(" productions ")"  ;
  */
-export class EBNFParser {
+export class Parser {
   readonly grammar: Grammar;
   private tokenizer: TLEX.TokenBuffer;
   private leftRecursive = false;
@@ -191,7 +191,7 @@ export class EBNFParser {
   }
 
   parse(input: string): void {
-    const et = EBNFTokenizer();
+    const et = Tokenizer();
     const ntFunc = (tape: Tape) => {
       const out = et.next(tape);
       return out;
@@ -384,4 +384,15 @@ export class EBNFParser {
     }
     return out;
   }
+}
+
+export function load(input: string, params: any = {}): [Grammar, null | TLEX.NextTokenFunc] {
+  const g = new Grammar(params.grammar || {});
+  const eparser = new Parser(input, { ...params, grammar: g });
+  // g.augmentStartSymbol();
+  const tokenFunc = eparser.generatedTokenizer.next.bind(eparser.generatedTokenizer);
+  if (params.debug) {
+    console.log("Prog: \n", `${eparser.generatedTokenizer.vm.prog.debugValue().join("\n")}`);
+  }
+  return [g, tokenFunc];
 }

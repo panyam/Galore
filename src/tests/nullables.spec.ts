@@ -1,4 +1,4 @@
-import { EBNFParser } from "../ebnf";
+import { Parser as EBNFParser } from "../dsl";
 import { expectNullables } from "./utils";
 import Samples from "./samples";
 

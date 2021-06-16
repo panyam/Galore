@@ -58,7 +58,7 @@ export function Tokenizer(): TLEX.Tokenizer {
     token.value = tape.substring(token.start + 1, token.end - 1);
     return token;
   });
-  lexer.add(/\/(.*?(?<!\\))\//, { tag: TokenType.REGEX }, (rule, tape, token) => {
+  lexer.add(/\/(.+?(?<!\\))\//, { tag: TokenType.REGEX }, (rule, tape, token) => {
     token.value = tape.substring(token.start + 1, token.end - 1);
     return token;
   });
@@ -269,6 +269,8 @@ export class Parser {
         } else {
           throw new Error("Invalid directive: " + peeked.value);
         }
+      } else {
+        throw new SyntaxError(`Declaration must start with IDENT or PCT_IDENT.  Found: '${peeked.value}' instead.`);
       }
       peeked = this.tokenizer.peek(tape);
     }

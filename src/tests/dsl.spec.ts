@@ -133,4 +133,22 @@ describe("EBNF Tests", () => {
     expectListsEqual(symLabels(g.terminals), ["", "$end", "A", "B"]);
     expectRules(g, "X", "A", "B", new Str());
   });
+
+  test("Test4 With Tokenizer", () => {
+    const parser = new EBNFParser(`
+
+      %token a "a"
+      %token x "x"
+      %token y "y"
+
+      X -> A | B | x ;
+      Y -> B | y ;
+      A -> a ;
+    `);
+    const g = parser.grammar;
+    const t = parser.generatedTokenizer;
+
+    expectListsEqual(symLabels(g.nonTerminals), ["X", "Y", "A"]);
+    expectListsEqual(symLabels(g.terminals), ["", "$end", "B", "x", "a", "y"]);
+  });
 });

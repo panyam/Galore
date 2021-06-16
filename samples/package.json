@@ -19,9 +19,6 @@
   "bugs": {
     "url": "https://github.com/panyam/galore/issues"
   },
-  "dependencies": {
-    "galore": "file:.."
-  },
   "devDependencies": {
     "@types/jest": "^26.0.20",
     "@types/js-yaml": "^4.0.0",
@@ -63,5 +60,8 @@
     "preversion": "npm run build && npm run lintfix",
     "version": "git add -A src",
     "postversion": "git push && git push --tags"
+  },
+  "dependencies": {
+    "galore": "file:.."
   }
 }

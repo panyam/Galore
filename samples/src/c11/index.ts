@@ -18,11 +18,12 @@ export const LEXER = String.raw`
   %define   CP            (u|U|L)
   %define   SP            (u8|u|U|L)
   %define   ES            (\\(['"\?\\abfnrtv]|[0-7]{1,3}|x[a-fA-F0-9]+))
-  %define   WS            [ \t\v\n\f]
+  %define   WS            [ \t\v\n\f\r]
 
   // comments
-  %skip                   /\*.*?\*/
-  %skip                   //.*$
+  %skip                   "/*"[.\n]*?"*/"
+  %skip                   "//".*$
+  %skip                   {WS}+
 
   %token AUTO                 "auto"
   %token BREAK                "break"
@@ -133,9 +134,6 @@ export const LEXER = String.raw`
   %token '^'                "^"
   %token '|'                "|"
   %token '?'                "?"
-
-  {WS}+          { /* whitespace separates tokens */ }
-  // .          { /* discard bad characters */ }
 `;
 
 export const GRAMMAR = String.raw`

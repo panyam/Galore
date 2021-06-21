@@ -151,4 +151,72 @@ describe("EBNF Tests", () => {
     expectListsEqual(symLabels(g.nonTerminals), ["X", "Y", "A"]);
     expectListsEqual(symLabels(g.terminals), ["", "$end", "B", "x", "a", "y"]);
   });
+
+  test("Test With Comments - JS RE", () => {
+    const parser = new EBNFParser(String.raw`
+      // Skip comments
+      %skip                   /\/\*.*\*\//s
+      %skip                   /\/\/.*$/m
+      %skip                   /[ \t\v\n\r\f]+/
+      /**
+        * Ignore this comment
+      */
+      // And this one too
+      %token a "a"
+      %token x "x"
+      %token y "y"
+
+      X -> A | B | x ;
+      Y -> B | y ;
+      A -> a ;
+    `);
+    const g = parser.grammar;
+    const t = parser.generatedTokenizer;
+
+    expectListsEqual(symLabels(g.nonTerminals), ["X", "Y", "A"]);
+    expectListsEqual(symLabels(g.terminals), ["", "$end", "B", "x", "a", "y"]);
+  });
+
+  test("Test With Comments - Flex RE", () => {
+    const LEXER = String.raw`
+  %resyntax   flex
+
+  %define   O             [0-7]
+  %define   D             [0-9]
+  %define   NZ            [1-9]
+  %define   L             [a-zA-Z_]
+  %define   A             [a-zA-Z_0-9]
+  %define   H             [a-fA-F0-9]
+  %define   HP            (0[xX])
+  %define   E             ([Ee][+-]?{D}+)
+  %define   P             ([Pp][+-]?{D}+)
+  %define   FS            (f|F|l|L)
+  %define   IS            (((u|U)(l|L|ll|LL)?)|((l|L|ll|LL)(u|U)?))
+  %define   CP            (u|U|L)
+  %define   SP            (u8|u|U|L)
+  %define   ES            (\\(['"\?\\abfnrtv]|[0-7]{1,3}|x[a-fA-F0-9]+))
+  %define   WS            [ \t\v\n\f\r]
+
+  // comments
+  %skip                   "/*"[.\n]*?"*/"
+  %skip                   "//".*$
+  %skip                   {WS}+
+
+      %token a "a"
+      %token x "x"
+      %token y "y"
+      `;
+
+    const parser = new EBNFParser(String.raw`
+      ${LEXER}
+      X -> A | B | x ;
+      Y -> B | y ;
+      A -> a ;
+    `);
+    const g = parser.grammar;
+    const t = parser.generatedTokenizer;
+
+    expectListsEqual(symLabels(g.nonTerminals), ["X", "Y", "A"]);
+    expectListsEqual(symLabels(g.terminals), ["", "$end", "B", "x", "a", "y"]);
+  });
 });

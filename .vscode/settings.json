@@ -1,3 +1,4 @@
 {
-    "workbench.list.automaticKeyboardNavigation": false
+    "workbench.list.automaticKeyboardNavigation": false,
+    "debug.javascript.unmapMissingSources": true
 }

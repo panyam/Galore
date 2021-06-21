@@ -48,8 +48,8 @@ export function Tokenizer(): TLEX.Tokenizer {
   lexer.add(/:/, { tag: TokenType.COLON });
   lexer.add(/\|/, { tag: TokenType.PIPE });
   lexer.add(/\s+/m, { tag: TokenType.SPACES }, () => null);
-  lexer.add(/\/\*.*?\*\//, { tag: TokenType.COMMENT }, () => null);
-  lexer.add(/\/\/.*$/, { tag: TokenType.COMMENT }, () => null);
+  lexer.add(/\/\*.*?\*\//s, { tag: TokenType.COMMENT }, () => null);
+  lexer.add(/\/\/.*$/m, { tag: TokenType.COMMENT }, () => null);
   lexer.add(/"(.*?(?<!\\))"/, { tag: TokenType.STRING }, (rule, tape, token) => {
     token.value = tape.substring(token.start + 1, token.end - 1);
     return token;

@@ -256,7 +256,7 @@ export class Parser {
           this.generatedTokenizer.addRule(rule, () => null);
         } else if (peeked.value == "token" || peeked.value == "define") {
           const isDef = peeked.value == "define";
-          const tokName = this.tokenizer.expectToken(tape, TokenType.IDENT);
+          const tokName = this.tokenizer.expectToken(tape, TokenType.IDENT, TokenType.STRING);
           const rule = this.parseRule(tape, tokName.value);
           if (isDef) {
             // Define a "reusable" regex that is not a token on its own

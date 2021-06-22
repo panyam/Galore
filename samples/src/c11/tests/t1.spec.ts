@@ -30,11 +30,66 @@ function parseFile(fname: string, contents?: string, debug = false): null | PTNo
 
 describe("C11 Parser", () => {
   test("1", () => {
+    const result = parseFile("Case 1", ` int main(void) { } `);
+    expect(result?.debugValue()).toEqual([
+      "translation_unit",
+      [
+        [
+          "external_declaration",
+          [
+            [
+              "function_definition",
+              [
+                ["declaration_specifiers", [["type_specifier", [["INT", "int"]]]]],
+                [
+                  "declarator",
+                  [
+                    [
+                      "direct_declarator",
+                      [
+                        ["direct_declarator", [["IDENTIFIER", "main"]]],
+                        ['"("', "("],
+                        [
+                          "parameter_type_list",
+                          [
+                            [
+                              "parameter_list",
+                              [
+                                [
+                                  "parameter_declaration",
+                                  [["declaration_specifiers", [["type_specifier", [["VOID", "void"]]]]]],
+                                ],
+                              ],
+                            ],
+                          ],
+                        ],
+                        ['")"', ")"],
+                      ],
+                    ],
+                  ],
+                ],
+                [
+                  "compound_statement",
+                  [
+                    ['"{"', "{"],
+                    ['"}"', "}"],
+                  ],
+                ],
+              ],
+            ],
+          ],
+        ],
+      ],
+    ]);
+  });
+
+  test("2", () => {
     const result = parseFile(
-      "Case 1",
-      `
-                             int main(void) { }
-    `,
+      "Case 2",
+      `typedef int T;
+      void f(void) {
+        T * b;
+      }`,
       true,
     );
   });

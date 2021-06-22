@@ -2,9 +2,9 @@ const fs = require("fs");
 const yargs = require("yargs");
 import * as TLEX from "tlex";
 import { measureTime, writeResults, tokenizeAll } from "./utils";
-import { Grammars } from "./";
-import { newLRParser } from "../../src/factory";
-import { Parser } from "../../src/lr";
+import { newLRParser } from "../src/factory";
+import { Parser } from "../src/lr";
+import { Grammars } from "../samples/src/";
 
 export class CLI {
   // Input to be parsed

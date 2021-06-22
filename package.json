@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@panyam/tsutils": "*",
-    "tlex": "^0.0.33"
+    "tlex": "*"
   },
   "devDependencies": {
     "@types/jest": "^26.0.20",

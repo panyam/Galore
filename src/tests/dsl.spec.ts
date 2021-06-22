@@ -219,4 +219,29 @@ describe("EBNF Tests", () => {
     expectListsEqual(symLabels(g.nonTerminals), ["X", "Y", "A"]);
     expectListsEqual(symLabels(g.terminals), ["", "$end", "B", "x", "a", "y"]);
   });
+
+  test("Test With Literal Tokens - Flex RE", () => {
+    const LEXER = String.raw`
+      %resyntax   flex
+      %token '!'                "!"
+      %token '&'                "&"
+      %token STRING_LITERAL       ({SP}?\"([^"\\\n]|{ES})*\"{WS}*)+
+      %token FUNC_NAME            "__func__"
+      `;
+
+    const parser = new EBNFParser(String.raw`
+      ${LEXER}
+      unary_operator : '&' | '!'
+        ;
+      string
+        : STRING_LITERAL
+        | FUNC_NAME
+        ;
+    `);
+    const g = parser.grammar;
+    const t = parser.generatedTokenizer;
+
+    expectListsEqual(symLabels(g.nonTerminals), ["string", "unary_operator"]);
+    expectListsEqual(symLabels(g.terminals), ["", "$end", "FUNC_NAME", "STRING_LITERAL", '"!"', '"&"']);
+  });
 });

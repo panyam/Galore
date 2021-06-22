@@ -238,41 +238,48 @@ export class Parser {
         // declaration
         this.parseDecl(tape);
       } else if (peeked.tag == TokenType.PCT_IDENT) {
-        // Some kind of directive
         this.tokenizer.next(tape);
-        if (peeked.value == "start") {
-          // override start directive
-          const next = this.tokenizer.expectToken(tape, TokenType.IDENT);
-          this.grammar.startSymbol = this.ensureSymbol(next.value as string, false);
-        } else if (peeked.value == "resyntax") {
-          // override start directive
-          const next = this.tokenizer.expectToken(tape, TokenType.IDENT);
-          if (next.value != "js" && next.value != "flex") {
-            throw new SyntaxError("Invalid regex syntax: " + next.value);
-          }
-          this.regexSyntax = next.value;
-        } else if (peeked.value == "skip") {
-          const rule = this.parseRule(tape, "", 30);
-          this.generatedTokenizer.addRule(rule, () => null);
-        } else if (peeked.value == "token" || peeked.value == "define") {
-          const isDef = peeked.value == "define";
-          const tokName = this.tokenizer.expectToken(tape, TokenType.IDENT, TokenType.STRING);
-          const rule = this.parseRule(tape, tokName.value);
-          if (isDef) {
-            // Define a "reusable" regex that is not a token on its own
-            this.generatedTokenizer.addVar(tokName.value, rule.expr);
-          } else {
-            this.generatedTokenizer.addRule(rule);
-            // register it
-            this.ensureSymbol(tokName.value, true);
-          }
-        } else {
-          throw new Error("Invalid directive: " + peeked.value);
-        }
+        this.parseDirective(tape, peeked.value);
       } else {
         throw new SyntaxError(`Declaration must start with IDENT or PCT_IDENT.  Found: '${peeked.value}' instead.`);
       }
       peeked = this.tokenizer.peek(tape);
+    }
+  }
+
+  parseDirective(tape: Tape, directive: string): void {
+    if (directive == "start") {
+      // override start directive
+      const next = this.tokenizer.expectToken(tape, TokenType.IDENT);
+      this.grammar.startSymbol = this.ensureSymbol(next.value as string, false);
+    } else if (directive == "resyntax") {
+      // override start directive
+      const next = this.tokenizer.expectToken(tape, TokenType.IDENT);
+      if (next.value != "js" && next.value != "flex") {
+        throw new SyntaxError("Invalid regex syntax: " + next.value);
+      }
+      this.regexSyntax = next.value;
+    } else if (directive == "skip") {
+      const rule = this.parseRule(tape, "", 30);
+      this.generatedTokenizer.addRule(rule, () => null);
+    } else if (directive == "token" || directive == "define") {
+      const isDef = directive == "define";
+      const tokName = this.tokenizer.expectToken(tape, TokenType.IDENT, TokenType.STRING);
+      let label = tokName.value as string;
+      if (tokName.tag == TokenType.STRING || tokName.tag == TokenType.NUMBER) {
+        label = `"${tokName.value}"`;
+      }
+      const rule = this.parseRule(tape, label);
+      if (isDef) {
+        // Define a "reusable" regex that is not a token on its own
+        this.generatedTokenizer.addVar(label, rule.expr);
+      } else {
+        this.generatedTokenizer.addRule(rule);
+        // register it
+        this.ensureSymbol(label, true);
+      }
+    } else {
+      throw new Error("Invalid directive: " + directive);
     }
   }
 
@@ -353,7 +360,7 @@ export class Parser {
         const token = this.tokenizer.next(tape) as TLEX.Token;
         let label = token.value as string;
         if (token.tag == TokenType.STRING || token.tag == TokenType.NUMBER) {
-          label = '"' + token.value + '"';
+          label = `"${token.value}"`;
           const pattern = str2regex(token.value);
           const rule = TLEX.Builder.build(pattern, { tag: label, priority: 20 });
           this.generatedTokenizer.addRule(rule);

@@ -1,18 +1,30 @@
-import * as G from "galore";
-import * as P from "../";
+const util = require("util");
+import { PTNode } from "../../../../src/parser";
+import { newLRParser } from "../../../../src/factory";
+import { GRAMMAR } from "../data";
 const fs = require("fs");
 
 function readFile(fname: string): string {
   return fs.readFileSync(__dirname + "/" + fname, "utf8");
 }
 
-function parseFile(fname: string, contents?: string): null | G.PTNode {
+function parseFile(fname: string, contents?: string, debug = false): null | PTNode {
   if (!contents) contents = readFile(fname);
-  const [parser, _] = P.newParser({ type: "slr" });
+  const [parser, _] = newLRParser(GRAMMAR, { type: "slr", debug: debug });
   const t1 = Date.now();
-  const result = null; //parser.parse(contents) || null;
+  const result = parser.parse(contents) || null;
   const t2 = Date.now();
   console.log(`'${fname}' parsed in ${t2 - t1} ms`);
+  if (debug) {
+    console.log(
+      `Parse Result: ${util.inspect(result?.debugValue(), {
+        showHidden: false,
+        depth: null,
+        maxArrayLength: null,
+        maxStringLength: null,
+      })}`,
+    );
+  }
   return result;
 }
 
@@ -23,6 +35,7 @@ describe("C11 Parser", () => {
       `
                              int main(void) { }
     `,
+      true,
     );
   });
 });

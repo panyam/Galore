@@ -1,6 +1,6 @@
 {
   "name": "galoresamples",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": "Sriram Panyam",
   "description": "Sample grammars and parsers in Galore",
   "homepage": "https://github.com/panyam/galore#readme",

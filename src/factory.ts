@@ -16,7 +16,8 @@ export function newLRParser(input: string, params: any = null): [Parser, null | 
   if (params.tokenizer || tokenFunc) {
     parser.setTokenizer(params.tokenizer || tokenFunc);
   }
-  if (params.debug) {
+  const debug = params.debug || "";
+  if (debug.split("|").findIndex((p: string) => p == "all" || p == "parser") >= 0) {
     logParserDebug(parser);
   }
   return [parser, tokenFunc];

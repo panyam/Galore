@@ -400,7 +400,8 @@ export function load(input: string, params: any = {}): [Grammar, null | TLEX.Nex
   const eparser = new Parser(input, { ...params, grammar: g });
   // g.augmentStartSymbol();
   const tokenFunc = eparser.generatedTokenizer.next.bind(eparser.generatedTokenizer);
-  if (params.debug) {
+  const debug = params.debug || "";
+  if (debug.split("|").findIndex((p: string) => p == "all" || p == "lexer") >= 0) {
     console.log("Prog: \n", `${eparser.generatedTokenizer.vm.prog.debugValue().join("\n")}`);
   }
   return [g, tokenFunc];

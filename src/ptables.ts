@@ -4,8 +4,13 @@ import { LRAction, ParseTable } from "./lr";
 import { LRItem, LR1ItemSet, LRItemGraph, LR0ItemGraph, LR1ItemGraph } from "./lr";
 
 export function newParseTable(g: Grammar, type = "lr1"): [ParseTable, LRItemGraph] {
-  const ptMaker = type == "lr1" ? makeLRParseTable : makeSLRParseTable;
-  return ptMaker(g);
+  switch (type) {
+    case "lr1":
+      return makeLRParseTable(g);
+    case "slr":
+      return makeSLRParseTable(g);
+  }
+  return makeSLRParseTable(g);
 }
 
 export function makeSLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {

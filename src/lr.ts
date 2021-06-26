@@ -508,7 +508,6 @@ export class ParseTable {
   actions: NumMap<NumMap<LRAction[]>> = {};
 
   constructor(public readonly grammar: Grammar) {}
-  // get grammar(): Grammar { return this.itemGraph.grammar; }
 
   /**
    * Gets the action for a given sym from a given state.
@@ -531,7 +530,7 @@ export class ParseTable {
     return [];
   }
 
-  addAction(stateId: number, next: Sym, action: LRAction): void {
+  addAction(stateId: number, next: Sym, action: LRAction): this {
     const actions = this.getActions(stateId, next, true);
     if (actions.findIndex((ac) => ac.equals(action)) < 0) {
       actions.push(action);
@@ -540,6 +539,7 @@ export class ParseTable {
       this.conflictActions[stateId] = this.conflictActions[stateId] || {};
       this.conflictActions[stateId][next.label] = true;
     }
+    return this;
   }
 
   get debugValue(): any {
@@ -559,16 +559,11 @@ export class ParseTable {
 }
 
 export class ParseStack {
-  readonly parseTable: ParseTable;
   // A way of marking the kind of item that is on the stack
   // true => isStateId
   // false => isSymbolId
   readonly stateStack: number[] = [];
   readonly nodeStack: PTNode[] = [];
-  constructor(parseTable: ParseTable) {
-    this.parseTable = parseTable;
-    TSU.assert(parseTable.grammar.startSymbol != null, "Start symbol not selected");
-  }
 
   push(state: number, node: PTNode): void {
     this.stateStack.push(state);
@@ -626,7 +621,7 @@ export class Parser extends ParserBase {
    */
   protected parseInput(input: TLEX.Tape): Nullable<PTNode> {
     let idCounter = 0;
-    this.stack = new ParseStack(this.parseTable);
+    this.stack = new ParseStack();
     this.stack.push(0, new PTNode(idCounter++, this.grammar.augStartRule.nt, null));
     const tokenbuffer = this.tokenbuffer;
     const stack = this.stack;

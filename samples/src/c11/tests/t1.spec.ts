@@ -63,7 +63,7 @@ describe("C11 Parser", () => {
   });
 });
 
-describe("Test cases from https://hal.archives-ouvertes.fr/hal-01633123/document", () => {
+describe.skip("Test cases from https://hal.archives-ouvertes.fr/hal-01633123/document", () => {
   test("variable_star", () => {
     const result = parseFile(
       "variable_star",

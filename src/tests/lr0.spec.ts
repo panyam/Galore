@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import * as dsl from "../dsl";
-import { LRItemSet, LRItem, LR0ItemGraph } from "../lr";
+import { LRItemSet, LRItem, LR0ItemGraph } from "../lritems";
 import { Grammar } from "../grammar";
 import { verifyItemGraphs } from "./utils";
 

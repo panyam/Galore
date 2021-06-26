@@ -2,7 +2,6 @@ const util = require("util");
 import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
 import { PTNode } from "../parser";
-import { mockTokenizer } from "./mocks";
 import { Sym } from "../Grammar";
 import { newLRParser as newParser } from "../factory";
 

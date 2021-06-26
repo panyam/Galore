@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import { Grammar } from "./grammar";
 import { LRAction, ParseTable } from "./lr";
-import { LRItem, LR1ItemSet, LRItemGraph, LR0ItemGraph, LR1ItemGraph } from "./lr";
+import { LRItem, LR1ItemSet, LRItemGraph, LR0ItemGraph, LR1ItemGraph } from "./lritems";
 
 export function newParseTable(g: Grammar, type = "lr1"): [ParseTable, LRItemGraph] {
   switch (type) {

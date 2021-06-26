@@ -72,7 +72,7 @@ describe("Jison tests", () => {
 
 describe("Sample Parse Tables", () => {
   test("Test1", () => {
-    const [parser, _] = newParser(
+    const [parser, _, ig] = newParser(
       `
         E -> T X ;
         X -> PLUS E | ;
@@ -81,7 +81,7 @@ describe("Sample Parse Tables", () => {
       `,
       { type: "slr" },
     );
-    const v = mergedDebugValue(parser.parseTable);
+    const v = mergedDebugValue(parser.parseTable, ig);
     expect(v).toEqual({
       "0": {
         items: ["0  -  $accept ->  • E", "1  -  E ->  • T X", "4  -  T ->  • int Y", "5  -  T ->  • OPEN E CLOSE"],

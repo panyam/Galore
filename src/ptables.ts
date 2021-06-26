@@ -1,16 +1,16 @@
 import * as TSU from "@panyam/tsutils";
 import { Grammar } from "./grammar";
 import { LRAction, ParseTable } from "./lr";
-import { LRItem, LR1ItemSet, LR0ItemGraph, LR1ItemGraph } from "./lr";
+import { LRItem, LR1ItemSet, LRItemGraph, LR0ItemGraph, LR1ItemGraph } from "./lr";
 
-export function newParseTable(g: Grammar, type = "lr1"): ParseTable {
+export function newParseTable(g: Grammar, type = "lr1"): [ParseTable, LRItemGraph] {
   const ptMaker = type == "lr1" ? makeLRParseTable : makeSLRParseTable;
   return ptMaker(g);
 }
 
-export function makeSLRParseTable(grammar: Grammar): ParseTable {
+export function makeSLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
   const ig = new LR0ItemGraph(grammar).refresh();
-  const parseTable = new ParseTable(ig);
+  const parseTable = new ParseTable(grammar);
   for (const itemSet of ig.itemSets.entries) {
     // Look for transitions from this set
     for (const itemId of itemSet.values) {
@@ -50,15 +50,15 @@ export function makeSLRParseTable(grammar: Grammar): ParseTable {
       parseTable.addAction(itemSet.id, grammar.Eof, LRAction.Accept());
     }
   }
-  return parseTable;
+  return [parseTable, ig];
 }
 
 /**
  * A canonical LR1 parse table maker.
  */
-export function makeLRParseTable(grammar: Grammar): ParseTable {
+export function makeLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
   const ig = new LR1ItemGraph(grammar).refresh();
-  const parseTable = new ParseTable(ig);
+  const parseTable = new ParseTable(grammar);
   for (const itemSet of ig.itemSets.entries) {
     // Look for transitions from this set
     for (const itemId of itemSet.values) {
@@ -99,5 +99,5 @@ export function makeLRParseTable(grammar: Grammar): ParseTable {
       parseTable.addAction(itemSet.id, grammar.Eof, LRAction.Accept());
     }
   }
-  return parseTable;
+  return [parseTable, ig];
 }

@@ -507,11 +507,8 @@ export class ParseTable {
    */
   actions: NumMap<NumMap<LRAction[]>> = {};
 
-  constructor(public readonly itemGraph: LRItemGraph) {}
-
-  get grammar(): Grammar {
-    return this.itemGraph.grammar;
-  }
+  constructor(public readonly grammar: Grammar) {}
+  // get grammar(): Grammar { return this.itemGraph.grammar; }
 
   /**
    * Gets the action for a given sym from a given state.
@@ -550,7 +547,7 @@ export class ParseTable {
     for (const fromId in this.actions) {
       out[fromId] = {};
       for (const symId in this.actions[fromId]) {
-        const sym = this.itemGraph.grammar.getSymById(symId as any)!;
+        const sym = this.grammar.getSymById(symId as any)!;
         const actions = this.actions[fromId][sym.id] || [];
         if (actions.length > 0) {
           out[fromId][sym.label] = actions.map((a) => a.toString());

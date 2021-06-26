@@ -1,17 +1,16 @@
 const util = require("util");
 import { Parser, LRAction, ParseTable, LRItemGraph } from "./lr";
 
-export function logParserDebug(parser: Parser): void {
+export function logParserDebug(parser: Parser, itemGraph?: LRItemGraph): void {
   const g = parser.grammar;
   const ptable = parser.parseTable;
-  const ig = ptable.itemGraph;
   console.log(
     "===============================\nGrammar (as default): \n",
     g.debugValue.map((x, i) => `${i + 1}  -   ${x}`),
     "===============================\nGrammar (as Bison): \n",
     g.debugValue.map((x, i) => `${x.replace("->", ":")} ; \n`).join(""),
     "===============================\nParseTable: \n",
-    util.inspect(mergedDebugValue(ptable), {
+    util.inspect(mergedDebugValue(ptable, itemGraph), {
       showHidden: false,
       depth: null,
       maxArrayLength: null,
@@ -22,14 +21,18 @@ export function logParserDebug(parser: Parser): void {
   );
 }
 
-export function mergedDebugValue(ptable: ParseTable): any {
+export function mergedDebugValue(ptable: ParseTable, itemGraph?: LRItemGraph): any {
   const merged = {} as any;
   const ptabDV = ptable.debugValue;
-  const igDV = ptable.itemGraph.debugValue;
+  const igDV = itemGraph?.debugValue;
   for (const stateId in ptabDV) {
     const actions = ptabDV[stateId];
-    const items = igDV[stateId];
-    merged[stateId] = { items: items["items"], actions: actions, goto: items["goto"] };
+    if (itemGraph) {
+      const items = igDV[stateId];
+      merged[stateId] = { items: items["items"], actions: actions, goto: items["goto"] };
+    } else {
+      merged[stateId] = actions;
+    }
   }
   return merged;
 }

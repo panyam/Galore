@@ -3,7 +3,7 @@ import { mergedDebugValue } from "../debug";
 
 describe("LR ParseTable", () => {
   test("Test Basic", () => {
-    const [parser, _] = newParser(
+    const [parser, _, ig] = newParser(
       `
         E -> E PLUS T | T ;
         T -> T STAR F | F ;
@@ -11,7 +11,7 @@ describe("LR ParseTable", () => {
       `,
       { type: "slr" },
     );
-    const v = mergedDebugValue(parser.parseTable);
+    const v = mergedDebugValue(parser.parseTable, ig);
     expect(v).toEqual({
       "0": {
         items: [

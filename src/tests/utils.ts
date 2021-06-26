@@ -100,7 +100,7 @@ export function testParseTable(grammarFile: string, ptablesFile: string, ptabTyp
     console.log(`Testing Grammar (${ptabType}): ${grammarFile}`);
   }
   const contents = fs.readFileSync(grammarFile, "utf8");
-  const [parser, _tokenizer] = newParser(contents, { type: ptabType, debug: debug });
-  const foundValue = mergedDebugValue(parser.parseTable);
+  const [parser, _tokenizer, ig] = newParser(contents, { type: ptabType, debug: debug });
+  const foundValue = mergedDebugValue(parser.parseTable, ig);
   expect(expectedPTables[ptabType]).toEqual(foundValue);
 }

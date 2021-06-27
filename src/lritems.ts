@@ -265,6 +265,10 @@ export abstract class LRItemGraph {
   protected advanceItemAndAdd(itemToAdvance: LRItem, fromItemSet: LRItemSet, toItemSet: LRItemSet): void {
     const newItem = this.items.ensure(itemToAdvance.advance());
     toItemSet.add(newItem.id);
+    // copy over the look aheads
+    for (const laSym of fromItemSet.getLookAheads(itemToAdvance)) {
+      toItemSet.addLookAhead(newItem, laSym);
+    }
   }
 
   protected newItemSet(...items: LRItem[]): LRItemSet {
@@ -374,14 +378,6 @@ export class LR1ItemGraph extends LRItemGraph {
   }
 
   /**
-   * Overridden to create LR1 item sets so we can associate lookahead
-   * symbols for each item in the set.
-   */
-  protected newItemSet(...items: LRItem[]): LRItemSet {
-    return new LRItemSet(this, ...items.map((item) => item.id));
-  }
-
-  /**
    * Computes the closure of this item set and returns a new
    * item set.
    */
@@ -414,14 +410,5 @@ export class LR1ItemGraph extends LRItemGraph {
       }
     }
     return out.size == 0 ? out : this.itemSets.ensure(out);
-  }
-
-  protected advanceItemAndAdd(itemToAdvance: LRItem, fromItemSet: LRItemSet, toItemSet: LRItemSet): void {
-    super.advanceItemAndAdd(itemToAdvance, fromItemSet, toItemSet);
-    const newItem = this.items.ensure(itemToAdvance.advance());
-    // copy over the look aheads
-    for (const laSym of fromItemSet.getLookAheads(itemToAdvance)) {
-      toItemSet.addLookAhead(newItem, laSym);
-    }
   }
 }

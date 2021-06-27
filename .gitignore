@@ -1,4 +1,8 @@
 yarn.lock
+*.output
+*.tab.c
+*.dot
+*.xml
 *.d.ts
 app.js
 /homepage/public

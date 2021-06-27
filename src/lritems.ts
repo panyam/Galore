@@ -5,6 +5,59 @@ import { IDSet } from "./sets";
 type Nullable<T> = TSU.Nullable<T>;
 type NumMap<T> = TSU.NumMap<T>;
 
+export class LRItem {
+  id = 0;
+  readonly rule: Rule;
+  readonly position: number;
+  constructor(rule: Rule, position = 0) {
+    this.rule = rule;
+    this.position = position;
+  }
+
+  advance(): LRItem {
+    TSU.assert(this.position < this.rule.rhs.length);
+    return new LRItem(this.rule, this.position + 1);
+  }
+
+  copy(): LRItem {
+    return new LRItem(this.rule, this.position);
+  }
+
+  /**
+   * TODO - Instead of using strings as keys, can we use a unique ID?
+   * If we assume a max limit on number of non terminals in our grammar
+   * and a max limit on the number of rules per non terminal and a
+   * max limit on the size of each rule then we can uniquely identify
+   * a rule and position for a non-terminal by a single (64 bit) number
+   *
+   * We can use the following bitpacking to nominate this:
+   *
+   * <padding 16 bits><nt id 16 bits><ruleIndex 16 bits><position 16 bits>
+   */
+  get key(): string {
+    TSU.assert(!isNaN(this.rule.id), "Rule's ID is not yet set.");
+    return this.rule.id + ":" + this.position;
+  }
+
+  compareTo(another: this): number {
+    let diff = this.rule.id - another.rule.id;
+    if (diff == 0) diff = this.position - another.position;
+    return diff;
+  }
+
+  equals(another: this): boolean {
+    return this.compareTo(another) == 0;
+  }
+
+  get debugString(): string {
+    const rule = this.rule;
+    const pos = this.position;
+    const pre = rule.rhs.syms.slice(0, pos).join(" ");
+    const post = rule.rhs.syms.slice(pos).join(" ");
+    return `${rule.id}  -  ${rule.nt} -> ${pre} • ${post}`;
+  }
+}
+
 export class LRItemSet {
   id = 0;
   readonly itemGraph: LRItemGraph;
@@ -263,59 +316,6 @@ export abstract class LRItemGraph {
       }
     });
     return out;
-  }
-}
-
-export class LRItem {
-  id = 0;
-  readonly rule: Rule;
-  readonly position: number;
-  constructor(rule: Rule, position = 0) {
-    this.rule = rule;
-    this.position = position;
-  }
-
-  advance(): LRItem {
-    TSU.assert(this.position < this.rule.rhs.length);
-    return new LRItem(this.rule, this.position + 1);
-  }
-
-  copy(): LRItem {
-    return new LRItem(this.rule, this.position);
-  }
-
-  /**
-   * TODO - Instead of using strings as keys, can we use a unique ID?
-   * If we assume a max limit on number of non terminals in our grammar
-   * and a max limit on the number of rules per non terminal and a
-   * max limit on the size of each rule then we can uniquely identify
-   * a rule and position for a non-terminal by a single (64 bit) number
-   *
-   * We can use the following bitpacking to nominate this:
-   *
-   * <padding 16 bits><nt id 16 bits><ruleIndex 16 bits><position 16 bits>
-   */
-  get key(): string {
-    TSU.assert(!isNaN(this.rule.id), "Rule's ID is not yet set.");
-    return this.rule.id + ":" + this.position;
-  }
-
-  compareTo(another: this): number {
-    let diff = this.rule.id - another.rule.id;
-    if (diff == 0) diff = this.position - another.position;
-    return diff;
-  }
-
-  equals(another: this): boolean {
-    return this.compareTo(another) == 0;
-  }
-
-  get debugString(): string {
-    const rule = this.rule;
-    const pos = this.position;
-    const pre = rule.rhs.syms.slice(0, pos).join(" ");
-    const post = rule.rhs.syms.slice(pos).join(" ");
-    return `${rule.id}  -  ${rule.nt} -> ${pre} • ${post}`;
   }
 }
 

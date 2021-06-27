@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import { Grammar } from "./grammar";
 import { LRAction, ParseTable } from "./lr";
-import { LRItem, LR1ItemSet, LRItemGraph, LR0ItemGraph, LR1ItemGraph } from "./lritems";
+import { LRItem, LRItemSet, LR1ItemSet, LRItemGraph, LR0ItemGraph, LR1ItemGraph } from "./lritems";
 
 export function newParseTable(g: Grammar, type = "lr1"): [ParseTable, LRItemGraph] {
   switch (type) {
@@ -104,5 +104,16 @@ export function makeLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
       parseTable.addAction(itemSet.id, grammar.Eof, LRAction.Accept());
     }
   }
+  return [parseTable, ig];
+}
+
+/**
+ * A LALR(1) parse table maker using the DeRemer and Penello's method.
+ */
+export function makeLALRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
+  const [parseTable, ig] = makeSLRParseTable(grammar);
+
+  // see if parseTable has conflicts!
+
   return [parseTable, ig];
 }

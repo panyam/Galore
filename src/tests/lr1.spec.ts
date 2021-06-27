@@ -27,6 +27,6 @@ const farshiG3 = `
 
 describe("Non Amgiguous Grammar without Conflicts", () => {
   test("Test1", () => {
-    const P = newParser(farshiG3, { debug: "all" });
+    const P = newParser(farshiG3, { debug: "all", type: "slr" });
   });
 });

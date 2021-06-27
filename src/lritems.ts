@@ -63,10 +63,41 @@ export class LRItemSet {
   readonly itemGraph: LRItemGraph;
   protected _key: Nullable<string> = null;
   readonly values: number[];
+  protected _lookaheads: NumMap<Sym[]> = {};
+  protected _hasLookAheads = false;
 
   constructor(ig: LRItemGraph, ...entries: number[]) {
     this.itemGraph = ig;
     this.values = entries;
+  }
+
+  copy(): LRItemSet {
+    const out = new LRItemSet(this.itemGraph, ...this.values);
+    out._lookaheads = { ...this._lookaheads };
+    out._hasLookAheads = this._hasLookAheads;
+    return out;
+  }
+
+  /**
+   * Adds a new look ahead symbol for a given item.
+   */
+  addLookAhead(item: LRItem, sym: Sym): boolean {
+    if (!(item.id in this._lookaheads)) {
+      this._lookaheads[item.id] = [];
+    }
+    for (const s of this._lookaheads[item.id]) if (s == sym) return false;
+    this._hasLookAheads = true;
+    this._key = null;
+    this._lookaheads[item.id].push(sym);
+    this._lookaheads[item.id].sort((s1, s2) => s1.id - s2.id);
+    return true;
+  }
+
+  /**
+   * Gets the lookahead symbols for a given item.
+   */
+  getLookAheads(item: LRItem): ReadonlyArray<Sym> {
+    return this._lookaheads[item.id] || [];
   }
 
   // A way to cache the key of this item set.
@@ -79,8 +110,18 @@ export class LRItemSet {
   }
 
   protected revalKey(): string {
-    this.values.sort();
-    return this.values.join("/");
+    if (this._hasLookAheads) {
+      this.values.sort();
+      return this.values
+        .map((itemId) => {
+          const la = this._lookaheads[itemId] || [];
+          return itemId + "[" + la.map((s) => s.id).join(",") + "]";
+        })
+        .join("/");
+    } else {
+      this.values.sort();
+      return this.values.join("/");
+    }
   }
 
   has(itemId: number): boolean {
@@ -108,68 +149,24 @@ export class LRItemSet {
   }
 
   get debugValue(): any {
-    const items = this.values.map((v: number) => this.itemGraph.items.get(v));
-    // sort them by rule
-    items.sort((i1, i2) => i1.compareTo(i2));
-    return items.map((i) => i.debugString);
-  }
-}
-
-export class LR1ItemSet extends LRItemSet {
-  private _lookaheads: NumMap<Sym[]> = {};
-
-  copy(): LR1ItemSet {
-    const out = new LR1ItemSet(this.itemGraph, ...this.values);
-    out._lookaheads = { ...this._lookaheads };
-    return out;
-  }
-
-  /**
-   * Adds a new look ahead symbol for a given item.
-   */
-  addLookAhead(item: LRItem, sym: Sym): boolean {
-    if (!(item.id in this._lookaheads)) {
-      this._lookaheads[item.id] = [];
+    if (this._hasLookAheads) {
+      const items = this.values.map((v: number) => this.itemGraph.items.get(v));
+      // sort them by rule
+      items.sort((i1, i2) => i1.compareTo(i2));
+      // then append the look aheads
+      return items.map((item) => {
+        const las = this.getLookAheads(item)
+          .map((s) => s.label)
+          .sort((s1, s2) => s1.localeCompare(s2))
+          .join(", ");
+        return `${item.debugString} / ( ${las} )`;
+      });
+    } else {
+      const items = this.values.map((v: number) => this.itemGraph.items.get(v));
+      // sort them by rule
+      items.sort((i1, i2) => i1.compareTo(i2));
+      return items.map((i) => i.debugString);
     }
-    for (const s of this._lookaheads[item.id]) if (s == sym) return false;
-    this._key = null;
-    this._lookaheads[item.id].push(sym);
-    this._lookaheads[item.id].sort((s1, s2) => s1.id - s2.id);
-    return true;
-  }
-
-  /**
-   * Key also here includes the look ahead symbols.
-   */
-  protected revalKey(): string {
-    this.values.sort();
-    return this.values
-      .map((itemId) => {
-        const la = this._lookaheads[itemId] || [];
-        return itemId + "[" + la.map((s) => s.id).join(",") + "]";
-      })
-      .join("/");
-  }
-
-  /**
-   * Gets the lookahead symbols for a given item.
-   */
-  getLookAheads(item: LRItem): ReadonlyArray<Sym> {
-    return this._lookaheads[item.id] || [];
-  }
-
-  get debugValue(): any {
-    const items = this.values.map((v: number) => this.itemGraph.items.get(v));
-    // sort them by rule
-    items.sort((i1, i2) => i1.compareTo(i2));
-    // then append the look aheads
-    return items.map((item) => {
-      const las = this.getLookAheads(item)
-        .map((s) => s.label)
-        .sort((s1, s2) => s1.localeCompare(s2))
-        .join(", ");
-      return `${item.debugString} / ( ${las} )`;
-    });
   }
 }
 
@@ -245,7 +242,7 @@ export abstract class LRItemGraph {
    * out of this item set.
    */
   goto(itemSet: LRItemSet, sym: Sym): LRItemSet {
-    const out = this.newItemSet() as LR1ItemSet;
+    const out = this.newItemSet();
     for (const itemId of itemSet.values) {
       const item = this.items.get(itemId);
       // see if item.position points to "sym" in its rule
@@ -361,8 +358,7 @@ export class LR0ItemGraph extends LRItemGraph {
 
 export class LR1ItemGraph extends LRItemGraph {
   /**
-   * Overridden to create LR1ItemSet objects with the start state
-   * also including the EOF marker as the lookahead.
+   * Overridden to include the EOF marker as the lookahead for the start state
    *
    * StartSet = closure({S' -> . S, $})
    */
@@ -377,15 +373,15 @@ export class LR1ItemGraph extends LRItemGraph {
    * Overridden to create LR1 item sets so we can associate lookahead
    * symbols for each item in the set.
    */
-  protected newItemSet(...items: LRItem[]): LR1ItemSet {
-    return new LR1ItemSet(this, ...items.map((item) => item.id));
+  protected newItemSet(...items: LRItem[]): LRItemSet {
+    return new LRItemSet(this, ...items.map((item) => item.id));
   }
 
   /**
    * Computes the closure of this item set and returns a new
    * item set.
    */
-  closure(itemSet: LR1ItemSet): LR1ItemSet {
+  closure(itemSet: LRItemSet): LRItemSet {
     const out = itemSet.copy();
     for (let i = 0; i < out.values.length; i++) {
       const itemId = out.values[i];
@@ -413,10 +409,10 @@ export class LR1ItemGraph extends LRItemGraph {
         });
       }
     }
-    return out.size == 0 ? out : (this.itemSets.ensure(out) as LR1ItemSet);
+    return out.size == 0 ? out : this.itemSets.ensure(out);
   }
 
-  protected advanceItemAndAdd(itemToAdvance: LRItem, fromItemSet: LR1ItemSet, toItemSet: LR1ItemSet): void {
+  protected advanceItemAndAdd(itemToAdvance: LRItem, fromItemSet: LRItemSet, toItemSet: LRItemSet): void {
     super.advanceItemAndAdd(itemToAdvance, fromItemSet, toItemSet);
     const newItem = this.items.ensure(itemToAdvance.advance());
     // copy over the look aheads

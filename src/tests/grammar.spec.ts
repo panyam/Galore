@@ -1,8 +1,9 @@
 import * as dsl from "../dsl";
 import { Str, Grammar } from "../grammar";
-import { Cardinality, multiplyCardinalities as MC } from "../cardinality";
+// import { Cardinality, multiplyCardinalities as MC } from "../cardinality";
 
 describe("Grammar Tests", () => {
+  /*
   test("Cardinalities", () => {
     const ATLEAST_0 = Cardinality.ATLEAST_0;
     const ATMOST_1 = Cardinality.ATMOST_1;
@@ -28,6 +29,7 @@ describe("Grammar Tests", () => {
     expect(MC(EXACTLY_1, ATLEAST_1)).toBe(ATLEAST_1);
     expect(MC(EXACTLY_1, EXACTLY_1)).toBe(EXACTLY_1);
   });
+ */
 
   test("Constructor", () => {
     const [g, _] = dsl.load(`

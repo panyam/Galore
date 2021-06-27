@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import { Grammar } from "./grammar";
 import { LRAction, ParseTable } from "./lr";
-import { LRItem, LRItemSet, LR1ItemSet, LRItemGraph, LR0ItemGraph, LR1ItemGraph } from "./lritems";
+import { LRItem, LRItemSet, LRItemGraph, LR0ItemGraph, LR1ItemGraph } from "./lritems";
 
 export function newParseTable(g: Grammar, type = "lr1"): [ParseTable, LRItemGraph] {
   switch (type) {
@@ -82,7 +82,7 @@ export function makeLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
         // ensure nt != S'
         // if we have nt -> rule DOT / t
         // Reduce nt -> rule for t
-        const lookaheads = (itemSet as LR1ItemSet).getLookAheads(item);
+        const lookaheads = itemSet.getLookAheads(item);
         for (const lookahead of lookaheads) {
           parseTable.addAction(itemSet.id, lookahead, LRAction.Reduce(rule));
         }
@@ -99,7 +99,7 @@ export function makeLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
     // If this state contains the augmented item, S' -> S . / $
     // then add accept
     const lr1Item = ig.items.ensure(new LRItem(grammar.augStartRule, 1));
-    (itemSet as LR1ItemSet).addLookAhead(lr1Item, grammar.Eof);
+    itemSet.addLookAhead(lr1Item, grammar.Eof);
     if (itemSet.has(lr1Item.id)) {
       parseTable.addAction(itemSet.id, grammar.Eof, LRAction.Accept());
     }

@@ -110,7 +110,7 @@ export class LRItemSet {
   }
 
   protected revalKey(): string {
-    if (this._hasLookAheads) {
+    if (this.hasLookAheads) {
       this.values.sort();
       return this.values
         .map((itemId) => {
@@ -148,8 +148,12 @@ export class LRItemSet {
     return this.debugValue.join("\n");
   }
 
+  get hasLookAheads(): boolean {
+    return this._hasLookAheads;
+  }
+
   get debugValue(): any {
-    if (this._hasLookAheads) {
+    if (this.hasLookAheads) {
       const items = this.values.map((v: number) => this.itemGraph.items.get(v));
       // sort them by rule
       items.sort((i1, i2) => i1.compareTo(i2));

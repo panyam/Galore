@@ -156,10 +156,10 @@ export function grammarFromLR0ItemGraph(ig: LR0ItemGraph, g: Grammar): Grammar {
   }
 
   // Create N', T' and S'
-  for (let startState in ig.gotoSets) {
+  for (const startState in ig.gotoSets) {
     // transitions is a Map of symId -> ItemSet
     const transitions: TSU.NumMap<LRItemSet> = ig.gotoSets[startState];
-    for (let symId in transitions) {
+    for (const symId in transitions) {
       const sym = g.getSymById(symId as any as number)!;
       ensureG2Sym(startState as any as number, sym);
     }
@@ -167,7 +167,7 @@ export function grammarFromLR0ItemGraph(ig: LR0ItemGraph, g: Grammar): Grammar {
 
   function buildRuleFrom(startSet: number, A: Sym, rule: Rule): Str {
     // Str to be built up for the production in the transformed grammar
-    //    -   [P1:X1][P2:X2]...[Pn:Xn] 
+    //    -   [P1:X1][P2:X2]...[Pn:Xn]
     let pi = startSet;
     const newSyms = rule.rhs.syms.map((xi, index) => {
       const nextSym = ensureG2Sym(pi, xi);
@@ -180,20 +180,20 @@ export function grammarFromLR0ItemGraph(ig: LR0ItemGraph, g: Grammar): Grammar {
     return new Str(...newSyms);
   }
 
-  for (let startState in ig.gotoSets) {
+  for (const startState in ig.gotoSets) {
     // from P1 - for every transition that is a non terminal A
     // find an equivalent chain of transition starting from P1 where we have
-    // [P1:X1][P2:X2]...[Pn:Xn] 
+    // [P1:X1][P2:X2]...[Pn:Xn]
     // for All A -> X1X2...Xn in G
     const transitions: TSU.NumMap<LRItemSet> = ig.gotoSets[startState];
-    for (let symId in transitions) {
+    for (const symId in transitions) {
       const startSym = g.getSymById(symId as any as number)!;
       const p1 = startState as any as number;
       if (!startSym.isTerminal) {
         const newA = ensureG2Sym(p1, startSym);
         g.forEachRule(startSym, (rule, index) => {
           const newRHS = buildRuleFrom(p1, startSym, rule);
-          const newRule = new Rule(newA, newRHS)
+          const newRule = new Rule(newA, newRHS);
           g2.addRule(newRule);
         });
       }

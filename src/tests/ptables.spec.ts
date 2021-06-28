@@ -186,5 +186,13 @@ describe("LALR Construction - Grammar Transformation Tests", () => {
       "[3:A] -> [3:B]",
       "[3:B] -> [3:g]",
     ]);
+    console.log("G2F: ", g2.followSets.debugValue);
+    expect(g2.followSets.debugValue).toEqual({
+      "[0:S]": "<$end>",
+      "[2:A]": "<[5:c]>",
+      "[2:B]": "<[5:c]>",
+      "[3:A]": "<[8:d]>",
+      "[3:B]": "<[8:d]>",
+    });
   });
 });

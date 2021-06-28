@@ -88,6 +88,35 @@ describe("FollowSet Tests", () => {
     expect(g.followSets.debugValue).toEqual({ S: "<$end, b, c, x>", A: "<$end, b, c, x>", X: "<$end, b, c, x>" });
   });
 
+  test("Tests 7", () => {
+    const g = new Parser(`
+      S -> a b c ;
+      S -> a A d ;
+      S -> e B f ;
+      S -> e g h ;
+
+      A -> C ;
+      C -> b ;
+      B -> D ;
+      D -> g ;
+    `).grammar;
+
+    expect(g.firstSets.debugValue).toEqual({
+      A: "<b>",
+      B: "<g>",
+      C: "<b>",
+      D: "<g>",
+      S: "<a, e>",
+    });
+    expect(g.followSets.debugValue).toEqual({
+      A: "<d>",
+      B: "<f>",
+      C: "<d>",
+      D: "<f>",
+      S: "<$end>",
+    });
+  });
+
   test("Tests JSON with Lists only", () => {
     const gRight = new Grammar({ auxNTPrefix: "_" });
     new Parser(

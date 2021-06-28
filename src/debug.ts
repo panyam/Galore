@@ -1,5 +1,6 @@
 const util = require("util");
-import { Parser, LRAction, ParseTable, LRItemGraph } from "./lr";
+import { Parser, LRAction, ParseTable } from "./lr";
+import { LRItemGraph } from "./lritems";
 
 export function logParserDebug(parser: Parser, itemGraph?: LRItemGraph): void {
   const g = parser.grammar;

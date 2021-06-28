@@ -1,6 +1,10 @@
 import { testParseTable } from "./utils";
 import { newLRParser as newParser } from "../factory";
 import { mergedDebugValue } from "../debug";
+import { Parser as DSLParser } from "../dsl";
+import { grammarFromLR0ItemGraph } from "../ptables";
+import { LR0ItemGraph } from "../lritems";
+import { printGrammar } from "../utils";
 
 describe("LR ParseTable", () => {
   test("Dragon Book 4.39 LR", () => {
@@ -155,5 +159,32 @@ describe("Sample Parse Tables", () => {
         goto: {},
       },
     });
+  });
+});
+
+describe("LALR Construction - Grammar Transformation Tests", () => {
+  test("Case 1", () => {
+    //
+    const input = `
+    S -> a g d ;
+    S -> a A c ;
+    S -> b A d ;
+    S -> b g c ;
+    A -> B ;
+    B -> g ;
+    `;
+    const g = new DSLParser(input).grammar.augmentStartSymbol();
+    const ig = new LR0ItemGraph(g).refresh();
+    const g2 = grammarFromLR0ItemGraph(ig, g);
+    expect(g2.debugValue).toEqual([
+      "[0:S] -> [0:a] [2:g] [4:d]",
+      "[0:S] -> [0:a] [2:A] [5:c]",
+      "[0:S] -> [0:b] [3:A] [8:d]",
+      "[0:S] -> [0:b] [3:g] [7:c]",
+      "[2:A] -> [2:B]",
+      "[2:B] -> [2:g]",
+      "[3:A] -> [3:B]",
+      "[3:B] -> [3:g]",
+    ]);
   });
 });

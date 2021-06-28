@@ -1,7 +1,8 @@
 import * as TLEX from "tlex";
 import { load as loadGrammar } from "./dsl";
 import { newParseTable } from "./ptables";
-import { Parser, LRItemGraph } from "./lr";
+import { Parser } from "./lr";
+import { LRItemGraph } from "./lritems";
 import { logParserDebug } from "./debug";
 
 /**

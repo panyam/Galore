@@ -5,7 +5,8 @@ import * as TSU from "@panyam/tsutils";
 import { Str, Grammar, Rule } from "../grammar";
 import { FirstSets, NullableSet, FollowSets } from "../sets";
 import { ParseTable as LLParseTable } from "../ll";
-import { LRAction, LRItemGraph } from "../lr";
+import { LRAction } from "../lr";
+import { LRItemGraph } from "../lritems";
 import { newLRParser as newParser } from "../factory";
 import { mergedDebugValue } from "../debug";
 

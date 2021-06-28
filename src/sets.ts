@@ -448,10 +448,6 @@ export class FollowSets extends SymSymbolSets {
     TSU.assert(g.startSymbol != null, "Select start symbol of the grammar");
     this.add(g.startSymbol, g.Eof);
 
-    // Augmented start symbol
-    // const augStart = new Sym("");
-    // augStart.add(new Seq(g.startSymbol, g.Eof));
-
     let beforeCount = 0;
     do {
       beforeCount = this.count;

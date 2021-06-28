@@ -13,7 +13,7 @@ export function parseTableToHtml(parseTable: LRParseTable, config: any = {}): st
   }
 
   // now each row in the parse table
-  const numStates = parseTable.itemGraph.itemSets.size;
+  const numStates = Object.keys(parseTable.actions).length;
   for (let i = 0; i < numStates; i++) {
     out += "<tr>";
     out += `<td class = "stateHeaderCell" stateID = "${i}">${i}</td>`;

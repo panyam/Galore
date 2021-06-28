@@ -8,9 +8,8 @@ import {
   RuleReductionCallback,
   NextTokenCallback,
 } from "./parser";
-import { LRAction, LRActionType, ParseTable, LRItemGraph } from "./lr";
+import { LRActionType, ParseTable } from "./lr";
 
-type Nullable<T> = TSU.Nullable<T>;
 type NumMap<T> = TSU.NumMap<T>;
 
 /**

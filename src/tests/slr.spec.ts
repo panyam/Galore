@@ -33,12 +33,12 @@ describe("LR ParseTable", () => {
         goto: { E: 1, T: 2, F: 3, OPEN: 4, id: 5 },
       },
       "1": {
-        items: ["0  -  $accept -> E • ", "1  -  E -> E • PLUS T"],
+        items: ["0  -  $accept -> E •  / ( $end )", "1  -  E -> E • PLUS T"],
         actions: { $end: ["Acc"], PLUS: ["S6"] },
         goto: { PLUS: 6 },
       },
       "2": {
-        items: ["2  -  E -> T • ", "3  -  T -> T • STAR F"],
+        items: ["2  -  E -> T •  / ( $end, CLOSE, PLUS )", "3  -  T -> T • STAR F"],
         actions: {
           $end: ["R 2"],
           PLUS: ["R 2"],
@@ -48,7 +48,7 @@ describe("LR ParseTable", () => {
         goto: { STAR: 7 },
       },
       "3": {
-        items: ["4  -  T -> F • "],
+        items: ["4  -  T -> F •  / ( $end, CLOSE, PLUS, STAR )"],
         actions: {
           $end: ["R 4"],
           PLUS: ["R 4"],
@@ -77,7 +77,7 @@ describe("LR ParseTable", () => {
         goto: { E: 8, T: 2, F: 3, OPEN: 4, id: 5 },
       },
       "5": {
-        items: ["6  -  F -> id • "],
+        items: ["6  -  F -> id •  / ( $end, CLOSE, PLUS, STAR )"],
         actions: {
           $end: ["R 6"],
           PLUS: ["R 6"],
@@ -108,7 +108,7 @@ describe("LR ParseTable", () => {
         goto: { PLUS: 6, CLOSE: 11 },
       },
       "9": {
-        items: ["1  -  E -> E PLUS T • ", "3  -  T -> T • STAR F"],
+        items: ["1  -  E -> E PLUS T •  / ( $end, CLOSE, PLUS )", "3  -  T -> T • STAR F"],
         actions: {
           $end: ["R 1"],
           PLUS: ["R 1"],
@@ -118,7 +118,7 @@ describe("LR ParseTable", () => {
         goto: { STAR: 7 },
       },
       "10": {
-        items: ["3  -  T -> T STAR F • "],
+        items: ["3  -  T -> T STAR F •  / ( $end, CLOSE, PLUS, STAR )"],
         actions: {
           $end: ["R 3"],
           PLUS: ["R 3"],
@@ -128,7 +128,7 @@ describe("LR ParseTable", () => {
         goto: {},
       },
       "11": {
-        items: ["5  -  F -> OPEN E CLOSE • "],
+        items: ["5  -  F -> OPEN E CLOSE •  / ( $end, CLOSE, PLUS, STAR )"],
         actions: {
           $end: ["R 5"],
           PLUS: ["R 5"],

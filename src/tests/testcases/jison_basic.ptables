@@ -54,17 +54,17 @@
       goto: { E: 1, T: 2, ZERO: 3 }
     },
     '1': {
-      items: [ '0  -  $accept -> E • ', '1  -  E -> E • PLUS T' ],
+      items: [ '0  -  $accept -> E •  / ( $end )', '1  -  E -> E • PLUS T' ],
       actions: { '$end': [ 'Acc' ], PLUS: [ 'S4' ] },
       goto: { PLUS: 4 }
     },
     '2': {
-      items: [ '2  -  E -> T • ' ],
+      items: [ '2  -  E -> T •  / ( $end, PLUS )' ],
       actions: { '$end': [ 'R 2' ], PLUS: [ 'R 2' ] },
       goto: {}
     },
     '3': {
-      items: [ '3  -  T -> ZERO • ' ],
+      items: [ '3  -  T -> ZERO •  / ( $end, PLUS )' ],
       actions: { '$end': [ 'R 3' ], PLUS: [ 'R 3' ] },
       goto: {}
     },
@@ -74,7 +74,7 @@
       goto: { T: 5, ZERO: 3 }
     },
     '5': {
-      items: [ '1  -  E -> E PLUS T • ' ],
+      items: [ '1  -  E -> E PLUS T •  / ( $end, PLUS )' ],
       actions: { '$end': [ 'R 1' ], PLUS: [ 'R 1' ] },
       goto: {}
     }

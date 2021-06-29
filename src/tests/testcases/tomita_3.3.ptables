@@ -18,7 +18,7 @@
       goto: { S: 1, NP: 2, det: 3, n: 4, that: 5 }
     },
     '1': {
-      items: [ '0  -  $accept -> S • ' ],
+      items: [ '0  -  $accept -> S •  / ( $end )' ],
       actions: { '$end': [ 'Acc' ] },
       goto: {}
     },
@@ -33,7 +33,7 @@
       goto: { n: 8 }
     },
     '4': {
-      items: [ '3  -  NP -> n • ' ],
+      items: [ '3  -  NP -> n •  / ( be )' ],
       actions: { be: [ 'R 3' ] },
       goto: {}
     },
@@ -55,7 +55,7 @@
       goto: { S: 9, NP: 2, det: 3, n: 4, that: 5 }
     },
     '6': {
-      items: [ '1  -  S -> NP VP • ' ],
+      items: [ '1  -  S -> NP VP •  / ( $end, be )' ],
       actions: { '$end': [ 'R 1' ], be: [ 'R 1' ] },
       goto: {}
     },
@@ -65,17 +65,17 @@
       goto: { adj: 10 }
     },
     '8': {
-      items: [ '2  -  NP -> det n • ' ],
+      items: [ '2  -  NP -> det n •  / ( be )' ],
       actions: { be: [ 'R 2' ] },
       goto: {}
     },
     '9': {
-      items: [ '4  -  NP -> that S • ' ],
+      items: [ '4  -  NP -> that S •  / ( be )' ],
       actions: { be: [ 'R 4' ] },
       goto: {}
     },
     '10': {
-      items: [ '5  -  VP -> be adj • ' ],
+      items: [ '5  -  VP -> be adj •  / ( $end, be )' ],
       actions: { '$end': [ 'R 5' ], be: [ 'R 5' ] },
       goto: {}
     }

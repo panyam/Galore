@@ -6,7 +6,7 @@
         '1  -  pgm ->  • instlist',
         '2  -  instlist ->  • label COLON inst instlist',
         '3  -  instlist ->  • inst instlist',
-        '4  -  instlist ->  • ',
+        '4  -  instlist ->  •  / ( $end )',
         '5  -  inst ->  • ADD intt intt intt',
         '6  -  inst ->  • SUB intt intt intt',
         '7  -  inst ->  • MUL intt intt intt',
@@ -62,12 +62,12 @@
       }
     },
     '1': {
-      items: [ '0  -  $accept -> pgm • ' ],
+      items: [ '0  -  $accept -> pgm •  / ( $end )' ],
       actions: { '$end': [ 'Acc' ] },
       goto: {}
     },
     '2': {
-      items: [ '1  -  pgm -> instlist • ' ],
+      items: [ '1  -  pgm -> instlist •  / ( $end )' ],
       actions: { '$end': [ 'R 1' ] },
       goto: {}
     },
@@ -81,7 +81,7 @@
         '2  -  instlist ->  • label COLON inst instlist',
         '3  -  instlist ->  • inst instlist',
         '3  -  instlist -> inst • instlist',
-        '4  -  instlist ->  • ',
+        '4  -  instlist ->  •  / ( $end )',
         '5  -  inst ->  • ADD intt intt intt',
         '6  -  inst ->  • SUB intt intt intt',
         '7  -  inst ->  • MUL intt intt intt',
@@ -315,7 +315,9 @@
       goto: { label: 20, intt: 33, LABEL: 17, INT: 22 }
     },
     '17': {
-      items: [ '17  -  label -> LABEL • ' ],
+      items: [
+        '17  -  label -> LABEL •  / ( $end, ADD, BEQ, BLT, COLON, HLT, INT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+      ],
       actions: {
         '$end': [ 'R 17' ],
         COLON: [ 'R 17' ],
@@ -384,12 +386,14 @@
       }
     },
     '19': {
-      items: [ '3  -  instlist -> inst instlist • ' ],
+      items: [ '3  -  instlist -> inst instlist •  / ( $end )' ],
       actions: { '$end': [ 'R 3' ] },
       goto: {}
     },
     '20': {
-      items: [ '19  -  intt -> label • ' ],
+      items: [
+        '19  -  intt -> label •  / ( $end, ADD, BEQ, BLT, HLT, INT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+      ],
       actions: {
         '$end': [ 'R 19' ],
         ADD: [ 'R 19' ],
@@ -425,7 +429,9 @@
       goto: { label: 20, intt: 35, LABEL: 17, INT: 22 }
     },
     '22': {
-      items: [ '18  -  intt -> INT • ' ],
+      items: [
+        '18  -  intt -> INT •  / ( $end, ADD, BEQ, BLT, HLT, INT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+      ],
       actions: {
         '$end': [ 'R 18' ],
         ADD: [ 'R 18' ],
@@ -566,7 +572,9 @@
       goto: { label: 20, intt: 43, LABEL: 17, INT: 22 }
     },
     '31': {
-      items: [ '14  -  inst -> RDN intt • ' ],
+      items: [
+        '14  -  inst -> RDN intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+      ],
       actions: {
         '$end': [ 'R 14' ],
         ADD: [ 'R 14' ],
@@ -586,7 +594,9 @@
       goto: {}
     },
     '32': {
-      items: [ '15  -  inst -> PTN intt • ' ],
+      items: [
+        '15  -  inst -> PTN intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+      ],
       actions: {
         '$end': [ 'R 15' ],
         ADD: [ 'R 15' ],
@@ -606,7 +616,9 @@
       goto: {}
     },
     '33': {
-      items: [ '16  -  inst -> HLT intt • ' ],
+      items: [
+        '16  -  inst -> HLT intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+      ],
       actions: {
         '$end': [ 'R 16' ],
         ADD: [ 'R 16' ],
@@ -630,7 +642,7 @@
         '2  -  instlist ->  • label COLON inst instlist',
         '2  -  instlist -> label COLON inst • instlist',
         '3  -  instlist ->  • inst instlist',
-        '4  -  instlist ->  • ',
+        '4  -  instlist ->  •  / ( $end )',
         '5  -  inst ->  • ADD intt intt intt',
         '6  -  inst ->  • SUB intt intt intt',
         '7  -  inst ->  • MUL intt intt intt',
@@ -729,7 +741,9 @@
       goto: { label: 20, intt: 47, LABEL: 17, INT: 22 }
     },
     '38': {
-      items: [ '8  -  inst -> MOV intt intt • ' ],
+      items: [
+        '8  -  inst -> MOV intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+      ],
       actions: {
         '$end': [ 'R 8' ],
         ADD: [ 'R 8' ],
@@ -824,12 +838,14 @@
       goto: { label: 20, intt: 52, LABEL: 17, INT: 22 }
     },
     '44': {
-      items: [ '2  -  instlist -> label COLON inst instlist • ' ],
+      items: [ '2  -  instlist -> label COLON inst instlist •  / ( $end )' ],
       actions: { '$end': [ 'R 2' ] },
       goto: {}
     },
     '45': {
-      items: [ '5  -  inst -> ADD intt intt intt • ' ],
+      items: [
+        '5  -  inst -> ADD intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+      ],
       actions: {
         '$end': [ 'R 5' ],
         ADD: [ 'R 5' ],
@@ -849,7 +865,9 @@
       goto: {}
     },
     '46': {
-      items: [ '6  -  inst -> SUB intt intt intt • ' ],
+      items: [
+        '6  -  inst -> SUB intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+      ],
       actions: {
         '$end': [ 'R 6' ],
         ADD: [ 'R 6' ],
@@ -869,7 +887,9 @@
       goto: {}
     },
     '47': {
-      items: [ '7  -  inst -> MUL intt intt intt • ' ],
+      items: [
+        '7  -  inst -> MUL intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+      ],
       actions: {
         '$end': [ 'R 7' ],
         ADD: [ 'R 7' ],
@@ -889,7 +909,9 @@
       goto: {}
     },
     '48': {
-      items: [ '9  -  inst -> LOD intt intt intt • ' ],
+      items: [
+        '9  -  inst -> LOD intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+      ],
       actions: {
         '$end': [ 'R 9' ],
         ADD: [ 'R 9' ],
@@ -909,7 +931,9 @@
       goto: {}
     },
     '49': {
-      items: [ '10  -  inst -> STR intt intt intt • ' ],
+      items: [
+        '10  -  inst -> STR intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+      ],
       actions: {
         '$end': [ 'R 10' ],
         ADD: [ 'R 10' ],
@@ -929,7 +953,9 @@
       goto: {}
     },
     '50': {
-      items: [ '11  -  inst -> JMP intt intt intt • ' ],
+      items: [
+        '11  -  inst -> JMP intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+      ],
       actions: {
         '$end': [ 'R 11' ],
         ADD: [ 'R 11' ],
@@ -949,7 +975,9 @@
       goto: {}
     },
     '51': {
-      items: [ '12  -  inst -> BEQ intt intt intt • ' ],
+      items: [
+        '12  -  inst -> BEQ intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+      ],
       actions: {
         '$end': [ 'R 12' ],
         ADD: [ 'R 12' ],
@@ -969,7 +997,9 @@
       goto: {}
     },
     '52': {
-      items: [ '13  -  inst -> BLT intt intt intt • ' ],
+      items: [
+        '13  -  inst -> BLT intt intt intt •  / ( $end, ADD, BEQ, BLT, HLT, JMP, LABEL, LOD, MOV, MUL, PTN, RDN, STR, SUB )'
+      ],
       actions: {
         '$end': [ 'R 13' ],
         ADD: [ 'R 13' ],

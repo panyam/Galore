@@ -16,47 +16,24 @@ export function newParseTable(g: Grammar, type = "lr1"): [ParseTable, LRItemGrap
 
 export function makeSLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
   const ig = new LR0ItemGraph(grammar).refresh();
-  const parseTable = new ParseTable(grammar);
   for (const itemSet of ig.itemSets.entries) {
     // Look for transitions from this set
     for (const itemId of itemSet.values) {
       const item = ig.items.get(itemId);
       const rule = item.rule;
-      if (item.position < rule.rhs.length) {
-        // possibilities of shift
-        const sym = rule.rhs.syms[item.position];
-        if (sym.isTerminal) {
-          const gotoSet = ig.getGoto(itemSet, sym);
-          if (gotoSet) {
-            parseTable.addAction(itemSet.id, sym, LRAction.Shift(gotoSet.id));
-          }
-        }
-      } else {
+      if (item.position >= rule.rhs.length) {
         // if sym is in follows(nt) then add the rule
         // Reduce nt -> rule for all sym in follows(nt)
         grammar.followSets.forEachTerm(rule.nt, (term) => {
           if (term != null) {
             TSU.assert(term.isTerminal);
-            parseTable.addAction(itemSet.id, term, LRAction.Reduce(rule));
+            itemSet.addLookAhead(item, term);
           }
         });
       }
     }
-
-    // Now create GOTO entries for (State,X) where X is a non-term
-    ig.forEachGoto(itemSet, (sym, next) => {
-      if (sym != null && !sym.isTerminal) {
-        parseTable.addAction(itemSet.id, sym, LRAction.Goto(next.id));
-      }
-    });
-
-    // If this state contains the augmented item, S' -> S .
-    // then add accept
-    if (itemSet.has(ig.items.ensure(new LRItem(grammar.augStartRule, 1)).id)) {
-      parseTable.addAction(itemSet.id, grammar.Eof, LRAction.Accept());
-    }
   }
-  return [parseTable, ig];
+  return [makeParseTableFromLA(ig, grammar), ig];
 }
 
 /**

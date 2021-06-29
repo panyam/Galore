@@ -100,7 +100,7 @@
       goto: { S: 1, a: 2, b: 3 }
     },
     '1': {
-      items: [ '0  -  $accept -> S • ' ],
+      items: [ '0  -  $accept -> S •  / ( $end )' ],
       actions: { '$end': [ 'Acc' ] },
       goto: {}
     },
@@ -135,7 +135,7 @@
       goto: { d: 10 }
     },
     '6': {
-      items: [ '5  -  A -> z • ', '6  -  B -> z • ' ],
+      items: [ '5  -  A -> z •  / ( c, d )', '6  -  B -> z •  / ( c, d )' ],
       actions: { c: [ 'R 5', 'R 6' ], d: [ 'R 5', 'R 6' ] },
       goto: {}
     },
@@ -150,22 +150,22 @@
       goto: { c: 12 }
     },
     '9': {
-      items: [ '1  -  S -> a A c • ' ],
+      items: [ '1  -  S -> a A c •  / ( $end )' ],
       actions: { '$end': [ 'R 1' ] },
       goto: {}
     },
     '10': {
-      items: [ '2  -  S -> a B d • ' ],
+      items: [ '2  -  S -> a B d •  / ( $end )' ],
       actions: { '$end': [ 'R 2' ] },
       goto: {}
     },
     '11': {
-      items: [ '3  -  S -> b A d • ' ],
+      items: [ '3  -  S -> b A d •  / ( $end )' ],
       actions: { '$end': [ 'R 3' ] },
       goto: {}
     },
     '12': {
-      items: [ '4  -  S -> b B c • ' ],
+      items: [ '4  -  S -> b B c •  / ( $end )' ],
       actions: { '$end': [ 'R 4' ] },
       goto: {}
     }

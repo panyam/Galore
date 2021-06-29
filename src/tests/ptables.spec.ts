@@ -93,22 +93,22 @@ describe("Sample Parse Tables", () => {
         goto: { E: 1, T: 2, int: 3, OPEN: 4 },
       },
       "1": {
-        items: ["0  -  $accept -> E • "],
+        items: ["0  -  $accept -> E •  / ( $end )"],
         actions: { $end: ["Acc"] },
         goto: {},
       },
       "2": {
-        items: ["1  -  E -> T • X", "2  -  X ->  • PLUS E", "3  -  X ->  • "],
+        items: ["1  -  E -> T • X", "2  -  X ->  • PLUS E", "3  -  X ->  •  / ( $end, CLOSE )"],
         actions: { $end: ["R 3"], X: ["5"], PLUS: ["S6"], CLOSE: ["R 3"] },
         goto: { X: 5, PLUS: 6 },
       },
       "3": {
-        items: ["4  -  T -> int • Y", "6  -  Y ->  • STAR T", "7  -  Y ->  • "],
+        items: ["4  -  T -> int • Y", "6  -  Y ->  • STAR T", "7  -  Y ->  •  / ( $end, CLOSE, PLUS )"],
         actions: {
           $end: ["R 7"],
           PLUS: ["R 7"],
-          Y: ["7"],
           CLOSE: ["R 7"],
+          Y: ["7"],
           STAR: ["S8"],
         },
         goto: { Y: 7, STAR: 8 },
@@ -119,7 +119,7 @@ describe("Sample Parse Tables", () => {
         goto: { E: 9, T: 2, int: 3, OPEN: 4 },
       },
       "5": {
-        items: ["1  -  E -> T X • "],
+        items: ["1  -  E -> T X •  / ( $end, CLOSE )"],
         actions: { $end: ["R 1"], CLOSE: ["R 1"] },
         goto: {},
       },
@@ -129,7 +129,7 @@ describe("Sample Parse Tables", () => {
         goto: { E: 10, T: 2, int: 3, OPEN: 4 },
       },
       "7": {
-        items: ["4  -  T -> int Y • "],
+        items: ["4  -  T -> int Y •  / ( $end, CLOSE, PLUS )"],
         actions: { $end: ["R 4"], PLUS: ["R 4"], CLOSE: ["R 4"] },
         goto: {},
       },
@@ -144,17 +144,17 @@ describe("Sample Parse Tables", () => {
         goto: { CLOSE: 12 },
       },
       "10": {
-        items: ["2  -  X -> PLUS E • "],
+        items: ["2  -  X -> PLUS E •  / ( $end, CLOSE )"],
         actions: { $end: ["R 2"], CLOSE: ["R 2"] },
         goto: {},
       },
       "11": {
-        items: ["6  -  Y -> STAR T • "],
+        items: ["6  -  Y -> STAR T •  / ( $end, CLOSE, PLUS )"],
         actions: { $end: ["R 6"], PLUS: ["R 6"], CLOSE: ["R 6"] },
         goto: {},
       },
       "12": {
-        items: ["5  -  T -> OPEN E CLOSE • "],
+        items: ["5  -  T -> OPEN E CLOSE •  / ( $end, CLOSE, PLUS )"],
         actions: { $end: ["R 5"], PLUS: ["R 5"], CLOSE: ["R 5"] },
         goto: {},
       },
@@ -186,7 +186,6 @@ describe("LALR Construction - Grammar Transformation Tests", () => {
       "[3:A] -> [3:B]",
       "[3:B] -> [3:g]",
     ]);
-    console.log("G2F: ", g2.followSets.debugValue);
     expect(g2.followSets.debugValue).toEqual({
       "[0:S]": "<$end>",
       "[2:A]": "<[5:c]>",

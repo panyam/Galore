@@ -8,8 +8,8 @@ export function newParseTable(g: Grammar, type = "lr1"): [ParseTable, LRItemGrap
   switch (type) {
     case "lr1":
       return makeLRParseTable(g);
-    case "slr":
-      return makeSLRParseTable(g);
+    case "lalr":
+      return makeLALRParseTable(g);
   }
   return makeSLRParseTable(g);
 }
@@ -64,6 +64,15 @@ export function makeSLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
  */
 export function makeLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
   const ig = new LR1ItemGraph(grammar).refresh();
+  const parseTable = makeParseTableFromLA(ig, grammar);
+  return [parseTable, ig];
+}
+
+/**
+ * Shared parse table creator for SLR/LR/LALR grammars that have lookahead
+ * in the LR0 automaton.
+ */
+function makeParseTableFromLA(ig: LRItemGraph, grammar: Grammar): ParseTable {
   const parseTable = new ParseTable(grammar);
   for (const itemSet of ig.itemSets.entries) {
     // Look for transitions from this set
@@ -80,8 +89,8 @@ export function makeLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
           }
         }
       } else if (!rule.nt.equals(grammar.augStartRule.nt)) {
-        // ensure nt != S'
-        // if we have nt -> rule DOT / t
+        // We have nt -> rule DOT / t
+        // AND nt != S'
         // Reduce nt -> rule for t
         const lookaheads = itemSet.getLookAheads(item);
         for (const lookahead of lookaheads) {
@@ -105,7 +114,7 @@ export function makeLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
       parseTable.addAction(itemSet.id, grammar.Eof, LRAction.Accept());
     }
   }
-  return [parseTable, ig];
+  return parseTable;
 }
 
 /**

@@ -119,17 +119,17 @@
       goto: { S: 1, L: 2, R: 3, STAR: 4, id: 5 }
     },
     '1': {
-      items: [ '0  -  $accept -> S • ' ],
+      items: [ '0  -  $accept -> S •  / ( $end )' ],
       actions: { '$end': [ 'Acc' ] },
       goto: {}
     },
     '2': {
-      items: [ '1  -  S -> L • EQ R', '5  -  R -> L • ' ],
+      items: [ '1  -  S -> L • EQ R', '5  -  R -> L •  / ( $end, EQ )' ],
       actions: { '$end': [ 'R 5' ], EQ: [ 'S6', 'R 5' ] },
       goto: { EQ: 6 }
     },
     '3': {
-      items: [ '2  -  S -> R • ' ],
+      items: [ '2  -  S -> R •  / ( $end )' ],
       actions: { '$end': [ 'R 2' ] },
       goto: {}
     },
@@ -144,7 +144,7 @@
       goto: { L: 7, R: 8, STAR: 4, id: 5 }
     },
     '5': {
-      items: [ '4  -  L -> id • ' ],
+      items: [ '4  -  L -> id •  / ( $end, EQ )' ],
       actions: { '$end': [ 'R 4' ], EQ: [ 'R 4' ] },
       goto: {}
     },
@@ -159,17 +159,17 @@
       goto: { L: 7, R: 9, STAR: 4, id: 5 }
     },
     '7': {
-      items: [ '5  -  R -> L • ' ],
+      items: [ '5  -  R -> L •  / ( $end, EQ )' ],
       actions: { '$end': [ 'R 5' ], EQ: [ 'R 5' ] },
       goto: {}
     },
     '8': {
-      items: [ '3  -  L -> STAR R • ' ],
+      items: [ '3  -  L -> STAR R •  / ( $end, EQ )' ],
       actions: { '$end': [ 'R 3' ], EQ: [ 'R 3' ] },
       goto: {}
     },
     '9': {
-      items: [ '1  -  S -> L EQ R • ' ],
+      items: [ '1  -  S -> L EQ R •  / ( $end )' ],
       actions: { '$end': [ 'R 1' ] },
       goto: {}
     }

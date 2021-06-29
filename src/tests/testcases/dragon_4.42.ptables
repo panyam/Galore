@@ -80,7 +80,7 @@
       goto: { S: 1, C: 2, c: 3, d: 4 }
     },
     '1': {
-      items: [ '0  -  $accept -> S • ' ],
+      items: [ '0  -  $accept -> S •  / ( $end )' ],
       actions: { '$end': [ 'Acc' ] },
       goto: {}
     },
@@ -95,17 +95,17 @@
       goto: { C: 6, c: 3, d: 4 }
     },
     '4': {
-      items: [ '3  -  C -> d • ' ],
+      items: [ '3  -  C -> d •  / ( $end, c, d )' ],
       actions: { '$end': [ 'R 3' ], c: [ 'R 3' ], d: [ 'R 3' ] },
       goto: {}
     },
     '5': {
-      items: [ '1  -  S -> C C • ' ],
+      items: [ '1  -  S -> C C •  / ( $end )' ],
       actions: { '$end': [ 'R 1' ] },
       goto: {}
     },
     '6': {
-      items: [ '2  -  C -> c C • ' ],
+      items: [ '2  -  C -> c C •  / ( $end, c, d )' ],
       actions: { '$end': [ 'R 2' ], c: [ 'R 2' ], d: [ 'R 2' ] },
       goto: {}
     }

@@ -163,7 +163,7 @@ export class LRItemSet {
           .map((s) => s.label)
           .sort((s1, s2) => s1.localeCompare(s2))
           .join(", ");
-        return `${item.debugString} / ( ${las} )`;
+        return las.length > 0 ? `${item.debugString} / ( ${las} )` : item.debugString;
       });
     } else {
       const items = this.values.map((v: number) => this.itemGraph.items.get(v));

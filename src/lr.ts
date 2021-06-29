@@ -87,6 +87,10 @@ export class ParseTable {
 
   constructor(public readonly grammar: Grammar) {}
 
+  get hasConflicts(): boolean {
+    return Object.keys(this.conflictActions).length > 0;
+  }
+
   /**
    * Gets the action for a given sym from a given state.
    */

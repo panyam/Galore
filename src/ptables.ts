@@ -14,7 +14,46 @@ export function newParseTable(g: Grammar, type = "lr1"): [ParseTable, LRItemGrap
   return makeSLRParseTable(g);
 }
 
+/**
+ * A SLR parse table maker.
+ */
 export function makeSLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
+  const ig = makeSLRAutomaton(grammar);
+  return [makeParseTableFromLA(ig, grammar), ig];
+}
+
+/**
+ * A canonical LR1 parse table maker.
+ */
+export function makeLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
+  const ig = new LR1ItemGraph(grammar).refresh();
+  const parseTable = makeParseTableFromLA(ig, grammar);
+  return [parseTable, ig];
+}
+
+/**
+ * A LALR(1) parse table maker using Bermudez and Logothetis' (1989)
+ *  "Simple computation of LALR(1) lookahead sets" method.
+ */
+export function makeLALRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
+  // const [parseTable, ig] = makeSLRParseTable(grammar);
+  const [parseTable, ig] = makeSLRParseTable(grammar);
+
+  if (parseTable.hasConflicts) {
+    // This is a really simple method compared to DeRemer and Penello's method
+    // (based on relations).
+    //
+    // 1. First transform the grammar G into G' that is based on around the LR0
+    // item graph
+    const g2 = grammarFromLR0ItemGraph(ig, grammar);
+
+    // For conflict states upgrade lookahead sets based on union of follow
+    // sets of G2 for the corresponding sets
+  }
+  return [parseTable, ig];
+}
+
+export function makeSLRAutomaton(grammar: Grammar): LRItemGraph {
   const ig = new LR0ItemGraph(grammar).refresh();
   for (const itemSet of ig.itemSets.entries) {
     // Look for transitions from this set
@@ -33,23 +72,14 @@ export function makeSLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
       }
     }
   }
-  return [makeParseTableFromLA(ig, grammar), ig];
-}
-
-/**
- * A canonical LR1 parse table maker.
- */
-export function makeLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
-  const ig = new LR1ItemGraph(grammar).refresh();
-  const parseTable = makeParseTableFromLA(ig, grammar);
-  return [parseTable, ig];
+  return ig;
 }
 
 /**
  * Shared parse table creator for SLR/LR/LALR grammars that have lookahead
  * in the LR0 automaton.
  */
-function makeParseTableFromLA(ig: LRItemGraph, grammar: Grammar): ParseTable {
+export function makeParseTableFromLA(ig: LRItemGraph, grammar: Grammar): ParseTable {
   const parseTable = new ParseTable(grammar);
   for (const itemSet of ig.itemSets.entries) {
     // Look for transitions from this set
@@ -92,25 +122,6 @@ function makeParseTableFromLA(ig: LRItemGraph, grammar: Grammar): ParseTable {
     }
   }
   return parseTable;
-}
-
-/**
- * A LALR(1) parse table maker using Bermudez and Logothetis' (1989)
- *  "Simple computation of LALR(1) lookahead sets" method.
- */
-export function makeLALRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
-  // const [parseTable, ig] = makeSLRParseTable(grammar);
-  const ig = new LR0ItemGraph(grammar).refresh();
-  const parseTable = new ParseTable(grammar);
-
-  // This is a really simple method compared to DeRemer and Penello's method
-  // (based on relations).
-  //
-  // 1. First transform the grammar G into G' that is based on around the LR0
-  // item graph
-  const g2 = grammarFromLR0ItemGraph(ig, grammar);
-
-  return [parseTable, ig];
 }
 
 /**

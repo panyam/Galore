@@ -9,7 +9,7 @@ import * as G from "galore";
 export class ParseTableView extends TSV.View {
   readonly app: App;
   headerElement: HTMLDivElement;
-  parser: G.LR.Parser;
+  parser: G.Parser;
 
   constructor(rootElement: HTMLElement, app: App, config?: TSV.ViewParams) {
     super(rootElement, config);

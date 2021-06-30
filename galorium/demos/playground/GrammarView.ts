@@ -17,7 +17,7 @@ export class GrammarView extends TSV.View {
   saveAsButton: HTMLButtonElement;
   compileButton: HTMLButtonElement;
   grammarSelect: HTMLSelectElement;
-  parser: G.LR.Parser;
+  parser: G.Parser;
 
   constructor(rootElement: HTMLElement, app: App, config?: TSV.ViewParams) {
     super(rootElement, config);

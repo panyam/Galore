@@ -13,7 +13,7 @@ export class InputView extends TSV.View {
   codeEditor: ace.Ace.Editor;
   headerElement: HTMLDivElement;
   editorElement: HTMLDivElement;
-  parser: G.LR.Parser;
+  parser: G.Parser;
   parseButton: HTMLButtonElement;
 
   constructor(rootElement: HTMLElement, app: App, config?: TSV.ViewParams) {

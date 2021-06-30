@@ -94,6 +94,13 @@ export class LRItemSet {
   }
 
   /**
+   * Clears all lookaheads from this itemset.
+   */
+  clearLookAheads(): void {
+    this._lookaheads = {};
+  }
+
+  /**
    * Gets the lookahead symbols for a given item.
    */
   getLookAheads(item: LRItem): ReadonlyArray<Sym> {

@@ -89,7 +89,12 @@ export function verifyLLParseTable(
   return true;
 }
 
-export function testParseTable(grammarFile: string, ptablesFile: string, ptabType: "lr1" | "slr", debug = ""): void {
+export function testParseTable(
+  grammarFile: string,
+  ptablesFile: string,
+  ptabType: "lr1" | "slr" | "lalr",
+  debug = "",
+): void {
   if (!grammarFile.startsWith("/")) {
     grammarFile = __dirname + "/" + grammarFile;
   }

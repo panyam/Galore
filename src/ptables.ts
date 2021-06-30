@@ -22,6 +22,44 @@ export function makeSLRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] {
   return [makeParseTableFromLA(ig, grammar), ig];
 }
 
+export function makeSLRAutomaton(grammar: Grammar): LRItemGraph {
+  const ig = new LR0ItemGraph(grammar).refresh();
+  for (const itemSet of ig.itemSets.entries) {
+    evalLASetsForSLRItem(grammar, ig, itemSet);
+  }
+  return ig;
+}
+
+/**
+ * For a given LR(0) Item in the LR0 automaton evaluates the lookahead set
+ * for an SLR1 parse table.
+ *
+ * The SLR lookahead is:
+ *
+ *    SLRLA(q, A -> w) = Follow(A)
+ *
+ * @param grammar
+ * @param ig
+ * @param itemSet
+ */
+export function evalLASetsForSLRItem(grammar: Grammar, ig: LRItemGraph, itemSet: LRItemSet): void {
+  // Look for transitions from this set
+  for (const itemId of itemSet.values) {
+    const item = ig.items.get(itemId);
+    const rule = item.rule;
+    if (item.position >= rule.rhs.length) {
+      // if sym is in follows(nt) then add the rule
+      // Reduce nt -> rule for all sym in follows(nt)
+      grammar.followSets.forEachTerm(rule.nt, (term) => {
+        if (term != null) {
+          TSU.assert(term.isTerminal);
+          itemSet.addLookAhead(item, term);
+        }
+      });
+    }
+  }
+}
+
 /**
  * A canonical LR1 parse table maker.
  */
@@ -39,40 +77,47 @@ export function makeLALRParseTable(grammar: Grammar): [ParseTable, LRItemGraph] 
   // const [parseTable, ig] = makeSLRParseTable(grammar);
   const [parseTable, ig] = makeSLRParseTable(grammar);
 
-  if (parseTable.hasConflicts) {
-    // This is a really simple method compared to DeRemer and Penello's method
-    // (based on relations).
-    //
-    // 1. First transform the grammar G into G' that is based on around the LR0
-    // item graph
-    const g2 = grammarFromLR0ItemGraph(ig, grammar);
-
-    // For conflict states upgrade lookahead sets based on union of follow
-    // sets of G2 for the corresponding sets
+  if (!parseTable.hasConflicts) {
+    return [parseTable, ig];
   }
-  return [parseTable, ig];
-}
 
-export function makeSLRAutomaton(grammar: Grammar): LRItemGraph {
-  const ig = new LR0ItemGraph(grammar).refresh();
-  for (const itemSet of ig.itemSets.entries) {
-    // Look for transitions from this set
-    for (const itemId of itemSet.values) {
-      const item = ig.items.get(itemId);
-      const rule = item.rule;
-      if (item.position >= rule.rhs.length) {
-        // if sym is in follows(nt) then add the rule
-        // Reduce nt -> rule for all sym in follows(nt)
-        grammar.followSets.forEachTerm(rule.nt, (term) => {
-          if (term != null) {
-            TSU.assert(term.isTerminal);
-            itemSet.addLookAhead(item, term);
-          }
-        });
+  // This is a really simple method compared to DeRemer and Penello's method
+  // (based on relations).
+  //
+  // 1. First transform the grammar G into G' that is based on around the LR0
+  // item graph
+  const g2 = grammarFromLR0ItemGraph(ig, grammar);
+
+  // Reverse of goto sets in the LR automaton to track predecessor states.
+  const prevSets: TSU.NumMap<TSU.NumMap<Set<number>>> = {};
+
+  for (const startState in ig.gotoSets) {
+    for (const symId in ig.gotoSets[startState]) {
+      const nextSet = ig.gotoSets[startState][symId];
+      if (!(nextSet.id in prevSets)) {
+        prevSets[nextSet.id] = {};
       }
+      if (!(symId in prevSets[nextSet.id])) {
+        prevSets[nextSet.id][symId] = new Set();
+      }
+      prevSets[nextSet.id][symId].add(startState as any as number);
     }
   }
-  return ig;
+
+  // For conflict states upgrade lookahead sets based on union of follow
+  // sets of G2 for the corresponding sets
+  // LALRLA(q, A -> w) =
+  for (const startState in parseTable.conflictActions) {
+    // So here we have a startState where a symbol was extraneously added
+    // into the look ahead set.   So here recompute the lookahead set
+    // for this state
+    const itemSet = ig.itemSets.get(startState as any as number);
+    evalLASetsForLALRItem(grammar, g2, ig, itemSet, prevSets);
+  }
+
+  // Now that all look aheads have been recomputed - recreate
+  // the parse table
+  return [makeParseTableFromLA(ig, grammar), ig];
 }
 
 /**
@@ -125,6 +170,85 @@ export function makeParseTableFromLA(ig: LRItemGraph, grammar: Grammar): ParseTa
 }
 
 /**
+ * For a given LR(0) Item in the LR0 automaton evaluates the lookahead set
+ * for an LALR1 parse table.
+ *
+ * The LALR lookahead is:
+ *
+ *    LALRLA(q, A -> w) = {t | [r:t] in Follow[p: A], Go[p: w] = q }
+ *
+ * Here [r: t] refers to a state in the augmented grammar transformed from the original
+ * grammar where the nonterminals and terminals are based on the transitions in the
+ * LR(0) automaton.  This augmented grammar is also passed in as a parameter.
+ *
+ * @param grammar     - Original grammar
+ * @param augGrammar  - Augmented grammar
+ * @param ig          - LR0 Automaton
+ * @param itemSet     - The item set in the automaton (ie a particular state)
+ *                      for which lookahead sets are to be computed.
+ * @param prevSets    - A mapping where prevSets[stateI][symId] is a list of
+ *                      states X1,X2...Xn where where the transition
+ *                      X1[symId] = stateI, X2[symId] = stateI ...
+ *                      Xn[symId] = stateI
+ */
+export function evalLASetsForLALRItem(
+  grammar: Grammar,
+  augGrammar: Grammar,
+  ig: LRItemGraph,
+  itemSet: LRItemSet,
+  prevSets: TSU.NumMap<TSU.NumMap<Set<number>>>,
+): void {
+  // find p going backwards from q spelling w
+  function findP(rule: Rule, i: number, currState: number, states: Set<number>): void {
+    if (i < 0) {
+      // we have reached the end - currState is P
+      // Ensure there is a transition from currState on rule.nt
+      const transitions: TSU.NumMap<LRItemSet> = ig.gotoSets[currState];
+      TSU.assert((transitions[rule.nt.id] || null) != null, "Transition on rule.nt missing from start state");
+      states.add(currState);
+    } else {
+      const sym = rule.rhs.syms[i];
+      const prevStates = prevSets[currState][sym.id] || null;
+      TSU.assert(prevStates != null, "Prev set should not be null");
+      prevStates.forEach((nextState) => findP(rule, i - 1, nextState, states));
+    }
+  }
+
+  itemSet.clearLookAheads();
+  // Look for transitions from this set
+  for (const itemId of itemSet.values) {
+    const item = ig.items.get(itemId);
+    const rule = item.rule;
+    if (item.position >= rule.rhs.length) {
+      // Here we have rule of the form A -> w in state q
+      //
+      // For this state we compute LALR lookaheads as:
+      //
+      // LALRLA(q, A -> w) = {t | [r:t] in Follow[p: A], Go[p: w] = q }
+      const pSet = new Set<number>();
+      findP(rule, rule.rhs.length - 1, itemSet.id, pSet);
+      pSet.forEach((p) => {
+        // Now find the NT [p: A] in the augmented grammar
+        const pALabel = `[${p}:${rule.nt.label}]`;
+        const pA = augGrammar.getSym(pALabel);
+        TSU.assert(pA != null, "Augmented grammar symbol [p:A] not found");
+        augGrammar.followSets.forEachTerm(pA, (term) => {
+          if (term != null && term != augGrammar.Eof) {
+            TSU.assert(term.isTerminal);
+            // This term is in the form [r: T] in the augmented grammar.
+            // Get the T from this and add to the look ahead set
+            const label = term.label.substring(term.label.indexOf(":") + 1, term.label.length - 1).trim();
+            const T = grammar.getSym(label);
+            TSU.assert(T != null, `T (${label}) in [r:T] cannot be null`);
+            itemSet.addLookAhead(item, T);
+          }
+        });
+      });
+    }
+  }
+}
+
+/**
  * For a grammar G and its LR0 ItemGraph, IG, returns a transformed grammar G'
  * that is based along the transitions of IG.
  *
@@ -144,9 +268,7 @@ export function grammarFromLR0ItemGraph(ig: LR0ItemGraph, g: Grammar): Grammar {
   function ensureG2Sym(pi: number, sym: Sym): Sym {
     const newSymLabel = `[${pi}:${sym.label}]`;
     const newSym = g2.ensureSym(new Sym(g2, newSymLabel, sym.isTerminal), false);
-    if (!sym.isTerminal && g.startSymbol == sym) {
-      // this *MUST* be the start state
-      TSU.assert(pi == 0, "Start symbol transition can only happen from start state");
+    if (pi == 0 && g.startSymbol == sym && g.startSymbol != newSym && !sym.isTerminal) {
       g2.startSymbol = newSym;
     }
     return newSym;

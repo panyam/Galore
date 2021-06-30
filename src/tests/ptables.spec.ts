@@ -6,21 +6,37 @@ import { grammarFromLR0ItemGraph } from "../ptables";
 import { LR0ItemGraph } from "../lritems";
 import { printGrammar } from "../utils";
 
-describe("LR ParseTable", () => {
+describe("LR ParseTable Dragon Book Cases", () => {
   test("Dragon Book 4.39 LR", () => {
     testParseTable("./testcases/dragon_4.39.g", "./testcases/dragon_4.39.ptables", "lr1");
   });
   test("Dragon Book 4.39 SLR", () => {
     testParseTable("./testcases/dragon_4.39.g", "./testcases/dragon_4.39.ptables", "slr");
   });
-});
+  test("Dragon Book 4.39 LALR", () => {
+    testParseTable("./testcases/dragon_4.39.g", "./testcases/dragon_4.39.ptables", "lalr");
+  });
 
-describe("LRParseTable with Conflicts", () => {
   test("Dragon Book 4.42", () => {
     testParseTable("./testcases/dragon_4.42.g", "./testcases/dragon_4.42.ptables", "lr1");
   });
   test("Dragon Book 4.42 - LR", () => {
     testParseTable("./testcases/dragon_4.42.g", "./testcases/dragon_4.42.ptables", "slr");
+  });
+  test("Dragon Book 4.42 - LR", () => {
+    testParseTable("./testcases/dragon_4.42.g", "./testcases/dragon_4.42.ptables", "lalr");
+  });
+});
+
+describe("LR ParseTable Case 2 - ", () => {
+  test("https://web.cs.dal.ca/~sjackson/lalr1.html - LR", () => {
+    testParseTable("./testcases/case1.g", "./testcases/case1.ptables", "lr1");
+  });
+  test("https://web.cs.dal.ca/~sjackson/lalr1.html - SLR", () => {
+    testParseTable("./testcases/case1.g", "./testcases/case1.ptables", "slr");
+  });
+  test("https://web.cs.dal.ca/~sjackson/lalr1.html - LALR", () => {
+    testParseTable("./testcases/case1.g", "./testcases/case1.ptables", "lalr");
   });
 });
 
@@ -192,6 +208,96 @@ describe("LALR Construction - Grammar Transformation Tests", () => {
       "[2:B]": "<[5:c]>",
       "[3:A]": "<[8:d]>",
       "[3:B]": "<[8:d]>",
+    });
+  });
+});
+
+describe("LALR Construction - LA Set recalc Tests", () => {
+  test("Case 1", () => {
+    const [parser, _, ig] = newParser(
+      `
+        S -> a g d ;
+        S -> a A c ;
+        S -> b A d ;
+        S -> b g c ;
+        A -> B ;
+        B -> g ;
+      `,
+      { type: "lalr" },
+    );
+    const v = mergedDebugValue(parser.parseTable, ig);
+    expect(v).toEqual({
+      "0": {
+        items: [
+          "0  -  $accept ->  • S",
+          "1  -  S ->  • a g d",
+          "2  -  S ->  • a A c",
+          "3  -  S ->  • b A d",
+          "4  -  S ->  • b g c",
+        ],
+        actions: { S: ["1"], a: ["S2"], b: ["S3"] },
+        goto: { S: 1, a: 2, b: 3 },
+      },
+      "1": {
+        items: ["0  -  $accept -> S •  / ( $end )"],
+        actions: { $end: ["Acc"] },
+        goto: {},
+      },
+      "2": {
+        items: ["1  -  S -> a • g d", "2  -  S -> a • A c", "5  -  A ->  • B", "6  -  B ->  • g"],
+        actions: { g: ["S4"], A: ["5"], B: ["6"] },
+        goto: { g: 4, A: 5, B: 6 },
+      },
+      "3": {
+        items: ["3  -  S -> b • A d", "4  -  S -> b • g c", "5  -  A ->  • B", "6  -  B ->  • g"],
+        actions: { g: ["S7"], A: ["8"], B: ["6"] },
+        goto: { g: 7, A: 8, B: 6 },
+      },
+      "4": {
+        items: ["1  -  S -> a g • d", "6  -  B -> g •  / ( c )"],
+        actions: { d: ["S9"], c: ["R 6"] },
+        goto: { d: 9 },
+      },
+      "5": {
+        items: ["2  -  S -> a A • c"],
+        actions: { c: ["S10"] },
+        goto: { c: 10 },
+      },
+      "6": {
+        items: ["5  -  A -> B •  / ( c, d )"],
+        actions: { d: ["R 5"], c: ["R 5"] },
+        goto: {},
+      },
+      "7": {
+        items: ["4  -  S -> b g • c", "6  -  B -> g •  / ( d )"],
+        actions: { d: ["R 6"], c: ["S11"] },
+        goto: { c: 11 },
+      },
+      "8": {
+        items: ["3  -  S -> b A • d"],
+        actions: { d: ["S12"] },
+        goto: { d: 12 },
+      },
+      "9": {
+        items: ["1  -  S -> a g d •  / ( $end )"],
+        actions: { $end: ["R 1"] },
+        goto: {},
+      },
+      "10": {
+        items: ["2  -  S -> a A c •  / ( $end )"],
+        actions: { $end: ["R 2"] },
+        goto: {},
+      },
+      "11": {
+        items: ["4  -  S -> b g c •  / ( $end )"],
+        actions: { $end: ["R 4"] },
+        goto: {},
+      },
+      "12": {
+        items: ["3  -  S -> b A d •  / ( $end )"],
+        actions: { $end: ["R 3"] },
+        goto: {},
+      },
     });
   });
 });

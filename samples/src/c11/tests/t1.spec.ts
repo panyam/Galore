@@ -9,7 +9,7 @@ function readFile(fname: string): string {
 
 function parseFile(fname: string, contents?: string, params = {} as any): any {
   if (!contents) contents = readFile(fname);
-  const [parser, _] = newParser({ type: "slr", ...params });
+  const [parser, _] = newParser({ type: "lalr", ...params });
   const t1 = Date.now();
   const result = parser.parse(contents) || null;
   const t2 = Date.now();

@@ -1,11 +1,13 @@
 export * from "./grammar";
 export * from "./parser";
-export * from "./ptables";
 export * from "./sets";
 export * as Graph from "./graph";
 export * as DSL from "./dsl";
 export * as Analyzer from "./analyzer";
 export * as LL from "./ll";
-export * as LR from "./lr";
 export * as Printers from "./printers";
-export * from "./factory";
+
+export * from "./lr";
+export * from "./lritems";
+export * from "./ptables";
+export { newLRParser as newParser } from "./factory";

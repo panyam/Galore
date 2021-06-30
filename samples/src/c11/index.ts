@@ -4,8 +4,8 @@ import * as G from "galore";
 export * from "./data";
 import { GRAMMAR } from "./data";
 
-export function newParser(params: any): [G.LR.Parser, TLEX.NextTokenFunc | null] {
-  const [parser, tokenizer] = G.newLRParser(GRAMMAR, params);
+export function newParser(params: any): [G.Parser, TLEX.NextTokenFunc | null, G.LRItemGraph | null] {
+  const [parser, tokenizer, ig] = G.newParser(GRAMMAR, params);
   /*
   const typedefNames = new Set<string>();
   const enumNames = new Set<string>();
@@ -28,5 +28,5 @@ export function newParser(params: any): [G.LR.Parser, TLEX.NextTokenFunc | null]
     return node;
   };
   */
-  return [parser, tokenizer];
+  return [parser, tokenizer, ig];
 }

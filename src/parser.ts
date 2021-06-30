@@ -111,7 +111,7 @@ export class PTNode extends PFNode {
   }
 }
 
-export abstract class Parser {
+export abstract class ParserBase {
   tokenbuffer: TLEX.TokenBuffer;
 
   setTokenizer(tokenizer: TLEX.NextTokenFunc): this {
@@ -133,7 +133,7 @@ export abstract class Parser {
   }
 }
 
-export abstract class SimpleParser extends Parser {
+export abstract class SimpleParser extends ParserBase {
   parse(input: string | TLEX.Tape): Nullable<PTNode> {
     if (typeof input === "string") {
       input = new TLEX.Tape(input);
@@ -147,7 +147,7 @@ export abstract class SimpleParser extends Parser {
   protected abstract parseInput(input: TLEX.Tape): Nullable<PTNode>;
 }
 
-export abstract class ParallelParser extends Parser {
+export abstract class ParallelParser extends ParserBase {
   parse(input: string | TLEX.Tape): PFNode[] {
     if (typeof input === "string") {
       input = new TLEX.Tape(input);

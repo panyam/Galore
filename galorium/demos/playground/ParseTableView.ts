@@ -37,7 +37,6 @@ export class ParseTableView extends TSV.View {
   };
 
   updateViews(): void {
-    const itemGraph = this.parser.parseTable.itemGraph;
     let symbols = [...this.parser.grammar.allSymbols].sort(this.gotoSymbolSorter);
     const out = G.Printers.parseTableToHtml(this.parser.parseTable, {
       gotoSymbolSorter: this.gotoSymbolSorter,

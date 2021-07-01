@@ -62,6 +62,6 @@
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
-    "galore": "file:.."
+    "galore": "*"
   }
 }

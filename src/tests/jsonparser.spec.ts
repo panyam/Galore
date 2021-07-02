@@ -1,7 +1,8 @@
 const util = require("util");
 import * as TSU from "@panyam/tsutils";
 import { newLRParser as newParser } from "../factory";
-import { Parser } from "../lr";
+import { PTNode } from "../parser";
+import { Rule } from "../grammar";
 
 const g = `
         %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
@@ -15,11 +16,10 @@ const g = `
         Boolean -> "true" | "false" ;
 `;
 
-function testParsing(input: string, onParser: (p: Parser) => void, debug = false): any {
+function testParsing(input: string, parseParams: any = null, debug = false): any {
   const [parser, _] = newParser(g, { type: "slr" });
-  onParser(parser);
 
-  const result = parser.parse(input);
+  const result = parser.parse(input, parseParams);
   if (debug) {
     console.log(
       "Parse Tree: ",
@@ -36,9 +36,7 @@ function testParsing(input: string, onParser: (p: Parser) => void, debug = false
 
 describe("JSON Parsing", () => {
   test("Basic Parsing", () => {
-    const result = testParsing(`{"a": 1, "b": "xyz", "c": false, "d": null}`, (p: Parser) => {
-      /* */
-    });
+    const result = testParsing(`{"a": 1, "b": "xyz", "c": false, "d": null}`);
     expect(result?.debugValue(true)).toEqual([
       "Value",
       [
@@ -109,8 +107,8 @@ describe("JSON Parsing", () => {
     ]);
   });
   test("Filter Useless Tokens", () => {
-    const result = testParsing(`{"a": 1, "b": "xyz", "c": false, "d": null}`, (p: Parser) => {
-      p.beforeAddingChildNode = (parent, child) => {
+    const result = testParsing(`{"a": 1, "b": "xyz", "c": false, "d": null}`, {
+      beforeAddingChildNode: (parent: PTNode, child: PTNode) => {
         if (child.sym.isTerminal) {
           // only allow true, false, string, number and null
           // terminals
@@ -126,7 +124,7 @@ describe("JSON Parsing", () => {
           }
         }
         return [child];
-      };
+      },
     });
     expect(result?.debugValue(true)).toEqual([
       "Value",
@@ -184,8 +182,8 @@ describe("JSON Parsing", () => {
   });
 
   test("Inline Simple productions", () => {
-    const result = testParsing(`{"a": 1, "b": "xyz", "c": false, "d": null}`, (p: Parser) => {
-      p.beforeAddingChildNode = (parent, child) => {
+    const result = testParsing(`{"a": 1, "b": "xyz", "c": false, "d": null}`, {
+      beforeAddingChildNode: (parent: PTNode, child: PTNode) => {
         if (child.sym.isTerminal) {
           // only allow true, false, string, number and null
           // terminals
@@ -201,13 +199,13 @@ describe("JSON Parsing", () => {
           }
         }
         return [child];
-      };
-      p.onReduction = (node, rule) => {
+      },
+      onReduction: (node: PTNode, rule: Rule) => {
         if (node.children.length == 1) {
           return node.children[0];
         }
         return node;
-      };
+      },
     });
     expect(result?.debugValue(true)).toEqual([
       "$3",
@@ -251,8 +249,8 @@ describe("JSON Parsing", () => {
   test("Collapse Auxiliary Productions", () => {
     const result = testParsing(
       ` { "name": "Milky Way", "age": 4600000000, "star": "sun", "planets": [ "Mercury", "Venus", "Earth" ] }`,
-      (p: Parser) => {
-        p.beforeAddingChildNode = (parent, child) => {
+      {
+        beforeAddingChildNode: (parent: PTNode, child: PTNode) => {
           if (child.sym.isTerminal) {
             // only allow true, false, string, number and null
             // terminals
@@ -270,13 +268,13 @@ describe("JSON Parsing", () => {
             return child.children;
           }
           return [child];
-        };
-        p.onReduction = (node, rule) => {
+        },
+        onReduction: (node: PTNode, rule: Rule) => {
           if (node.children.length == 1) {
             return node.children[0];
           }
           return node;
-        };
+        },
       },
     );
     expect(result?.debugValue()).toEqual([

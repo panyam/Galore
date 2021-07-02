@@ -122,7 +122,7 @@ export class Parser extends ParserBase {
     return this.parseTable.grammar;
   }
 
-  protected parseInput(input: TLEX.Tape): PFNode[] {
+  protected parseInput(input: TLEX.Tape, delegate: any = null): PFNode[] {
     this.reset();
     while (this.tokenbuffer.peek(input) != null) {
       let token = this.tokenbuffer.peek(input);

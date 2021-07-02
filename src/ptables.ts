@@ -4,7 +4,7 @@ import { LRAction, ParseTable } from "./lr";
 import { LRItem, LRItemSet, LRItemGraph, LR0ItemGraph, LR1ItemGraph } from "./lritems";
 import { Goto } from "./tests/utils";
 
-export function newParseTable(g: Grammar, type = "lr1"): [ParseTable, LRItemGraph] {
+export function makeParseTable(g: Grammar, type = "lr1"): [ParseTable, LRItemGraph] {
   switch (type) {
     case "lr1":
       return makeLRParseTable(g);

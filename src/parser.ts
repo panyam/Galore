@@ -134,29 +134,29 @@ export abstract class ParserBase {
 }
 
 export abstract class SimpleParser extends ParserBase {
-  parse(input: string | TLEX.Tape): Nullable<PTNode> {
+  parse(input: string | TLEX.Tape, delegate: any = null): Nullable<PTNode> {
     if (typeof input === "string") {
       input = new TLEX.Tape(input);
     }
-    return this.parseInput(input);
+    return this.parseInput(input, delegate);
   }
 
   /**
    * Parses the input and returns the resulting root Parse Tree node.
    */
-  protected abstract parseInput(input: TLEX.Tape): Nullable<PTNode>;
+  protected abstract parseInput(input: TLEX.Tape, delegate: any): Nullable<PTNode>;
 }
 
 export abstract class ParallelParser extends ParserBase {
-  parse(input: string | TLEX.Tape): PFNode[] {
+  parse(input: string | TLEX.Tape, delegate: any = null): PFNode[] {
     if (typeof input === "string") {
       input = new TLEX.Tape(input);
     }
-    return this.parseInput(input);
+    return this.parseInput(input, delegate);
   }
 
   /**
    * Parses the input and returns the resulting root Parse Tree node.
    */
-  protected abstract parseInput(input: TLEX.Tape): PFNode[];
+  protected abstract parseInput(input: TLEX.Tape, delegate: any): PFNode[];
 }

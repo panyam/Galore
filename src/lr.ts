@@ -181,15 +181,8 @@ export class ParseStack {
 }
 
 export class Parser extends ParserBase {
-  beforeAddingChildNode: BeforeAddingChildCallback;
-  onReduction: RuleReductionCallback;
-  onNextToken: NextTokenCallback;
-
   constructor(public readonly parseTable: ParseTable, config: any = {}) {
     super();
-    this.beforeAddingChildNode = config.beforeAddingChildNode;
-    this.onReduction = config.onReduction;
-    this.onNextToken = config.onNextToken;
   }
 
   get grammar(): Grammar {
@@ -199,7 +192,14 @@ export class Parser extends ParserBase {
   /**
    * Parses the input and returns the resulting root Parse Tree node.
    */
-  protected parseInput(input: TLEX.Tape): Nullable<PTNode> {
+  protected parseInput(
+    input: TLEX.Tape,
+    delegate: {
+      beforeAddingChildNode?: BeforeAddingChildCallback;
+      onReduction?: RuleReductionCallback;
+      onNextToken?: NextTokenCallback;
+    },
+  ): Nullable<PTNode> {
     let idCounter = 0;
     const stack = new ParseStack();
     stack.push(0, new PTNode(idCounter++, this.grammar.augStartRule.nt, null));
@@ -208,7 +208,7 @@ export class Parser extends ParserBase {
     let output: Nullable<PTNode> = null;
     while (tokenbuffer.peek(input) != null || !stack.isEmpty) {
       let token = tokenbuffer.peek(input);
-      if (token && this.onNextToken) token = this.onNextToken(token);
+      if (token && delegate?.onNextToken) token = delegate?.onNextToken(token);
       const nextSym = token == null ? g.Eof : this.getSym(token);
       const nextValue = token == null ? null : token.value;
       let [topState, topNode] = stack.top();
@@ -237,8 +237,8 @@ export class Parser extends ParserBase {
         let newNode = new PTNode(idCounter++, action.rule.nt, null);
         for (let i = ruleLen - 1; i >= 0; i--) {
           const childNode: TSU.Nullable<PTNode> = stack.top(i)[1];
-          if (this.beforeAddingChildNode) {
-            for (const node of this.beforeAddingChildNode(newNode, childNode)) {
+          if (delegate?.beforeAddingChildNode) {
+            for (const node of delegate?.beforeAddingChildNode(newNode, childNode)) {
               newNode.add(node);
             }
           } else {
@@ -252,8 +252,8 @@ export class Parser extends ParserBase {
         [topState, topNode] = stack.top();
         const newAction = this.resolveActions(this.parseTable.getActions(topState, action.rule.nt), stack, tokenbuffer);
         TSU.assert(newAction != null, "Top item does not have an action.");
-        if (this.onReduction) {
-          newNode = this.onReduction(newNode, action.rule);
+        if (delegate?.onReduction) {
+          newNode = delegate?.onReduction(newNode, action.rule);
         }
         stack.push(newAction.gotoState!, newNode);
         output = newNode;

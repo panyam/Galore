@@ -177,7 +177,7 @@ export class Parser extends ParserBase {
   /**
    * Parses the input and returns the resulting root Parse Tree node.
    */
-  protected parseInput(input: TLEX.Tape): Nullable<PTNode> {
+  protected parseInput(input: TLEX.Tape, delegate: any = null): Nullable<PTNode> {
     this.stack = new ParseStack(this.parseTable);
     const tokenbuffer = this.tokenbuffer;
     const stack = this.stack;

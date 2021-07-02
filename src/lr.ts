@@ -181,8 +181,6 @@ export class ParseStack {
 }
 
 export class Parser extends ParserBase {
-  stack: ParseStack;
-
   beforeAddingChildNode: BeforeAddingChildCallback;
   onReduction: RuleReductionCallback;
   onNextToken: NextTokenCallback;
@@ -203,10 +201,9 @@ export class Parser extends ParserBase {
    */
   protected parseInput(input: TLEX.Tape): Nullable<PTNode> {
     let idCounter = 0;
-    this.stack = new ParseStack();
-    this.stack.push(0, new PTNode(idCounter++, this.grammar.augStartRule.nt, null));
+    const stack = new ParseStack();
+    stack.push(0, new PTNode(idCounter++, this.grammar.augStartRule.nt, null));
     const tokenbuffer = this.tokenbuffer;
-    const stack = this.stack;
     const g = this.grammar;
     let output: Nullable<PTNode> = null;
     while (tokenbuffer.peek(input) != null || !stack.isEmpty) {

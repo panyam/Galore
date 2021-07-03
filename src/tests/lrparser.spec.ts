@@ -1,4 +1,3 @@
-const util = require("util");
 import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
 import { PTNode } from "../parser";
@@ -16,7 +15,7 @@ function testParsing(grammar: string, input: string, config: any = {}): TSU.Null
   const result = parser.parse(input);
   if (config === true || config.debug) {
     // console.log(result?.reprString);
-    console.log(util.inspect(result?.debugValue(true) || null, { showHidden: false, depth: null }));
+    console.log(JSON.stringify(result?.debugValue(true) || null, null, 4));
   }
   return result;
 }

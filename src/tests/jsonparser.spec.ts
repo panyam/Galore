@@ -1,19 +1,18 @@
-const util = require("util");
 import * as TSU from "@panyam/tsutils";
 import { newLRParser as newParser } from "../factory";
 import { PTNode } from "../parser";
 import { Rule } from "../grammar";
 
 const g = `
-        %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
-        %token STRING /".*?(?<!\\\\)"/
-        %skip /[ \\t\\n\\f\\r]+/
+      %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
+      %token STRING /".*?(?<!\\\\)"/
+      %skip /[ \\t\\n\\f\\r]+/
 
-        Value -> Dict | List | STRING | NUMBER | Boolean | "null" ;
-        List -> "[" [ Value ( "," Value ) * ] "]" ;
-        Dict -> "{" [ Pair ("," Pair)* ] "}" ;
-        Pair -> STRING ":" Value ;
-        Boolean -> "true" | "false" ;
+      Value -> Dict | List | STRING | NUMBER | Boolean | "null" ;
+      List -> "[" [ Value ( "," Value ) * ] "]" ;
+      Dict -> "{" [ Pair ("," Pair)* ] "}" ;
+      Pair -> STRING ":" Value ;
+      Boolean -> "true" | "false" ;
 `;
 
 function testParsing(input: string, parseParams: any = null, debug = false): any {
@@ -21,15 +20,7 @@ function testParsing(input: string, parseParams: any = null, debug = false): any
 
   const result = parser.parse(input, parseParams);
   if (debug) {
-    console.log(
-      "Parse Tree: ",
-      util.inspect(result?.debugValue(true), {
-        showHidden: false,
-        depth: null,
-        maxArrayLength: null,
-        maxStringLength: null,
-      }),
-    );
+    console.log("Parse Tree: ", JSON.stringify(result?.debugValue(true), null, 4));
   }
   return result;
 }

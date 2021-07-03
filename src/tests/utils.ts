@@ -1,4 +1,3 @@
-const util = require("util");
 import fs from "fs";
 const JSON5 = require("json5");
 import * as TSU from "@panyam/tsutils";

@@ -1,4 +1,3 @@
-const util = require("util");
 import { Parser, LRAction, ParseTable } from "./lr";
 import { LRItemGraph } from "./lritems";
 
@@ -11,12 +10,7 @@ export function logParserDebug(parser: Parser, itemGraph?: LRItemGraph): void {
     "===============================\nGrammar (as Bison): \n",
     g.debugValue.map((x, i) => `${x.replace("->", ":")} ; \n`).join(""),
     "===============================\nParseTable: \n",
-    util.inspect(mergedDebugValue(ptable, itemGraph), {
-      showHidden: false,
-      depth: null,
-      maxArrayLength: null,
-      maxStringLength: null,
-    }),
+    JSON.stringify(mergedDebugValue(ptable, itemGraph), null, 4),
     "===============================\nConflicts: \n",
     ptable.conflictActions,
   );

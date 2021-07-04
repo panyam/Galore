@@ -200,8 +200,9 @@ export class Parser {
     this.parseGrammar(new TLEX.Tape(input));
   }
 
-  parseRule(tape: TLEX.Tape, tag?: string, priority = 0): TLEX.Rule {
-    if (this.regexSyntax == "js") {
+  parseRule(tape: TLEX.Tape, tag?: string, priority = 0, syntax = ""): TLEX.Rule {
+    if (syntax == "") syntax = this.regexSyntax;
+    if (syntax == "js") {
       const tokPattern = this.tokenizer.expectToken(tape, TokenType.STRING, TokenType.NUMBER, TokenType.REGEX);
       let rule: TLEX.Rule;
       if (!tag || tag.length == 0) {
@@ -260,7 +261,7 @@ export class Parser {
       }
       this.regexSyntax = next.value;
     } else if (directive.startsWith("skip")) {
-      const rule = this.parseRule(tape, "", 30);
+      const rule = this.parseRule(tape, "", 30, directive.endsWith("flex") ? "flex" : "");
       this.generatedTokenizer.addRule(rule, () => null);
     } else if (directive.startsWith("token") || directive.startsWith("define")) {
       const isDef = directive.startsWith("define");
@@ -269,7 +270,7 @@ export class Parser {
       if (tokName.tag == TokenType.STRING || tokName.tag == TokenType.NUMBER) {
         label = `"${tokName.value}"`;
       }
-      const rule = this.parseRule(tape, label);
+      const rule = this.parseRule(tape, label, 0, directive.endsWith("flex") ? "flex" : "");
       if (isDef) {
         // Define a "reusable" regex that is not a token on its own
         this.generatedTokenizer.addVar(label, rule.expr);

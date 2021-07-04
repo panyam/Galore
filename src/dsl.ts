@@ -259,11 +259,11 @@ export class Parser {
         throw new SyntaxError("Invalid regex syntax: " + next.value);
       }
       this.regexSyntax = next.value;
-    } else if (directive == "skip") {
+    } else if (directive.startsWith("skip")) {
       const rule = this.parseRule(tape, "", 30);
       this.generatedTokenizer.addRule(rule, () => null);
-    } else if (directive == "token" || directive == "define") {
-      const isDef = directive == "define";
+    } else if (directive.startsWith("token") || directive.startsWith("define")) {
+      const isDef = directive.startsWith("define");
       const tokName = this.tokenizer.expectToken(tape, TokenType.IDENT, TokenType.STRING);
       let label = tokName.value as string;
       if (tokName.tag == TokenType.STRING || tokName.tag == TokenType.NUMBER) {

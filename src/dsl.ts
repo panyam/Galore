@@ -54,7 +54,7 @@ export function Tokenizer(): TLEX.Tokenizer {
     token.value = tape.substring(token.start + 1, token.end - 1);
     return token;
   });
-  lexer.add(/'(.*?(?<!\\))'/, { tag: TokenType.STRING }, (rule, tape, token) => {
+  lexer.add(TLEX.Builder.flexRE`[']([^'\\\n]|\\.|\\\n)*[']`, { tag: TokenType.STRING }, (rule, tape, token) => {
     token.value = tape.substring(token.start + 1, token.end - 1);
     return token;
   });

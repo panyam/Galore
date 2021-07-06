@@ -27,8 +27,20 @@ function loadGrammar(input: string, debug = false): Grammar {
 }
 
 describe("EBNF Tests", () => {
+  test("Syntax", () => {
+    const g = loadGrammar(`
+      %token  TOK1  "hello"
+    `);
+  });
+
+  test("Syntax", () => {
+    const g = loadGrammar(String.raw`
+      %token  TOK1  "\\"
+    `);
+  });
+
   test("JSON", () => {
-    const g = loadGrammar(
+    loadGrammar(
       `
       %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
       %token STRING /".*?(?<!\\\\)"/

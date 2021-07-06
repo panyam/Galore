@@ -50,7 +50,7 @@ export function Tokenizer(): TLEX.Tokenizer {
   lexer.add(/\s+/m, { tag: TokenType.SPACES }, () => null);
   lexer.add(/\/\*.*?\*\//s, { tag: TokenType.COMMENT }, () => null);
   lexer.add(/\/\/.*$/m, { tag: TokenType.COMMENT }, () => null);
-  lexer.add(/"(.*?(?<!\\))"/, { tag: TokenType.STRING }, (rule, tape, token) => {
+  lexer.add(TLEX.Builder.flexRE`["]([^"\\\n]|\\.|\\\n)*["]`, { tag: TokenType.STRING }, (rule, tape, token) => {
     token.value = tape.substring(token.start + 1, token.end - 1);
     return token;
   });
@@ -228,7 +228,7 @@ export class Parser {
       if (!tag || tag.length == 0) {
         tag = "/" + patternStr + "/";
       }
-      return TLEX.Builder.fromFlexRE(patternStr, { tag: tag, priority: priority });
+      return new TLEX.Rule(TLEX.Builder.exprFromFlexRE(patternStr), { tag: tag, priority: priority });
     }
   }
 

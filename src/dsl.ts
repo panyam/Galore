@@ -99,18 +99,24 @@ export enum NodeType {
  *
  * rules -> rule | rule rules ;
  *
- * rule -> IDENT "->" productions ";" ;
+ * rule -> IDENT "->" top_productions ";" ;
  *
- * productions -> prod  ( | prod ) *
- *            |
- *            ;
+ * top_productions -> ( actionSpec ) ?
+ *                |   prod ( actionSpec ) ? top_productions
+ *                ;
  *
- * prod -> ( prod_group | optional_prod | IDENT | STRING ) ( "*" | "+" | "?" ) ?
+ * productions ->
+ *              | prod  "|" productions
+ *              ;
+ *
+ * prod -> ( prod_group | optional_prod | IDENT ( ":" name ) ? | STRING ) ( "*" | "+" | "?" ) ?
  *      ;
  *
  * prod_group -> "(" productions ")"  ;
  *
- * optional_prod -> "(" productions ")"  ;
+ * optional_prod -> "[" productions "]"  ;
+ *
+ * actionSpec := "{" IDENT "(" IDENT ( "," IDENT ) * ")" "}"
  */
 export class Parser {
   readonly grammar: Grammar;
@@ -200,7 +206,7 @@ export class Parser {
     this.parseGrammar(new TLEX.Tape(input));
   }
 
-  parseRule(tape: TLEX.Tape, tag?: string, priority = 0, syntax = ""): TLEX.Rule {
+  parseRegex(tape: TLEX.Tape, tag?: string, priority = 0, syntax = ""): TLEX.Rule {
     if (syntax == "") syntax = this.regexSyntax;
     if (syntax == "js") {
       const tokPattern = this.tokenizer.expectToken(tape, TokenType.STRING, TokenType.NUMBER, TokenType.REGEX);
@@ -261,7 +267,7 @@ export class Parser {
       }
       this.regexSyntax = next.value;
     } else if (directive.startsWith("skip")) {
-      const rule = this.parseRule(tape, "", 30, directive.endsWith("flex") ? "flex" : "");
+      const rule = this.parseRegex(tape, "", 30, directive.endsWith("flex") ? "flex" : "");
       this.generatedTokenizer.addRule(rule, () => null);
     } else if (directive.startsWith("token") || directive.startsWith("define")) {
       const isDef = directive.startsWith("define");
@@ -270,7 +276,7 @@ export class Parser {
       if (tokName.tag == TokenType.STRING || tokName.tag == TokenType.NUMBER) {
         label = `"${tokName.value}"`;
       }
-      const rule = this.parseRule(tape, label, 0, directive.endsWith("flex") ? "flex" : "");
+      const rule = this.parseRegex(tape, label, 0, directive.endsWith("flex") ? "flex" : "");
       if (isDef) {
         // Define a "reusable" regex that is not a token on its own
         this.generatedTokenizer.addVar(label, rule.expr);

@@ -1,5 +1,5 @@
 import * as TSU from "@panyam/tsutils";
-import { Grammar, Str, Sym } from "../grammar";
+import { Grammar, Str, Sym, RuleAction } from "../grammar";
 import { Tokenizer as EBNFTokenizer, Parser as EBNFParser } from "../dsl";
 import { expectRules } from "./utils";
 import { printGrammar } from "../utils";
@@ -255,5 +255,28 @@ describe("EBNF Tests", () => {
 
     expectListsEqual(symLabels(g.nonTerminals), ["string", "unary_operator"]);
     expectListsEqual(symLabels(g.terminals), ["", "$end", "FUNC_NAME", "STRING_LITERAL", '"!"', '"&"']);
+  });
+
+  test("Testing Actions", () => {
+    const parser = new EBNFParser(String.raw`
+                                  E -> E "+" E { add } ;
+                                  E -> E "-" E { subtract } ;
+                                  E -> E "*" E { mult } ;
+                                  E -> E "/" E { divide } ;
+                                  E -> "(" E ")" { $2 } ;
+                                  E -> id | num ;
+    `);
+    const g = parser.grammar;
+    const t = parser.generatedTokenizer;
+
+    expectListsEqual(symLabels(g.nonTerminals), ["E"]);
+    expectListsEqual(symLabels(g.terminals), ["", "$end", '"+"', '"-"', '"/"', '"*"', '"("', '")"', "id", "num"]);
+    const rules = g.rulesForNT(g.getSym("E")!);
+    expect(rules.length).toBe(7);
+    expect(rules.map((r) => r.action)).toEqual(
+      ["add", "subtract", "mult", "divide", 2, null, null].map((v) => (v == null ? v : new RuleAction(v))),
+    );
+    expect(rules[4].action?.isChildPosition).toBe(true);
+    expect(rules[4].action?.isFunction).toBe(false);
   });
 });

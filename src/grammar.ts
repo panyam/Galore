@@ -136,28 +136,24 @@ export class Str {
   }
 }
 
+export class RuleAction {
+  constructor(public value: string | number) {}
+
+  get isFunction(): boolean {
+    return typeof this.value === "string";
+  }
+
+  get isChildPosition(): boolean {
+    return typeof this.value === "number";
+  }
+}
+
 export class Rule {
   id: number;
-  nt: Sym;
-  rhs: Str;
-  /**
-   * Fields are a way to indentify specific symbols instead of only
-   * accessing them via indices.
-   * For example consider the rule:
-   *
-   * E -> E ("+" | "-") E;
-   *
-   * This represents a binary arithmetic expression with left and right
-   * hand sides along with the right operator.
-   */
-  protected fields: StringMap<number>;
-
-  constructor(nt: Sym, rhs: Str) {
+  constructor(public nt: Sym, public rhs: Str, public action: RuleAction | null = null) {
     if (nt.isTerminal) {
       throw new Error("Cannot add rules to a terminal");
     }
-    this.nt = nt;
-    this.rhs = rhs;
   }
 
   get debugString(): string {
@@ -340,7 +336,7 @@ export class Grammar {
    *
    * Null production can be represented with an empty exps list.
    */
-  add(nt: string | Sym, production: Str): Rule {
+  add(nt: string | Sym, production: Str, action: RuleAction | null = null): Rule {
     let nonterm: Nullable<Sym> = null;
     if (typeof nt === "string") {
       nonterm = this.getSym(nt);
@@ -351,7 +347,7 @@ export class Grammar {
     } else {
       nonterm = this.ensureSym(nt);
     }
-    return this.addRule(new Rule(nonterm, production));
+    return this.addRule(new Rule(nonterm, production, action));
   }
 
   /**

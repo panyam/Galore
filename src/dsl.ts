@@ -1,10 +1,11 @@
 import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
-import { Sym, Grammar, Str } from "./grammar";
+import { Sym, Grammar, Str, Rule, RuleAction } from "./grammar";
 
 type Tape = TLEX.Tape;
 
-const str2regex = (s: string): string => {
+const str2regex = (s: string | number): string => {
+  if (typeof s === "number") return "" + s;
   return s.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 };
 
@@ -19,6 +20,8 @@ export enum TokenType {
   PLUS = "PLUS",
   QMARK = "QMARK",
   PIPE = "PIPE",
+  DOLLAR_NUM = "DOLLAR_NUM",
+  DOLLAR_IDENT = "DOLLAR_IDENT",
   OPEN_PAREN = "OPEN_PAREN",
   CLOSE_PAREN = "CLOSE_PAREN",
   OPEN_BRACE = "OPEN_BRACE",
@@ -30,6 +33,92 @@ export enum TokenType {
   COLCOLHYPHEN = "COLCOLHYPHEN",
   COLON = "COLON",
   SEMI_COLON = "SEMI_COLON",
+}
+
+/**
+ * The SemanticHandler is the bridge between the DSL, the Grammar, the Parser
+ * and the caller of the parser.
+ * In the DSL semantic actions can be added to tokenizer and grammar specs.
+ * However the problem how to invoke them during runtime.
+ *
+ * For example in the grammar:
+ *
+ * E -> E + E { add($1, $3) }
+ *
+ * declares that when this rule is reduced the "add" function (in user land) is
+ * invoked with the results of the right hand side values.
+ *
+ * This parsing however is done by the DSL loader and at this time the "add" method
+ * is not declared anywhere.   In fact the the declaration is only  used by the parser
+ * driver (after the parse tables have been constructed and parsing is started on
+ * a real input).   The parser here needs to supply the definition for "add" method.
+ * Note only this only the parser can call what is needed to kick off the "add" method
+ * to be invoked.
+ *
+ * So the parser will need something like:
+ *
+ * while (input) {
+ *    ....
+ *    reduceRule(Nt, E1, E2, E3 ..., "action")
+ * }
+ *
+ * the "action" will be part of the SemanticHandler
+ *
+ * reduceRule(Nt...., "action") {
+ *  Nt.value = semanticHandler.getAction("action").apply(E1, E2...., En);
+ * }
+ *
+ * Similarly the caller of the "parse" method could populate the actions, eg:
+ *
+ * semanticHandler.register("action", (a, b, c) => {
+ *    return ....;
+ * });
+ *
+ * The DSL loader in turn returns a semanticHandler instance just the way it
+ * creates a tokenizer.
+ *
+ * There are a couple of options here.
+ *
+ * 1. Keep actions simple and store action IDs and let the caller do all the work, eg:
+ *
+ * E -> E + E { add $1 $3 }
+ *
+ * 2. Provide a stronger expression syntax:
+ *
+ * Or we could add a slightly more functional syntax so that a proper interpreter like setup is possible, eg:
+ *
+ * E -> E + E { add(halve($1), double($3)) }
+ *
+ * Here instead of calling an action "add" we could actually store expression trees and call an interpreter
+ * with attribute value bindings.
+ *
+ * For now we will go with (1) as it is simpler and we can always build up (2) if doing (1) alone is too verbose.
+ *
+ * With (1), syntax for semantic actions is:
+ *
+ *  SemAction -> "{" ActionSpec "}" ;
+ *
+ *  ActionSpec -> DOLLAR_NUM
+ *              | IDENT ( IDENT | DOLLAR_NUM | NUM | STRING | BOOLEAN | NULL ) *
+ *              ;
+ *
+ * 3. There is an evern simpler third option.  Instead of the parser trying to martial parameters etc it could just
+ * let the handler do the work of martialling/extracting parameters from children.  This is effective and easy
+ *
+ * In this mode all child nodes are passed as is to the handler and it is upto the handler to return the semantic
+ * value of the production.
+ */
+export class SemanticAction {
+  funcName: string;
+}
+
+export class SemanticHandler {
+  tokenHandlers: TSU.StringMap<any> = {};
+  onToken(name: string, token: TLEX.Token, tape: TLEX.Tape): TLEX.Token {
+    const handler = this.tokenHandlers[name];
+    handler(token, tape);
+    return token;
+  }
 }
 
 export function Tokenizer(): TLEX.Tokenizer {
@@ -62,8 +151,19 @@ export function Tokenizer(): TLEX.Tokenizer {
     token.value = tape.substring(token.start + 1, token.end - 1);
     return token;
   });
-  lexer.add(/\d+/, { tag: TokenType.NUMBER });
+  lexer.add(/\d+/, { tag: TokenType.NUMBER }, (rule, tape, token) => {
+    token.value = parseInt(tape.substring(token.start, token.end));
+    return token;
+  });
   lexer.add(/%([\w][\w\d_]*)/, { tag: TokenType.PCT_IDENT }, (rule, tape, token) => {
+    token.value = tape.substring(token.start + 1, token.end);
+    return token;
+  });
+  lexer.add(/\$\d+/, { tag: TokenType.DOLLAR_NUM }, (rule, tape, token) => {
+    token.value = parseInt(tape.substring(token.start + 1, token.end));
+    return token;
+  });
+  lexer.add(/\$([\w][\w\d_]*)/, { tag: TokenType.DOLLAR_IDENT }, (rule, tape, token) => {
     token.value = tape.substring(token.start + 1, token.end);
     return token;
   });
@@ -123,6 +223,7 @@ export class Parser {
   private tokenizer: TLEX.TokenBuffer;
   private leftRecursive = false;
   readonly generatedTokenizer: TLEX.Tokenizer = new TLEX.Tokenizer();
+  readonly semanticHandler = new SemanticHandler();
 
   /*
    * The newSymbol callback provided to the contructor is a way for the client to
@@ -268,7 +369,15 @@ export class Parser {
       this.regexSyntax = next.value;
     } else if (directive.startsWith("skip")) {
       const rule = this.parseRegex(tape, "", 30, directive.endsWith("flex") ? "flex" : "");
-      this.generatedTokenizer.addRule(rule, () => null);
+      const tokenHandler = this.parseTokenHandler(tape);
+      if (tokenHandler) {
+        this.generatedTokenizer.addRule(rule, (rule, tape, token) => {
+          tokenHandler(rule, tape, token);
+          return null;
+        });
+      } else {
+        this.generatedTokenizer.addRule(rule, () => null);
+      }
     } else if (directive.startsWith("token") || directive.startsWith("define")) {
       const isDef = directive.startsWith("define");
       const tokName = this.tokenizer.expectToken(tape, TokenType.IDENT, TokenType.STRING);
@@ -281,13 +390,31 @@ export class Parser {
         // Define a "reusable" regex that is not a token on its own
         this.generatedTokenizer.addVar(label, rule.expr);
       } else {
-        this.generatedTokenizer.addRule(rule);
+        const tokenHandler = this.parseTokenHandler(tape);
+        // see if we have a handler function here
+        this.generatedTokenizer.addRule(rule, tokenHandler);
         // register it
         this.ensureSymbol(label, true);
       }
     } else {
       throw new Error("Invalid directive: " + directive);
     }
+  }
+
+  parseTokenHandler(tape: Tape): TLEX.RuleMatchHandler | null {
+    if (!this.tokenizer.consumeIf(tape, TokenType.OPEN_BRACE)) {
+      return null;
+    }
+
+    const funcName = this.tokenizer.expectToken(tape, TokenType.IDENT);
+
+    // how do we use the funcName to
+    const out = (rule: TLEX.Rule, tape: Tape, token: any) => {
+      return this.semanticHandler.onToken(funcName.value, token, tape);
+    };
+
+    this.tokenizer.expectToken(tape, TokenType.CLOSE_BRACE);
+    return out;
   }
 
   parseDecl(tape: Tape): void {
@@ -301,18 +428,18 @@ export class Parser {
       } else if (nt.isAuxiliary) {
         throw new Error("NT is already auxiliary and cannot be reused.");
       }
-      for (const rule of this.parseProductions(tape, this.grammar, nt)) {
-        this.grammar.add(nt, rule);
+      for (const [rhs, action] of this.parseProductions(tape, this.grammar, nt)) {
+        const rule = this.grammar.add(nt, rhs, action);
       }
       this.tokenizer.expectToken(tape, TokenType.SEMI_COLON);
     }
   }
 
-  parseProductions(tape: Tape, grammar: Grammar, nt: TSU.Nullable<Sym>): Str[] {
-    const out: Str[] = [];
+  parseProductions(tape: Tape, grammar: Grammar, nt: TSU.Nullable<Sym>): [Str, RuleAction | null][] {
+    const out: [Str, RuleAction | null][] = [];
     while (this.tokenizer.peek(tape) != null) {
       const rule = this.parseProd(tape, grammar);
-      if (rule) out.push(rule);
+      out.push(rule);
       if (this.tokenizer.consumeIf(tape, TokenType.PIPE)) {
         continue;
       } else if (this.tokenizer.nextMatches(tape, TokenType.CLOSE_SQ, TokenType.CLOSE_PAREN, TokenType.SEMI_COLON)) {
@@ -322,7 +449,7 @@ export class Parser {
     return out;
   }
 
-  parseProd(tape: Tape, grammar: Grammar): Str {
+  parseProd(tape: Tape, grammar: Grammar): [Str, null | RuleAction] {
     const out = new Str();
     while (true) {
       // if we are starting with a FOLLOW symbol then return as it marks
@@ -334,20 +461,25 @@ export class Parser {
           TokenType.CLOSE_SQ,
           TokenType.SEMI_COLON,
           TokenType.PIPE,
+          TokenType.OPEN_BRACE,
         )
       ) {
-        return out;
+        break;
+        // return [out, null];
       }
+
       let curr: TSU.Nullable<Str> = null;
       if (this.tokenizer.consumeIf(tape, TokenType.OPEN_PAREN)) {
         const rules = this.parseProductions(tape, grammar, null);
         if (rules.length == 0) {
           // nothing
         } else if (rules.length == 1) {
-          curr = rules[0];
+          // TODO: Consider actions in non top level rules
+          curr = rules[0][0];
         } else {
           // create a new NT over this
-          curr = grammar.anyof(...rules);
+          // TODO: Consider actions in non top level rules
+          curr = grammar.anyof(...rules.map((r) => r[0]));
         }
         this.tokenizer.expectToken(tape, TokenType.CLOSE_PAREN);
       } else if (this.tokenizer.consumeIf(tape, TokenType.OPEN_SQ)) {
@@ -355,10 +487,12 @@ export class Parser {
         if (rules.length == 0) {
           // nothing
         } else if (rules.length == 1) {
-          curr = grammar.opt(rules[0]);
+          // TODO: Consider actions in non top level rules
+          curr = grammar.opt(rules[0][0]);
         } else {
           // create a new NT over this
-          curr = grammar.opt(grammar.anyof(...rules));
+          // TODO: Consider actions in non top level rules
+          curr = grammar.opt(grammar.anyof(...rules.map((r) => r[0])));
         }
         this.tokenizer.expectToken(tape, TokenType.CLOSE_SQ);
       } else if (
@@ -398,7 +532,13 @@ export class Parser {
       }
       out.extend(curr);
     }
-    return out;
+    let action: RuleAction | null = null;
+    if (this.tokenizer.consumeIf(tape, TokenType.OPEN_BRACE)) {
+      const next = this.tokenizer.expectToken(tape, TokenType.DOLLAR_NUM, TokenType.IDENT);
+      action = new RuleAction(next.value);
+      this.tokenizer.expectToken(tape, TokenType.CLOSE_BRACE);
+    }
+    return [out, action];
   }
 }
 

@@ -36,63 +36,82 @@ const test_grammar = `
 describe("LRParsing Tests", () => {
   test("Test Single ID", () => {
     const result = testParsing(test_grammar, "A", { type: "slr" });
-    expect(result?.debugValue(false)).toEqual(["E", "  T", "    F", "      id - A"]);
+    expect(result?.debugValue()).toEqual(["E", "A", [["T", "A", [["F", "A", [["id", "A"]]]]]]]);
   });
 
   test("Test A + B * C", () => {
     const result = testParsing(test_grammar, "A+B*C", { type: "slr" });
-    expect(result?.debugValue(false)).toEqual([
+    expect(result?.debugValue()).toEqual([
       "E",
-      "  E",
-      "    T",
-      "      F",
-      "        id - A",
-      "  plus - +",
-      "  T",
-      "    T",
-      "      F",
-      "        id - B",
-      "    star - *",
-      "    F",
-      "      id - C",
+      [
+        ["E", "A", [["T", "A", [["F", "A", [["id", "A"]]]]]]],
+        ["plus", "+"],
+        [
+          "T",
+          [
+            ["T", "B", [["F", "B", [["id", "B"]]]]],
+            ["star", "*"],
+            ["F", "C", [["id", "C"]]],
+          ],
+        ],
+      ],
     ]);
   });
 
   test("Test A + B * C + (x * y + z)", () => {
     const result = testParsing(test_grammar, "A+B*C+(x*y+z)", { type: "slr" });
-    expect(result?.debugValue(false)).toEqual([
+    expect(result?.debugValue()).toEqual([
       "E",
-      "  E",
-      "    E",
-      "      T",
-      "        F",
-      "          id - A",
-      "    plus - +",
-      "    T",
-      "      T",
-      "        F",
-      "          id - B",
-      "      star - *",
-      "      F",
-      "        id - C",
-      "  plus - +",
-      "  T",
-      "    F",
-      "      open - (",
-      "      E",
-      "        E",
-      "          T",
-      "            T",
-      "              F",
-      "                id - x",
-      "            star - *",
-      "            F",
-      "              id - y",
-      "        plus - +",
-      "        T",
-      "          F",
-      "            id - z",
-      "      close - )",
+      [
+        [
+          "E",
+          [
+            ["E", "A", [["T", "A", [["F", "A", [["id", "A"]]]]]]],
+            ["plus", "+"],
+            [
+              "T",
+              [
+                ["T", "B", [["F", "B", [["id", "B"]]]]],
+                ["star", "*"],
+                ["F", "C", [["id", "C"]]],
+              ],
+            ],
+          ],
+        ],
+        ["plus", "+"],
+        [
+          "T",
+          [
+            [
+              "F",
+              [
+                ["open", "("],
+                [
+                  "E",
+                  [
+                    [
+                      "E",
+                      [
+                        [
+                          "T",
+                          [
+                            ["T", "x", [["F", "x", [["id", "x"]]]]],
+                            ["star", "*"],
+                            ["F", "y", [["id", "y"]]],
+                          ],
+                        ],
+                      ],
+                    ],
+                    ["plus", "+"],
+                    ["T", "z", [["F", "z", [["id", "z"]]]]],
+                  ],
+                ],
+                ["close", ")"],
+              ],
+            ],
+          ],
+        ],
+      ],
     ]);
   });
 
@@ -217,7 +236,7 @@ describe("Auxiliary Symbol Tests", () => {
                 [
                   "$0",
                   [
-                    ["$0", [["B", "b"]]],
+                    ["$0", "b", [["B", "b"]]],
                     ["B", "b"],
                   ],
                 ],

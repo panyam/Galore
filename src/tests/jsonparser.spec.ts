@@ -43,7 +43,7 @@ describe("JSON Parsing", () => {
                   [
                     ["STRING", '"a"'],
                     ['":"', ":"],
-                    ["Value", [["NUMBER", "1"]]],
+                    ["Value", "1", [["NUMBER", "1"]]],
                   ],
                 ],
                 [
@@ -62,7 +62,7 @@ describe("JSON Parsing", () => {
                               [
                                 ["STRING", '"b"'],
                                 ['":"', ":"],
-                                ["Value", [["STRING", '"xyz"']]],
+                                ["Value", '"xyz"', [["STRING", '"xyz"']]],
                               ],
                             ],
                           ],
@@ -73,7 +73,7 @@ describe("JSON Parsing", () => {
                           [
                             ["STRING", '"c"'],
                             ['":"', ":"],
-                            ["Value", [["Boolean", [['"false"', "false"]]]]],
+                            ["Value", "false", [["Boolean", "false", [['"false"', "false"]]]]],
                           ],
                         ],
                       ],
@@ -84,7 +84,7 @@ describe("JSON Parsing", () => {
                       [
                         ["STRING", '"d"'],
                         ['":"', ":"],
-                        ["Value", [['"null"', "null"]]],
+                        ["Value", "null", [['"null"', "null"]]],
                       ],
                     ],
                   ],
@@ -130,7 +130,7 @@ describe("JSON Parsing", () => {
                   "Pair",
                   [
                     ["STRING", '"a"'],
-                    ["Value", [["NUMBER", "1"]]],
+                    ["Value", "1", [["NUMBER", "1"]]],
                   ],
                 ],
                 [
@@ -147,7 +147,7 @@ describe("JSON Parsing", () => {
                               "Pair",
                               [
                                 ["STRING", '"b"'],
-                                ["Value", [["STRING", '"xyz"']]],
+                                ["Value", '"xyz"', [["STRING", '"xyz"']]],
                               ],
                             ],
                           ],

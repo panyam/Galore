@@ -212,7 +212,9 @@ export class Parser extends ParserBase {
    */
   protected parseInput(input: TLEX.Tape, context?: ParserContext): Nullable<PTNode> {
     context = context || ({} as ParserContext);
+    // Set default values for missing values
     if (context.buildParseTree != false) context.buildParseTree = true;
+    if (context.copySingleChild != false) context.copySingleChild = true;
     let idCounter = 0;
     const stack = new ParseStack();
     stack.push(0, new PTNode(idCounter++, this.grammar.augStartRule.nt, null));

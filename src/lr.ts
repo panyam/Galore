@@ -191,7 +191,7 @@ export type RuleActionHandler = (rule: Rule, parent: PTNode, ...children: PTNode
 export interface ParserContext {
   buildParseTree?: boolean;
   copySingleChild?: boolean;
-  semanticHandler: TSU.StringMap<RuleActionHandler>;
+  ruleHandlers: TSU.StringMap<RuleActionHandler>;
   beforeAddingChildNode?: BeforeAddingChildCallback;
   onReduction?: RuleReductionCallback;
   onNextToken?: NextTokenCallback;
@@ -326,7 +326,7 @@ export class Parser extends ParserBase {
           if (action.rule.action.isFunction) {
             // find the function associated with
             const handlerName = action.rule.action.value;
-            const handler = context.semanticHandler![handlerName];
+            const handler = context.ruleHandlers![handlerName];
             if (!handler) throw new Error("Action handler not found: " + handlerName);
             // TODO - Replace the handler signature to take an
             // interface that returns the nth child node (directly from

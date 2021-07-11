@@ -186,10 +186,12 @@ export type ActionResolverCallback = (
   tokenbuffer: TLEX.TokenBuffer,
 ) => LRAction;
 
+export type RuleActionHandler = (rule: Rule, ...children: PTNode[]) => any;
+
 export interface ParserContext {
   buildParseTree?: boolean;
   copySingleChild?: boolean;
-  semanticHandler: TSU.StringMap<any>;
+  semanticHandler: TSU.StringMap<RuleActionHandler>;
   beforeAddingChildNode?: BeforeAddingChildCallback;
   onReduction?: RuleReductionCallback;
   onNextToken?: NextTokenCallback;
@@ -327,7 +329,7 @@ export class Parser extends ParserBase {
             // the parse stack) instead of all children - this way we
             // can even avoid building a parse tree if need be and
             // decouple semantic actions from parse tree building
-            newNode.value = handler(...newNode.children);
+            newNode.value = handler(action.rule, ...newNode.children);
           } else {
             // setting value as a child's value, eg $1, $2 etc
             newNode.value = newNode.children[(action.rule.action.value as number) - 1].value;

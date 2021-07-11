@@ -27,7 +27,7 @@ function testParsing(input: string, parseParams: any = null, debug = false): any
 
 describe("JSON Parsing", () => {
   test("Basic Parsing", () => {
-    const result = testParsing(`{"a": 1, "b": "xyz", "c": false, "d": null}`);
+    const result = testParsing(`{"a": 1, "b": "xyz", "c": false, "d": null}`, null);
     expect(result?.debugValue(true)).toEqual([
       "Value",
       [

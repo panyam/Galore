@@ -180,6 +180,22 @@ export class ParseStack {
   }
 }
 
+export type ActionResolverCallback = (
+  actions: LRAction[],
+  stack: ParseStack,
+  tokenbuffer: TLEX.TokenBuffer,
+) => LRAction;
+
+export interface ParserContext {
+  buildParseTree?: boolean;
+  copySingleChild?: boolean;
+  semanticHandler: TSU.StringMap<any>;
+  beforeAddingChildNode?: BeforeAddingChildCallback;
+  onReduction?: RuleReductionCallback;
+  onNextToken?: NextTokenCallback;
+  actionResolver?: ActionResolverCallback;
+}
+
 export class Parser extends ParserBase {
   constructor(public readonly parseTable: ParseTable, config: any = {}) {
     super();
@@ -192,23 +208,34 @@ export class Parser extends ParserBase {
   /**
    * Parses the input and returns the resulting root Parse Tree node.
    */
-  protected parseInput(
-    input: TLEX.Tape,
-    delegate: {
-      beforeAddingChildNode?: BeforeAddingChildCallback;
-      onReduction?: RuleReductionCallback;
-      onNextToken?: NextTokenCallback;
-    },
-  ): Nullable<PTNode> {
+  protected parseInput(input: TLEX.Tape, context?: ParserContext): Nullable<PTNode> {
+    context = context || ({} as ParserContext);
+    if (context.buildParseTree != false) context.buildParseTree = true;
     let idCounter = 0;
     const stack = new ParseStack();
     stack.push(0, new PTNode(idCounter++, this.grammar.augStartRule.nt, null));
     const tokenbuffer = this.tokenbuffer;
     const g = this.grammar;
     let output: Nullable<PTNode> = null;
+
+    /**
+     * Pick an action among several actions based on several factors (eg
+     * curr parse stack, tokenbuffer etc).
+     */
+    function resolveActions(actions: LRAction[]): LRAction {
+      if (context?.actionResolver) {
+        return context.actionResolver(actions, stack, tokenbuffer);
+      } else {
+        if (actions.length > 1) {
+          throw new Error("Multiple actions found.");
+        }
+        return actions[0];
+      }
+    }
+
     while (tokenbuffer.peek(input) != null || !stack.isEmpty) {
       let token = tokenbuffer.peek(input);
-      if (token && delegate?.onNextToken) token = delegate?.onNextToken(token);
+      if (token && context.onNextToken) token = context.onNextToken(token);
       const nextSym = token == null ? g.Eof : this.getSym(token);
       const nextValue = token == null ? null : token.value;
       let [topState, topNode] = stack.top();
@@ -221,7 +248,7 @@ export class Parser extends ParserBase {
         );
       }
 
-      const action = this.resolveActions(actions, stack, tokenbuffer);
+      const action = resolveActions(actions);
       if (action.tag == LRActionType.ACCEPT) {
         break;
       } else if (action.tag == LRActionType.SHIFT) {
@@ -232,45 +259,99 @@ export class Parser extends ParserBase {
         // reduce
         TSU.assert(action.rule != null, "Nonterm and ruleindex must be provided for a reduction action");
         const ruleLen = action.rule.rhs.length;
-        // pop this many items off the stack and create a node
-        // from this
+
+        // here see if a rule handler exists - if it does use it
         let newNode = new PTNode(idCounter++, action.rule.nt, null);
-        for (let i = ruleLen - 1; i >= 0; i--) {
-          const childNode: TSU.Nullable<PTNode> = stack.top(i)[1];
-          if (delegate?.beforeAddingChildNode) {
-            for (const node of delegate?.beforeAddingChildNode(newNode, childNode)) {
-              newNode.add(node);
-            }
-          } else {
-            if (childNode != null) {
+        // Begin the reduction here. We are breaking the reduction into
+        // two parts:
+        //
+        // 1. Adding child nodes into the parent (reduced) node. Here
+        // the beforeAddingChildNode callback is used to modify children
+        // being added.
+        // 2. After all children have been added to give the caller a chance
+        // to handle/post-process the reduction - eg to build the semantic value.
+        //
+        // Our onReduction is a catch all to perform semantic actions.  Instead
+        // we could do rule specific ones by using the rule.action (if it exists)
+        // and only invoke the onReduction if a rule specific action does not exist.
+        //
+        // Are these "double steps" needed?  Can we just build parse tree, filter out
+        // child nodes and eval semantic value with a single action?
+        //
+        // Can semanticHandler do this?
+        //
+        // eg with
+        //
+        // E -> E + E { add }
+        //
+        // we could have our stack looking like;
+        //
+        // .... s1 E s2 E
+        //
+        // to be reduced and add could be called with:
+        //
+        // add(E1, E2) - as the child nodes themselves.
+        //
+        // the add handler could now do a few things:
+        //
+        // 1. Ensure all nodes are added to E as is (resulting in 3 nodes - "E", "+", "E")
+        // 2. Not add any nodes
+        // 3. Computing the value of E and E and the sum of those and put it in the parent E.
+        // 4. or all of the above.
+        //
+        // Doing filtering seems like a very premature usecase.  In the case of incremental
+        // parsing we may need all nodes to exist and filtering out can get in the way of that.
+        //
+        // But let us leave it for now and make any semantic handling happen *after* parse tree
+        // child node filter/transformation
+        if (context.buildParseTree) {
+          for (let i = ruleLen - 1; i >= 0; i--) {
+            const childNode: TSU.Nullable<PTNode> = stack.top(i)[1];
+            if (context.beforeAddingChildNode) {
+              for (const node of context.beforeAddingChildNode(newNode, childNode)) {
+                newNode.add(node);
+              }
+            } else if (childNode != null) {
               newNode.add(childNode);
             }
           }
         }
-        // Pop ruleLen number of items off the stack
+        // Now apply the semantic handler if it exists
+        if (action.rule.action) {
+          // call it
+          if (action.rule.action.isFunction) {
+            // find the function associated with
+            const handler = context.semanticHandler![action.rule.action.value];
+            // TODO - Replace the handler signature to take an
+            // interface that returns the nth child node (directly from
+            // the parse stack) instead of all children - this way we
+            // can even avoid building a parse tree if need be and
+            // decouple semantic actions from parse tree building
+            newNode.value = handler(...newNode.children);
+          } else {
+            // setting value as a child's value, eg $1, $2 etc
+            newNode.value = newNode.children[(action.rule.action.value as number) - 1].value;
+          }
+        } else if (context.onReduction) {
+          // fallback to default reduction handler
+          newNode = context.onReduction(newNode, action.rule);
+        } else if (newNode.children.length == 1 && context.copySingleChild) {
+          // If we have only 1 child set the semantic value to be child's value
+          // ie values "bubble up"
+          newNode.value = newNode.children[0].value;
+        }
+
+        // Perform the action reduction by popping ruleLen number of items off the stack
+        // and replace the top with our newNode
         stack.popN(ruleLen);
         [topState, topNode] = stack.top();
-        const newAction = this.resolveActions(this.parseTable.getActions(topState, action.rule.nt), stack, tokenbuffer);
-        TSU.assert(newAction != null, "Top item does not have an action.");
-        if (delegate?.onReduction) {
-          newNode = delegate?.onReduction(newNode, action.rule);
-        }
-        stack.push(newAction.gotoState!, newNode);
+        const newAction = resolveActions(this.parseTable.getActions(topState, action.rule.nt));
+        TSU.assert(newAction != null && newAction.gotoState != null, "Top item does not have an action.");
+        stack.push(newAction.gotoState, newNode);
         output = newNode;
       }
     }
     // It is possible that here no reductions have been done!
     return output;
-  }
-
-  /**
-   * Pick an action among several actions based on several factors (eg
-   * curr parse stack, tokenbuffer etc).
-   */
-  resolveActions(actions: LRAction[], stack: ParseStack, tokenbuffer: TLEX.TokenBuffer): LRAction {
-    if (actions.length > 1) {
-      throw new Error("Multiple actions found.");
-    }
-    return actions[0];
   }
 }

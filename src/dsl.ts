@@ -421,6 +421,7 @@ export class Parser {
 
     // how do we use the funcName to
     const out = (rule: TLEX.Rule, tape: Tape, token: any) => {
+      console.log("FuncName = ", funcName);
       return this.semanticHandler.onToken(funcName.value, token, tape);
     };
 

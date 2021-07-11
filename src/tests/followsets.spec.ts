@@ -1,11 +1,11 @@
 import { Grammar } from "../grammar";
-import { Parser } from "../dsl";
+import { Loader as DSLLoader } from "../dsl";
 import { expectNullables, expectFSEntries } from "./utils";
 import Samples from "./samples";
 
 describe("FollowSet Tests", () => {
   test("Tests 1", () => {
-    const g = new Parser(` A -> a b c ; `).grammar;
+    const g = new DSLLoader(` A -> a b c ; `).grammar;
 
     const ns = g.nullables;
     const fs = g.followSets;
@@ -13,7 +13,7 @@ describe("FollowSet Tests", () => {
   });
 
   test("Tests 2", () => {
-    const g = new Parser(` A -> B a ; B -> b ; `).grammar;
+    const g = new DSLLoader(` A -> B a ; B -> b ; `).grammar;
 
     const ns = g.nullables;
     const firstSets = g.firstSets;
@@ -21,7 +21,7 @@ describe("FollowSet Tests", () => {
   });
 
   test("Tests 3", () => {
-    const g = new Parser(Samples.expr2).grammar;
+    const g = new DSLLoader(Samples.expr2).grammar;
 
     const ns = g.nullables;
     expect(g.firstSets.debugValue).toEqual({
@@ -41,7 +41,7 @@ describe("FollowSet Tests", () => {
   });
 
   test("Tests 4", () => {
-    const g = new Parser(`
+    const g = new DSLLoader(`
       E -> T X ;
       X -> PLUS E | ;
       T -> int Y | OPEN E CLOSE ;
@@ -63,7 +63,7 @@ describe("FollowSet Tests", () => {
   });
 
   test("Tests 5", () => {
-    const g = new Parser(Samples.Sample4).grammar;
+    const g = new DSLLoader(Samples.Sample4).grammar;
 
     const ns = g.nullables;
     expectNullables(ns, ["V", "W"]);
@@ -78,7 +78,7 @@ describe("FollowSet Tests", () => {
   });
 
   test("Tests 6", () => {
-    const g = new Parser(`
+    const g = new DSLLoader(`
       S -> S A | ;
       A -> X | b X | c X ;
       X -> X x | ;
@@ -89,7 +89,7 @@ describe("FollowSet Tests", () => {
   });
 
   test("Tests 7", () => {
-    const g = new Parser(`
+    const g = new DSLLoader(`
       S -> a b c ;
       S -> a A d ;
       S -> e B f ;
@@ -119,7 +119,7 @@ describe("FollowSet Tests", () => {
 
   test("Tests JSON with Lists only", () => {
     const gRight = new Grammar({ auxNTPrefix: "_" });
-    new Parser(
+    new DSLLoader(
       `
         Value -> List | NULL ;
         List -> OSQ Value ( COMMA Value ) * CSQ ;
@@ -135,7 +135,7 @@ describe("FollowSet Tests", () => {
     });
 
     const gLeft = new Grammar({ auxNTPrefix: "_" });
-    new Parser(
+    new DSLLoader(
       `
         Value -> List | NULL ;
         List -> OSQ Value ( COMMA Value ) * CSQ ;
@@ -153,7 +153,7 @@ describe("FollowSet Tests", () => {
 
   test("Tests Bigger JSON", () => {
     const gRight = new Grammar({ auxNTPrefix: "_" });
-    new Parser(
+    new DSLLoader(
       `
         Value -> Dict | List | STRING | NUMBER | TRUE | FALSE | NULL ;
         List -> OSQ [ Value ( COMMA Value ) * ] CSQ ;
@@ -197,7 +197,7 @@ describe("FollowSet Tests", () => {
 
     // Do the same with leftRecursive grammar
     const gLeft = new Grammar({ auxNTPrefix: "_" });
-    new Parser(
+    new DSLLoader(
       `
         Value -> Dict | List | STRING | NUMBER | TRUE | FALSE | NULL ;
         List -> OSQ [ Value ( COMMA Value ) * ] CSQ ;

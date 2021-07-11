@@ -40,7 +40,7 @@ export enum TokenType {
  */
 export function load(input: string, params: any = {}): [Grammar, null | TLEX.NextTokenFunc] {
   const g = new Grammar(params.grammar || {});
-  const eparser = new Parser(input, { ...params, grammar: g });
+  const eparser = new Loader(input, { ...params, grammar: g });
   // g.augmentStartSymbol();
   const tokenFunc = eparser.generatedTokenizer.next.bind(eparser.generatedTokenizer);
   const debug = params.debug || "";
@@ -123,15 +123,7 @@ export function load(input: string, params: any = {}): [Grammar, null | TLEX.Nex
  * In this mode all child nodes are passed as is to the handler and it is upto the handler to return the semantic
  * value of the production.
  */
-export class SemanticHandler {
-  tokenHandlers: TSU.StringMap<any> = {};
-  onToken(name: string, token: TLEX.Token, tape: TLEX.Tape): TLEX.Token {
-    const handler = this.tokenHandlers[name];
-    if (!handler) throw new Error("Handler method not found: " + name);
-    handler(token, tape);
-    return token;
-  }
-}
+export type TokenHandler = (token: TLEX.Token, tape: TLEX.Tape) => TLEX.Token;
 
 export function Tokenizer(): TLEX.Tokenizer {
   const lexer = new TLEX.Tokenizer();
@@ -230,12 +222,12 @@ export enum NodeType {
  *
  * actionSpec := "{" IDENT "(" IDENT ( "," IDENT ) * ")" "}"
  */
-export class Parser {
+export class Loader {
   readonly grammar: Grammar;
   private tokenizer: TLEX.TokenBuffer;
   private leftRecursive = false;
   readonly generatedTokenizer: TLEX.Tokenizer = new TLEX.Tokenizer();
-  readonly semanticHandler = new SemanticHandler();
+  tokenHandlers: TSU.StringMap<TokenHandler>;
 
   /*
    * The newSymbol callback provided to the contructor is a way for the client to
@@ -261,6 +253,7 @@ export class Parser {
     this.grammar = config.grammar || new Grammar();
     this.leftRecursive = "leftRecursive" in config ? config.leftRecursive : true;
     this.newSymbolCallback = config.newSymbol || null;
+    this.tokenHandlers = config.tokenHandlers || {};
     this.parse(input);
   }
 
@@ -422,7 +415,10 @@ export class Parser {
 
     // how do we use the funcName to
     const out = (rule: TLEX.Rule, tape: Tape, token: any) => {
-      return this.semanticHandler.onToken(funcName.value, token, tape);
+      const handler = this.tokenHandlers[funcName.value];
+      if (!handler) throw new Error("Handler method not found: " + funcName.value);
+      handler(token, tape);
+      return token;
     };
 
     this.tokenizer.expectToken(tape, TokenType.CLOSE_BRACE);

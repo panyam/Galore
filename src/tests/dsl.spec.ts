@@ -1,6 +1,6 @@
 import * as TSU from "@panyam/tsutils";
 import { Grammar, Str, Sym, RuleAction } from "../grammar";
-import { Tokenizer as EBNFTokenizer, Parser as EBNFParser } from "../dsl";
+import { Tokenizer as EBNFTokenizer, Loader as DSLLoader } from "../dsl";
 import { expectRules } from "./utils";
 import { printGrammar } from "../utils";
 
@@ -19,7 +19,7 @@ function loadGrammar(input: string, debug = false): Grammar {
     const l = EBNFTokenizer();
     console.log("Prog: \n", `${l.vm.prog.debugValue().join("\n")}`);
   }
-  const out = new EBNFParser(input).grammar;
+  const out = new DSLLoader(input).grammar;
   if (debug) {
     console.log(printGrammar(out, false));
   }
@@ -55,7 +55,7 @@ describe("EBNF Tests", () => {
     );
   });
   test("Test1", () => {
-    const g = new EBNFParser(`S -> A | B | C ;`).grammar;
+    const g = new DSLLoader(`S -> A | B | C ;`).grammar;
     // console.log("G.nonTerminals: ", g.nonTerminals);
 
     expect(g.nonTerminals.length).toBe(1);
@@ -63,7 +63,7 @@ describe("EBNF Tests", () => {
   });
 
   test("Test1", () => {
-    const g = new EBNFParser(`
+    const g = new DSLLoader(`
       S -> A B | C ;
       A -> 0 B | C  ;
       B -> 1 | A 0 ;
@@ -136,7 +136,7 @@ describe("EBNF Tests", () => {
   });
 
   test("Test3", () => {
-    const g = new EBNFParser(`
+    const g = new DSLLoader(`
       X -> A | B | ;
       Y -> B | ;
     `).grammar;
@@ -147,7 +147,7 @@ describe("EBNF Tests", () => {
   });
 
   test("Test4 With Tokenizer", () => {
-    const parser = new EBNFParser(`
+    const parser = new DSLLoader(`
 
       %token a "a"
       %token x "x"
@@ -165,7 +165,7 @@ describe("EBNF Tests", () => {
   });
 
   test("Test With Comments - JS RE", () => {
-    const parser = new EBNFParser(String.raw`
+    const parser = new DSLLoader(String.raw`
       // Skip comments
       %skip                   /\/\*.*\*\//s
       %skip                   /\/\/.*$/m
@@ -219,7 +219,7 @@ describe("EBNF Tests", () => {
       %token y "y"
       `;
 
-    const parser = new EBNFParser(String.raw`
+    const parser = new DSLLoader(String.raw`
       ${LEXER}
       X -> A | B | x ;
       Y -> B | y ;
@@ -241,7 +241,7 @@ describe("EBNF Tests", () => {
       %token FUNC_NAME            "__func__"
       `;
 
-    const parser = new EBNFParser(String.raw`
+    const parser = new DSLLoader(String.raw`
       ${LEXER}
       unary_operator : '&' | '!'
         ;
@@ -258,7 +258,7 @@ describe("EBNF Tests", () => {
   });
 
   test("Testing Actions", () => {
-    const parser = new EBNFParser(String.raw`
+    const parser = new DSLLoader(String.raw`
                                   E -> E "+" E { add } ;
                                   E -> E "-" E { subtract } ;
                                   E -> E "*" E { mult } ;

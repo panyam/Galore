@@ -1,7 +1,7 @@
 import { testParseTable } from "./utils";
 import { newLRParser as newParser } from "../factory";
 import { mergedDebugValue } from "../debug";
-import { Parser as DSLParser } from "../dsl";
+import { Loader as DSLParser } from "../dsl";
 import { grammarFromLR0ItemGraph } from "../ptables";
 import { LR0ItemGraph } from "../lritems";
 import { printGrammar } from "../utils";

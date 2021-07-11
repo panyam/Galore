@@ -59,7 +59,7 @@ function tok(tag: any, value: any): TLEX.Token {
  * Helper to create a grammar, and its parser.
  */
 export function newParser(input: string, debug = false): Parser {
-  const eparser = new dsl.Parser(input);
+  const eparser = new dsl.Loader(input);
   const g = eparser.grammar.augmentStartSymbol();
   const parser = new Parser(new ParseTable(g));
   const tokenizer = eparser.generatedTokenizer;

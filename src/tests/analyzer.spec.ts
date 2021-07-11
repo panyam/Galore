@@ -1,9 +1,9 @@
-import { Parser } from "../dsl";
+import { Loader } from "../dsl";
 import { leftFactor, removeUselessSymbols, removeNullProductions, removeDirectLeftRecursion } from "../analyzer";
 
 describe("Analyzer Tests", () => {
   test("Useless Symbols Tests", () => {
-    const g = new Parser(`
+    const g = new Loader(`
       S -> a b S | a b A | a b B ;
       A -> c d ;
       B -> a B ;
@@ -16,7 +16,7 @@ describe("Analyzer Tests", () => {
   });
 
   test("Expand Null Production", () => {
-    const g = new Parser(`
+    const g = new Loader(`
       S -> A B A C ;
       A -> a A | ;
       B -> b B | ;
@@ -25,7 +25,7 @@ describe("Analyzer Tests", () => {
   });
 
   test("Null Production Removal", () => {
-    const g = new Parser(`
+    const g = new Loader(`
       S -> A B A C ;
       A -> a A | ;
       B -> b B | ;
@@ -54,7 +54,7 @@ describe("Analyzer Tests", () => {
   });
 
   test("Remove Left Recursion", () => {
-    const g = new Parser(`
+    const g = new Loader(`
       E -> E MINUS T | E STAR T | E PLUS T | T1 t | T2 a | T3 c ;
     `).grammar;
     removeDirectLeftRecursion(g);
@@ -70,7 +70,7 @@ describe("Analyzer Tests", () => {
   });
 
   test("Left Factoring", () => {
-    const g = new Parser(`
+    const g = new Loader(`
       E -> E A T | E B T | E C T ;
       E -> A B X1 ;
       E -> A B C X2 ;

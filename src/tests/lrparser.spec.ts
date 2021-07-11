@@ -1,7 +1,7 @@
 import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
 import { PTNode } from "../parser";
-import { Sym } from "../Grammar";
+import { Sym, Rule } from "../Grammar";
 import { newLRParser as newParser } from "../factory";
 
 function tok(tag: any, value: any): TLEX.Token {
@@ -12,7 +12,7 @@ function tok(tag: any, value: any): TLEX.Token {
 
 function testParsing(grammar: string, input: string, config: any = {}): TSU.Nullable<PTNode> {
   const [parser, _] = newParser(grammar, config);
-  const result = parser.parse(input);
+  const result = parser.parse(input, config);
   if (config === true || config.debug) {
     // console.log(result?.reprString);
     console.log(JSON.stringify(result?.debugValue(true) || null, null, 4));
@@ -230,5 +230,43 @@ describe("Auxiliary Symbol Tests", () => {
         ["C", "c"],
       ],
     ]);
+  });
+});
+
+const grammar_with_actions = `
+      %token plus "+"
+      %token star "*"
+      %token open "("
+      %token close ")"
+      %token id /[A-Za-z]+/
+      %skip /[ \\t\\n\\f\\r]+/
+
+      E -> E plus T { add } | T { $1 };
+      T -> T star F { mult } | F { $1 };
+      F -> open E close { $2 } | id { getVar };
+`;
+
+describe("LRParsing Action Tests", () => {
+  test("Test A + B * C", () => {
+    const vars = { a: 1, b: 2, c: 3 } as any;
+    const result = testParsing(grammar_with_actions, "a+b*c", {
+      type: "slr",
+      semanticHandler: {
+        mult: (rule: Rule, parent: PTNode, ...children: PTNode[]) => {
+          return children[0].value * children[2].value;
+        },
+        add: (rule: Rule, parent: PTNode, ...children: PTNode[]) => {
+          return children[0].value + children[2].value;
+        },
+        getVar: (rule: Rule, parent: PTNode, ...children: PTNode[]) => {
+          const varname = children[0].value;
+          if (!(varname in vars)) {
+            throw new Error("Variable not found: " + varname);
+          }
+          return vars[varname];
+        },
+      },
+    });
+    expect(result?.value).toEqual(7);
   });
 });

@@ -186,7 +186,7 @@ export type ActionResolverCallback = (
   tokenbuffer: TLEX.TokenBuffer,
 ) => LRAction;
 
-export type RuleActionHandler = (rule: Rule, ...children: PTNode[]) => any;
+export type RuleActionHandler = (rule: Rule, parent: PTNode, ...children: PTNode[]) => any;
 
 export interface ParserContext {
   buildParseTree?: boolean;
@@ -323,13 +323,15 @@ export class Parser extends ParserBase {
           // call it
           if (action.rule.action.isFunction) {
             // find the function associated with
-            const handler = context.semanticHandler![action.rule.action.value];
+            const handlerName = action.rule.action.value;
+            const handler = context.semanticHandler![handlerName];
+            if (!handler) throw new Error("Action handler not found: " + handlerName);
             // TODO - Replace the handler signature to take an
             // interface that returns the nth child node (directly from
             // the parse stack) instead of all children - this way we
             // can even avoid building a parse tree if need be and
             // decouple semantic actions from parse tree building
-            newNode.value = handler(action.rule, ...newNode.children);
+            newNode.value = handler(action.rule, newNode, ...newNode.children);
           } else {
             // setting value as a child's value, eg $1, $2 etc
             newNode.value = newNode.children[(action.rule.action.value as number) - 1].value;

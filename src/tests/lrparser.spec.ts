@@ -270,7 +270,7 @@ describe("LRParsing Action Tests", () => {
     const vars = { a: 1, b: 2, c: 3 } as any;
     const result = testParsing(grammar_with_actions, "a+b*c", {
       type: "slr",
-      semanticHandler: {
+      ruleHandlers: {
         mult: (rule: Rule, parent: PTNode, ...children: PTNode[]) => {
           return children[0].value * children[2].value;
         },

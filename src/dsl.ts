@@ -36,6 +36,21 @@ export enum TokenType {
 }
 
 /**
+ * Entry point in loading a grammar from a DSL spec.
+ */
+export function load(input: string, params: any = {}): [Grammar, null | TLEX.NextTokenFunc] {
+  const g = new Grammar(params.grammar || {});
+  const eparser = new Parser(input, { ...params, grammar: g });
+  // g.augmentStartSymbol();
+  const tokenFunc = eparser.generatedTokenizer.next.bind(eparser.generatedTokenizer);
+  const debug = params.debug || "";
+  if (debug.split("|").findIndex((p: string) => p == "all" || p == "lexer") >= 0) {
+    console.log("Prog: \n", `${eparser.generatedTokenizer.vm.prog.debugValue().join("\n")}`);
+  }
+  return [g, tokenFunc];
+}
+
+/**
  * The SemanticHandler is the bridge between the DSL, the Grammar, the Parser
  * and the caller of the parser.
  * In the DSL semantic actions can be added to tokenizer and grammar specs.
@@ -108,10 +123,6 @@ export enum TokenType {
  * In this mode all child nodes are passed as is to the handler and it is upto the handler to return the semantic
  * value of the production.
  */
-export class SemanticAction {
-  funcName: string;
-}
-
 export class SemanticHandler {
   tokenHandlers: TSU.StringMap<any> = {};
   onToken(name: string, token: TLEX.Token, tape: TLEX.Tape): TLEX.Token {
@@ -540,16 +551,4 @@ export class Parser {
     }
     return [out, action];
   }
-}
-
-export function load(input: string, params: any = {}): [Grammar, null | TLEX.NextTokenFunc] {
-  const g = new Grammar(params.grammar || {});
-  const eparser = new Parser(input, { ...params, grammar: g });
-  // g.augmentStartSymbol();
-  const tokenFunc = eparser.generatedTokenizer.next.bind(eparser.generatedTokenizer);
-  const debug = params.debug || "";
-  if (debug.split("|").findIndex((p: string) => p == "all" || p == "lexer") >= 0) {
-    console.log("Prog: \n", `${eparser.generatedTokenizer.vm.prog.debugValue().join("\n")}`);
-  }
-  return [g, tokenFunc];
 }

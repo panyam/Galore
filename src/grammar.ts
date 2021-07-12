@@ -17,9 +17,6 @@ type Nullable<T> = TSU.Nullable<T>;
  *    verions of the getSym method.
  */
 export class Sym {
-  readonly grammar: Grammar;
-  readonly label: string;
-  isTerminal = false;
   isAuxiliary = false;
   auxType: string | null = null;
   precedence = 1;
@@ -28,16 +25,30 @@ export class Sym {
   private static idCounter = -1;
 
   /**
+   * An ID assigned to indicate order of "creation" of this symbol in the grammar.
+   */
+  creationId = -1;
+
+  /**
    * ID unique across all expression within the grammar.
    */
   id: number;
 
   /**
-   * An ID assigned to indicate order of "creation" of this symbol in the grammar.
+   * Creates a new symbol in the grammar.
+   *
+   * @param   grammar     Grammar this symbol belongs to.
+   * @param   label       Label for the symbol.
+   * @param   isTerminal  Whether the symbol is a terminal or not.
+   * @param   id          ID unique across all expression within the
+   *                      grammar.
    */
-  creationId = -1;
-
-  constructor(grammar: Grammar, label: string, isTerminal: boolean, id: Nullable<number> = null) {
+  constructor(
+    public readonly grammar: Grammar,
+    public readonly label: string,
+    public isTerminal: boolean,
+    id: Nullable<number> = null,
+  ) {
     this.isTerminal = isTerminal;
     this.label = label;
     if (id == null) {
@@ -439,35 +450,68 @@ export class Grammar {
     return sym2;
   }
 
-  newTerm(label: string): Sym {
-    if (this.getSym(label) != null) {
-      throw new Error(`${label} is already exists`);
+  /**
+   * Ensures that a terminal by a given name exists (creating if
+   * necessary).  If a terminal already exists by this label then
+   * an error is thrown.
+   *
+   * The grammar acts as a factory for terminal and non terminal symbols
+   * so that we can reuse symbols instead of having users create new
+   * symbols each time.  This also ensures that users are not able mix
+   * terminal and non terminal labels.
+   */
+  T(label: string, throwIfExists = false): Sym {
+    let t = this.getSym(label);
+    if (t != null) {
+      if (throwIfExists) throw new Error(`Terminal ${label} is already exists`);
+      if (!t.isTerminal) throw new Error(`Symbol (${label}) already exists as a non-terminal`);
+    } else {
+      t = new Sym(this, label, true);
+      t = this.ensureSym(t, true);
     }
-    return this.ensureSym(new Sym(this, label, true), true);
+    return t;
   }
 
   /**
-   * Creates a non terminal with the given label.
-   * The grammar acts as a factory for non terminal symbols
-   * so that we can reuse symbols instead of having
-   * users create new symbols each time.
+   * Ensures that a non term by a given name exists (creating if
+   * necessary).  If a terminal already exists by this label then
+   * an error is thrown.
    *
-   * This also ensures that users are not able mix terminal
-   * and non terminal labels.
+   * The grammar acts as a factory for terminal and non terminal symbols
+   * so that we can reuse symbols instead of having users create new
+   * symbols each time.  This also ensures that users are not able mix
+   * terminal and non terminal labels.
    */
-  newNT(label: string, isAuxiliary = false): Sym {
-    if (this.getSym(label) != null) {
-      throw new Error(`Non-terminal ${label} is already exists`);
-    }
-    let nt = new Sym(this, label, false);
-    nt.isAuxiliary = isAuxiliary;
-    nt = this.ensureSym(nt, true);
-    if (!isAuxiliary) {
-      if (this.startSymbol == null) {
+  NT(label: string, isAuxiliary = false, throwIfExists = false): Sym {
+    let nt = this.getSym(label);
+    if (nt != null) {
+      if (throwIfExists) throw new Error(`Non-terminal ${label} is already exists`);
+      if (nt.isTerminal) throw new Error(`Symbol (${label}) already exists as a terminal`);
+    } else {
+      nt = new Sym(this, label, false);
+      nt.isAuxiliary = isAuxiliary;
+      nt = this.ensureSym(nt, true);
+      if (!isAuxiliary && this.startSymbol == null) {
         this.startSymbol = nt;
       }
     }
     return nt;
+  }
+
+  /**
+   * Creates a terminal with the given label if one does not
+   * already exist.
+   */
+  newTerm(label: string): Sym {
+    return this.T(label, true);
+  }
+
+  /**
+   * Creates a non terminal with the given label if it does not
+   * already exist.
+   */
+  newNT(label: string, isAuxiliary = false): Sym {
+    return this.NT(label, isAuxiliary, true);
   }
 
   /**

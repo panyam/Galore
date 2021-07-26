@@ -91,7 +91,7 @@
     "test": "jest --coverage --runInBand",
     "start": "node ./bin/www",
     "startlocal": "cd dist && npm run start",
-    "deploy": "npm run buildall && ( cd dist ; gcloud app deploy --verbosity=info )",
+    "deploy": "npm run buildall && ( cd dist ; gcloud app deploy --verbosity=info --project galorium )",
     "lint": "eslint './src' --quiet --ext .ts --resolve-plugins-relative-to .",
     "lintfix": "eslint 'src/**/*.ts' --quiet --fix --resolve-plugins-relative-to .",
     "precommit-msg": "echo 'Pre-commit checks...' && exit 0",

@@ -10,6 +10,8 @@ import { GrammarView } from "./GrammarView";
 import { NormalizedGrammarView } from "./NormalizedGrammarView";
 import * as configs from "./configs";
 
+const LAYOUT_STATE_KEY = "galorium:savedState";
+
 /**
  * The app that drives the viewer and the editor.
  */
@@ -50,7 +52,7 @@ export class App {
     this.parseTreeView = new ParseTreeView(ptreeAreaDiv, this);
     this.parseTreeView.eventHub = this.eventHub;
 
-    const savedState = localStorage.getItem("savedState");
+    const savedState = localStorage.getItem(LAYOUT_STATE_KEY);
     let inputContents = "";
     const myLayout = new GL.GoldenLayout(
       configs.defaultGLConfig,
@@ -87,7 +89,7 @@ export class App {
     });
     myLayout.on("stateChanged", function () {
       var state = JSON.stringify(myLayout.toConfig());
-      localStorage.setItem("savedState", state);
+      localStorage.setItem(LAYOUT_STATE_KEY, state);
       console.log("Saving State: ", state);
     });
     myLayout.init();

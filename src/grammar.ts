@@ -366,7 +366,7 @@ export class Grammar {
    */
   addRule(rule: Rule, index = -1): Rule {
     if (this.findRule(rule.nt, rule.rhs) >= 0) {
-      throw new Error("Duplicate rule");
+      throw new Error("Duplicate rule: " + rule.debugString);
     }
     rule.id = this.allRules.length;
     if (rule.rhs.length == 0) this._hasNull = true;

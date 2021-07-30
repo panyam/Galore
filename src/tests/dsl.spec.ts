@@ -279,4 +279,15 @@ describe("EBNF Tests", () => {
     expect(rules[4].action?.isChildPosition).toBe(true);
     expect(rules[4].action?.isFunction).toBe(false);
   });
+
+  test("Testing Token Regex Flags", () => {
+    const parser = new DSLLoader(String.raw`
+                                 A -> /hello/i ;
+    `);
+    const g = parser.grammar;
+    const t = parser.generatedTokenizer;
+
+    expectListsEqual(symLabels(g.nonTerminals), ["A"]);
+    expectListsEqual(symLabels(g.terminals), ["", "$end", "/hello/i"]);
+  });
 });

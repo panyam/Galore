@@ -151,8 +151,10 @@ export function Tokenizer(): TLEX.Tokenizer {
     token.value = tape.substring(token.start + 1, token.end - 1);
     return token;
   });
-  lexer.add(/\/(.+?(?<!\\))\//, { tag: TokenType.REGEX }, (rule, tape, token) => {
-    token.value = tape.substring(token.start + 1, token.end - 1);
+  lexer.add(/\/(.+?(?<!\\))\/([imus]*)/, { tag: TokenType.REGEX }, (rule, tape, token) => {
+    const pattern = tape.substring(token.positions[1][0], token.positions[1][1]);
+    const flags = tape.substring(token.positions[3][0], token.positions[3][1]);
+    token.value = [pattern, flags];
     return token;
   });
   lexer.add(/\d+/, { tag: TokenType.NUMBER }, (rule, tape, token) => {
@@ -318,13 +320,18 @@ export class Loader {
       const tokPattern = this.tokenizer.expectToken(tape, TokenType.STRING, TokenType.NUMBER, TokenType.REGEX);
       let rule: TLEX.Rule;
       if (!tag || tag.length == 0) {
-        tag = "/" + tokPattern.value + "/";
+        tag = "/" + tokPattern.value[0] + "/" + tokPattern.value[1];
       }
       if (tokPattern.tag == TokenType.STRING || tokPattern.tag == TokenType.NUMBER) {
         const pattern = str2regex(tokPattern.value);
         rule = TLEX.Builder.build(pattern, { tag: tag, priority: priority + 20 });
       } else if (tokPattern.tag == TokenType.REGEX) {
-        rule = TLEX.Builder.build(tokPattern.value, { tag: tag, priority: priority + 10 });
+        let re = tokPattern.value[0];
+        if (tokPattern.value[1].length > 0) {
+          // Flags given so create
+          re = new RegExp(tokPattern.value[0], tokPattern.value[1]);
+        }
+        rule = TLEX.Builder.build(re, { tag: tag, priority: priority + 10 });
       } else {
         throw new TLEX.UnexpectedTokenError(tokPattern);
       }
@@ -514,8 +521,13 @@ export class Loader {
           const rule = TLEX.Builder.build(pattern, { tag: label, priority: 20 });
           this.generatedTokenizer.addRule(rule);
         } else if (token.tag == TokenType.REGEX) {
-          label = "/" + token.value + "/";
-          const rule = TLEX.Builder.build(token.value, { tag: label, priority: 10 });
+          label = "/" + token.value[0] + "/" + token.value[1];
+          let re = token.value[0];
+          if (token.value[1].length > 0) {
+            // Flags given so create
+            re = new RegExp(token.value[0], token.value[1]);
+          }
+          const rule = TLEX.Builder.build(re, { tag: label, priority: 10 });
           this.generatedTokenizer.addRule(rule);
         } else {
           // Normal

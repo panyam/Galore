@@ -143,15 +143,15 @@ export function Tokenizer(): TLEX.Tokenizer {
   lexer.add(/\s+/m, { tag: TokenType.SPACES }, () => null);
   lexer.add(/\/\*.*?\*\//s, { tag: TokenType.COMMENT }, () => null);
   lexer.add(/\/\/.*$/m, { tag: TokenType.COMMENT }, () => null);
-  lexer.add(TLEX.Builder.flexRE`["]([^"\\\n]|\\.|\\\n)*["]`, { tag: TokenType.STRING }, (rule, tape, token) => {
+  lexer.add(TLEX.Samples.DOUBLE_QUOTE_STRING(), { tag: TokenType.STRING }, (rule, tape, token) => {
     token.value = tape.substring(token.start + 1, token.end - 1);
     return token;
   });
-  lexer.add(TLEX.Builder.flexRE`[']([^'\\\n]|\\.|\\\n)*[']`, { tag: TokenType.STRING }, (rule, tape, token) => {
+  lexer.add(TLEX.Samples.SINGLE_QUOTE_STRING(), { tag: TokenType.STRING }, (rule, tape, token) => {
     token.value = tape.substring(token.start + 1, token.end - 1);
     return token;
   });
-  lexer.add(/\/(.+?(?<!\\))\/([imus]*)/, { tag: TokenType.REGEX }, (rule, tape, token) => {
+  lexer.add(TLEX.Samples.JS_REGEX_WITH_NEG_LB(), { tag: TokenType.REGEX }, (rule, tape, token) => {
     const pattern = tape.substring(token.positions[1][0], token.positions[1][1]);
     const flags = tape.substring(token.positions[3][0], token.positions[3][1]);
     token.value = [pattern, flags];
@@ -330,6 +330,7 @@ export class Loader {
         if (tokPattern.value[1].length > 0) {
           // Flags given so create
           re = new RegExp(tokPattern.value[0], tokPattern.value[1]);
+          console.log("RegExp, flags: ", re, re.flags);
         }
         rule = TLEX.Builder.build(re, { tag: tag, priority: priority + 10 });
       } else {
@@ -526,6 +527,7 @@ export class Loader {
           if (token.value[1].length > 0) {
             // Flags given so create
             re = new RegExp(token.value[0], token.value[1]);
+            console.log("RegExp, flags: ", re, re.flags);
           }
           const rule = TLEX.Builder.build(re, { tag: label, priority: 10 });
           this.generatedTokenizer.addRule(rule);

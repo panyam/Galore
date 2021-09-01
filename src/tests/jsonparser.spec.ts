@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import * as TSU from "@panyam/tsutils";
 import { newLRParser as newParser } from "../factory";
 import { PTNode } from "../parser";

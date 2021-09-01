@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import * as dsl from "../dsl";
 import { Str, Grammar } from "../grammar";
 // import { Cardinality, multiplyCardinalities as MC } from "../cardinality";

@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import { Loader } from "../dsl";
 import { leftFactor, removeUselessSymbols, removeNullProductions, removeDirectLeftRecursion } from "../analyzer";
 

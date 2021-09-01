@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import * as TLEX from "tlex";
 
 export function mockTokenizer(...tokens: TLEX.Token[]): TLEX.NextTokenFunc {

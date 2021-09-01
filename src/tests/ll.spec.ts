@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import * as TLEX from "tlex";
 import * as dsl from "../dsl";
 import { ParseTable, Parser } from "../ll";

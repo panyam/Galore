@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import { testParseTable } from "./utils";
 import { newLRParser as newParser } from "../factory";
 import { mergedDebugValue } from "../debug";

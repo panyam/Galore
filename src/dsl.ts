@@ -151,7 +151,7 @@ export function Tokenizer(): TLEX.Tokenizer {
     token.value = tape.substring(token.start + 1, token.end - 1);
     return token;
   });
-  lexer.add(TLEX.Samples.JS_REGEX_WITH_NEG_LB(), { tag: TokenType.REGEX }, (rule, tape, token) => {
+  lexer.add(TLEX.Samples.JS_REGEXP(), { tag: TokenType.REGEX }, (rule, tape, token) => {
     const pattern = tape.substring(token.positions[1][0], token.positions[1][1]);
     const flags = tape.substring(token.positions[3][0], token.positions[3][1]);
     token.value = [pattern, flags];

@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import * as G from "galore";
 import * as P from "../";
 const fs = require("fs");

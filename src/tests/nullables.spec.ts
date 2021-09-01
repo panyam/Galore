@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import { Loader as DSLLoader } from "../dsl";
 import { expectNullables } from "./utils";
 import Samples from "./samples";

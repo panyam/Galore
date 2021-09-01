@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import { Grammar } from "../grammar";
 import { Loader as DSLLoader } from "../dsl";
 import { expectNullables, expectFSEntries } from "./utils";

@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
 import { PTNode } from "../parser";

@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import { newLRParser as newParser } from "../factory";
 
 /*

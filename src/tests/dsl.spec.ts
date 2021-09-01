@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import * as TSU from "@panyam/tsutils";
 import { Grammar, Str, Sym, RuleAction } from "../grammar";
 import { Tokenizer as EBNFTokenizer, Loader as DSLLoader } from "../dsl";

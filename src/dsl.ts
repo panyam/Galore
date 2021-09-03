@@ -425,7 +425,7 @@ export class Loader {
     const out = (rule: TLEX.Rule, tape: Tape, token: any) => {
       const handler = this.tokenHandlers[funcName.value];
       if (!handler) throw new Error("Handler method not found: " + funcName.value);
-      handler(token, tape);
+      token = handler(token, tape);
       return token;
     };
 

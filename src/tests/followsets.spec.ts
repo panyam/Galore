@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import { Grammar } from "../grammar";
-import { Loader as DSLLoader } from "../dsl";
+import { LoaderConfig, Loader as DSLLoader } from "../dsl";
 import { expectNullables, expectFSEntries } from "./utils";
 import Samples from "./samples";
 
@@ -127,7 +127,7 @@ describe("FollowSet Tests", () => {
         Value -> List | NULL ;
         List -> OSQ Value ( COMMA Value ) * CSQ ;
     `,
-      { grammar: gRight, leftRecursive: false },
+      { grammar: gRight, leftRecursive: false } as LoaderConfig,
     );
 
     expect(gRight.firstSets.debugValue).toEqual({ Value: "<NULL, OSQ>", List: "<OSQ>", _0: "<, COMMA>" });
@@ -143,7 +143,7 @@ describe("FollowSet Tests", () => {
         Value -> List | NULL ;
         List -> OSQ Value ( COMMA Value ) * CSQ ;
     `,
-      { grammar: gLeft, leftRecursive: true },
+      { grammar: gLeft, leftRecursive: true } as LoaderConfig,
     );
 
     expect(gLeft.firstSets.debugValue).toEqual({ Value: "<NULL, OSQ>", List: "<OSQ>", _0: "<, COMMA>" });
@@ -163,7 +163,7 @@ describe("FollowSet Tests", () => {
         Dict -> OBRACE [ Pair (COMMA Pair)* ] CBRACE ;
         Pair -> STRING COLON Value ;
     `,
-      { grammar: gRight, leftRecursive: false },
+      { grammar: gRight, leftRecursive: false } as LoaderConfig,
     );
 
     /*
@@ -207,7 +207,7 @@ describe("FollowSet Tests", () => {
         Dict -> OBRACE [ Pair (COMMA Pair)* ] CBRACE ;
         Pair -> STRING COLON Value ;
     `,
-      { grammar: gLeft },
+      { grammar: gLeft } as LoaderConfig,
     );
 
     /*

@@ -196,6 +196,9 @@ export interface ParserContext {
   onReduction?: RuleReductionCallback;
   onNextToken?: NextTokenCallback;
   actionResolver?: ActionResolverCallback;
+  // The owner used for tokenizer to get an insight into the context
+  // (to allow context sensitive scanning - aka "scanner hacks").
+  tokenizerContext: any;
 }
 
 export class Parser extends ParserBase {
@@ -213,6 +216,7 @@ export class Parser extends ParserBase {
   protected parseInput(input: TLEX.Tape, context?: ParserContext): Nullable<PTNode> {
     context = context || ({} as ParserContext);
     // Set default values for missing values
+    this.tokenbuffer.tokenizerContext = context.tokenizerContext;
     if (context.buildParseTree != false) context.buildParseTree = true;
     if (context.copySingleChild != false) context.copySingleChild = true;
     let idCounter = 0;
@@ -238,7 +242,7 @@ export class Parser extends ParserBase {
     }
 
     while (tokenbuffer.peek(input) != null || !stack.isEmpty) {
-      let token = tokenbuffer.peek(input);
+      let token = tokenbuffer.peek(input, context.tokenizerContext);
       if (token && context.onNextToken) token = context.onNextToken(token);
       const nextSym = token == null ? g.Eof : this.getSym(token);
       const nextValue = token == null ? null : token.value;

@@ -35,10 +35,22 @@ export enum TokenType {
   SEMI_COLON = "SEMI_COLON",
 }
 
+export type NewSymbolCallback = TSU.Nullable<(label: string, assumedTerminal: boolean) => Sym | void>;
+export type TokenHandler = (token: TLEX.Token, tape: TLEX.Tape, owner: any) => TLEX.Token;
+
+export interface LoaderConfig {
+  grammar?: Grammar;
+  leftRecursive?: boolean;
+  newSymbolCallback?: NewSymbolCallback;
+  tokenHandlers: TSU.StringMap<TokenHandler>;
+  debug?: string;
+}
+
 /**
  * Entry point in loading a grammar from a DSL spec.
  */
-export function load(input: string, params: any = {}): [Grammar, null | TLEX.NextTokenFunc] {
+export function load(input: string, params?: LoaderConfig): [Grammar, null | TLEX.NextTokenFunc] {
+  params = params || ({} as LoaderConfig);
   const g = new Grammar(params.grammar || {});
   const eparser = new Loader(input, { ...params, grammar: g });
   // g.augmentStartSymbol();
@@ -123,7 +135,6 @@ export function load(input: string, params: any = {}): [Grammar, null | TLEX.Nex
  * In this mode all child nodes are passed as is to the handler and it is upto the handler to return the semantic
  * value of the production.
  */
-export type TokenHandler = (token: TLEX.Token, tape: TLEX.Tape) => TLEX.Token;
 
 export function Tokenizer(): TLEX.Tokenizer {
   const lexer = new TLEX.Tokenizer();
@@ -242,7 +253,7 @@ export class Loader {
    * encountered by the parser.   If the client returns a duplicte symbol
    * then parsing fails.
    */
-  private newSymbolCallback: TSU.Nullable<(label: string, assumedTerminal: boolean) => Sym | void>;
+  private newSymbolCallback: NewSymbolCallback;
   private symbolsByLabel: TSU.StringMap<Sym>;
 
   /**
@@ -250,11 +261,12 @@ export class Loader {
    */
   private regexSyntax = "js";
 
-  constructor(input: string, config: any = {}) {
+  constructor(input: string, config?: LoaderConfig) {
+    config = config || ({} as LoaderConfig);
     this.symbolsByLabel = {};
     this.grammar = config.grammar || new Grammar();
-    this.leftRecursive = "leftRecursive" in config ? config.leftRecursive : true;
-    this.newSymbolCallback = config.newSymbol || null;
+    this.leftRecursive = "leftRecursive" in config ? config.leftRecursive || false : true;
+    this.newSymbolCallback = config.newSymbolCallback || null;
     this.tokenHandlers = config.tokenHandlers || {};
     this.parse(input);
   }
@@ -307,10 +319,10 @@ export class Loader {
   parse(input: string): void {
     const et = Tokenizer();
     const ntFunc = (tape: Tape) => {
-      const out = et.next(tape);
+      const out = et.next(tape, this);
       return out;
     };
-    this.tokenizer = new TLEX.TokenBuffer(ntFunc);
+    this.tokenizer = new TLEX.TokenBuffer(ntFunc, this);
     this.parseGrammar(new TLEX.Tape(input));
   }
 
@@ -385,7 +397,7 @@ export class Loader {
       const tokenHandler = this.parseTokenHandler(tape);
       if (tokenHandler) {
         this.generatedTokenizer.addRule(rule, (rule, tape, token) => {
-          tokenHandler(rule, tape, token);
+          tokenHandler(rule, tape, token, this);
           return null;
         });
       } else {
@@ -422,10 +434,10 @@ export class Loader {
     const funcName = this.tokenizer.expectToken(tape, TokenType.IDENT);
 
     // how do we use the funcName to
-    const out = (rule: TLEX.Rule, tape: Tape, token: any) => {
+    const out = (rule: TLEX.Rule, tape: Tape, token: any, owner: any) => {
       const handler = this.tokenHandlers[funcName.value];
       if (!handler) throw new Error("Handler method not found: " + funcName.value);
-      token = handler(token, tape);
+      token = handler(token, tape, owner);
       return token;
     };
 

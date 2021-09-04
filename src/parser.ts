@@ -115,7 +115,7 @@ export abstract class ParserBase {
   tokenbuffer: TLEX.TokenBuffer;
 
   setTokenizer(tokenizer: TLEX.NextTokenFunc): this {
-    this.tokenbuffer = new TLEX.TokenBuffer(tokenizer);
+    this.tokenbuffer = new TLEX.TokenBuffer(tokenizer, null);
     return this;
   }
 

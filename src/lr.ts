@@ -242,7 +242,7 @@ export class Parser extends ParserBase {
     }
 
     while (tokenbuffer.peek(input) != null || !stack.isEmpty) {
-      let token = tokenbuffer.peek(input, context.tokenizerContext);
+      let token = tokenbuffer.peek(input);
       if (token && context.onNextToken) token = context.onNextToken(token);
       const nextSym = token == null ? g.Eof : this.getSym(token);
       const nextValue = token == null ? null : token.value;

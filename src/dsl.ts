@@ -342,7 +342,6 @@ export class Loader {
         if (tokPattern.value[1].length > 0) {
           // Flags given so create
           re = new RegExp(tokPattern.value[0], tokPattern.value[1]);
-          console.log("RegExp, flags: ", re, re.flags);
         }
         rule = TLEX.Builder.build(re, { tag: tag, priority: priority + 10 });
       } else {
@@ -539,7 +538,6 @@ export class Loader {
           if (token.value[1].length > 0) {
             // Flags given so create
             re = new RegExp(token.value[0], token.value[1]);
-            console.log("RegExp, flags: ", re, re.flags);
           }
           const rule = TLEX.Builder.build(re, { tag: label, priority: 10 });
           this.generatedTokenizer.addRule(rule);

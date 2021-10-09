@@ -11,5 +11,4 @@ export * from "./lr";
 export * from "./lritems";
 export * from "./ptables";
 export { newLRParser as newParser } from "./factory";
-
-export { ParseError, UnexpectedTokenError } from "tlex";
+export { ParseError } from "./errors";

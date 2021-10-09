@@ -180,7 +180,7 @@ describe("Auxiliary Symbol Tests", () => {
   });
 
   test("Test Zero or More with error", () => {
-    expect(() => testParsing(g2, "a d c")).toThrowError("Invalid character found at offset (3): ' '");
+    expect(() => testParsing(g2, "a d c")).toThrowError("Unexpected character ('d')");
   });
 
   test("Test Zero or More", () => {
@@ -290,5 +290,36 @@ describe("LRParsing Action Tests", () => {
       },
     });
     expect(result?.value).toEqual(7);
+  });
+});
+
+describe("LRParsing Tokenizer Errors", () => {
+  test("Test A + B # * C", () => {
+    const vars = { a: 1, b: 2, c: 3 } as any;
+    const errors: TLEX.TokenizerError[] = [];
+    const result = testParsing(grammar_with_actions, "a+b##*c", {
+      type: "slr",
+      onTokenError: (err: TLEX.TokenizerError, tape: TLEX.Tape) => {
+        errors.push(err);
+        return true; // true will skip this error token
+      },
+      ruleHandlers: {
+        mult: (rule: Rule, parent: PTNode, ...children: PTNode[]) => {
+          return children[0].value * children[2].value;
+        },
+        add: (rule: Rule, parent: PTNode, ...children: PTNode[]) => {
+          return children[0].value + children[2].value;
+        },
+        getVar: (rule: Rule, parent: PTNode, ...children: PTNode[]) => {
+          const varname = children[0].value;
+          if (!(varname in vars)) {
+            throw new Error("Variable not found: " + varname);
+          }
+          return vars[varname];
+        },
+      },
+    });
+    expect(result?.value).toEqual(7);
+    expect(errors.length).toEqual(2); // one for each "#"
   });
 });

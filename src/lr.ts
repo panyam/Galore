@@ -8,6 +8,7 @@ import {
   RuleReductionCallback,
   NextTokenCallback,
 } from "./parser";
+import { ParseError } from "./errors";
 
 type Nullable<T> = TSU.Nullable<T>;
 type NumMap<T> = TSU.NumMap<T>;
@@ -188,6 +189,8 @@ export type ActionResolverCallback = (
 
 export type RuleActionHandler = (rule: Rule, parent: PTNode, ...children: PTNode[]) => any;
 
+export type TokenErrorCallback = (err: TLEX.TokenizerError, input: TLEX.Tape) => boolean;
+
 export interface ParserContext {
   buildParseTree?: boolean;
   copySingleChild?: boolean;
@@ -196,6 +199,7 @@ export interface ParserContext {
   onReduction?: RuleReductionCallback;
   onNextToken?: NextTokenCallback;
   actionResolver?: ActionResolverCallback;
+  onTokenError?: TokenErrorCallback;
   // The owner used for tokenizer to get an insight into the context
   // (to allow context sensitive scanning - aka "scanner hacks").
   tokenizerContext: any;
@@ -241,16 +245,39 @@ export class Parser extends ParserBase {
       }
     }
 
-    while (tokenbuffer.peek(input) != null || !stack.isEmpty) {
-      let token = tokenbuffer.peek(input);
-      if (token && context.onNextToken) token = context.onNextToken(token);
+    function nextToken(): TLEX.Token | null {
+      try {
+        return tokenbuffer.peek(input);
+      } catch (err /* InvalidCharacterException */) {
+        if (!context?.onTokenError || !context?.onTokenError(err as TLEX.TokenizerError, input)) {
+          // no handler or handler could do nothing so throw it up again
+          throw err;
+        }
+
+        // Handler managed to do "something" so retry again
+        // TODO - Check offsets were modified?
+        return nextToken();
+      }
+    }
+
+    while (true) {
+      // while (tokenbuffer.peek(input) != null || !stack.isEmpty) {
+      let token = nextToken();
+      if (token == null) {
+        if (stack.isEmpty) {
+          // no more to do
+          break;
+        }
+      } else if (context.onNextToken) {
+        token = context.onNextToken(token);
+      }
       const nextSym = token == null ? g.Eof : this.getSym(token);
       const nextValue = token == null ? null : token.value;
       let [topState, topNode] = stack.top();
       const actions = this.parseTable.getActions(topState, nextSym);
       if (actions == null || actions.length == 0) {
         // TODO - use a error handler here
-        throw new TLEX.ParseError(
+        throw new ParseError(
           token?.start || 0,
           `Unexpected token at state (${topState}): ${token?.tag} ('${nextSym.label}')`,
         );

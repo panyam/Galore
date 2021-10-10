@@ -277,10 +277,7 @@ export class Parser extends ParserBase {
       const actions = this.parseTable.getActions(topState, nextSym);
       if (actions == null || actions.length == 0) {
         // TODO - use a error handler here
-        throw new ParseError(
-          token?.start || 0,
-          `Unexpected token at state (${topState}): ${token?.tag} ('${nextSym.label}')`,
-        );
+        throw new ParseError("UnexpectedToken", { state: topState, token: token, nextSym: nextSym });
       }
 
       const action = resolveActions(actions);

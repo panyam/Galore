@@ -6,6 +6,7 @@ import * as TLEX from "tlex";
 import { PTNode } from "../parser";
 import { Sym, Rule } from "../Grammar";
 import { newLRParser as newParser } from "../factory";
+import { ParseError } from "../errors";
 
 function tok(tag: any, value: any): TLEX.Token {
   const out = new TLEX.Token(tag, 0, 0, 0);
@@ -222,7 +223,16 @@ describe("Auxiliary Symbol Tests", () => {
       X -> A B+ C ;
     `;
   test("Test One or More with Failure", () => {
-    expect(() => testParsing(g2, "a c")).toThrowError("Parse Error at (2): Unexpected token at state (1): C ('C')");
+    try {
+      testParsing(g2, "a c");
+      fail("Should not be here");
+    } catch (e) {
+      const err = e as ParseError;
+      expect(err.message).toEqual("ParseError(UnexpectedToken)");
+      expect(err.type).toEqual("UnexpectedToken");
+      expect(err.value.nextSym.label).toEqual("C");
+      expect(err.value.state).toEqual(1);
+    }
   });
   test("Test One or More", () => {
     const result = testParsing(g2, "a b b b b c");

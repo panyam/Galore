@@ -181,7 +181,7 @@ describe("Auxiliary Symbol Tests", () => {
   });
 
   test("Test Zero or More with error", () => {
-    expect(() => testParsing(g2, "a d c")).toThrowError("Unexpected character ('d')");
+    expect(() => testParsing(g2, "a d c")).toThrowError("Unexpected Character: d");
   });
 
   test("Test Zero or More", () => {
@@ -228,7 +228,7 @@ describe("Auxiliary Symbol Tests", () => {
       fail("Should not be here");
     } catch (e) {
       const err = e as ParseError;
-      expect(err.message).toEqual("ParseError(UnexpectedToken)");
+      expect(err.message).toEqual("Unexpected Token: 'C'");
       expect(err.type).toEqual("UnexpectedToken");
       expect(err.value.nextSym.label).toEqual("C");
       expect(err.value.state).toEqual(1);

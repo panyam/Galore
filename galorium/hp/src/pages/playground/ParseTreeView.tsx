@@ -23,21 +23,21 @@ export class ParseTreeView extends BaseComponent {
   }
 
   render() {
-  if (this.root) {
-    return ( <svg ref = {this.ptreeRootSVG} className = "ptreeRootSVG">
-      <PTNodeView ref = {this.rootNodeView} node={this.root} parent={null} />
-    </svg> )
-  } else {
-    return ( <svg ref = {this.ptreeRootSVG} className = "ptreeRootSVG"> </svg> )
-  }
+    if (this.root) {
+      return ( <svg ref = {this.ptreeRootSVG} className = "ptreeRootSVG">
+        <PTNodeView ref = {this.rootNodeView} node={this.root} parent={null} />
+      </svg> )
+    } else {
+      return ( <svg ref = {this.ptreeRootSVG} className = "ptreeRootSVG"> </svg> )
+    }
   }
 
   refreshView(): void {
     // kick off a re render
-    this.setState({})
+    this.forceUpdate();
   }
 
-  componentDidMount() {
+  componentDidUpdate() {
     // once rendered set the bbox
     const ptnodeView: PTNodeView = this.rootNodeView.current!;
     if (ptnodeView) {
@@ -81,15 +81,17 @@ class PTNodeView extends BaseComponent<PTNodePropType> {
   render() {
     const node = (this.props as PTNodePropType).node;
     // create all children
+    const childViewNodes = [] as React.ReactNode[];
     this.childViews = node.children.map((childNode) => {
         const out = React.createRef<PTNodeView>();
-        <PTNodeView ref={out} node={childNode} parent = {this} />
+        childViewNodes.push(<PTNodeView ref={out} node={childNode} parent = {this} />);
         return out;
     });
 
+    const lineToChildNodes = [] as React.ReactNode[];
     this.linesToChildren = node.children.map((childNode) => {
       const out = React.createRef<LineToChild>();
-      (<LineToChild />)
+      lineToChildNodes.push(<LineToChild  lineColor = { this.lineColor } ref = {out}/>)
       return out;
     });
 
@@ -111,6 +113,8 @@ class PTNodeView extends BaseComponent<PTNodePropType> {
             </tspan>
           </text>
         </svg>
+        { childViewNodes }
+        { lineToChildNodes }
       </svg>
     )
   }

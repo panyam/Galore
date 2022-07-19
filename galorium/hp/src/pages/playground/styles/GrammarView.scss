@@ -1,20 +1,19 @@
-$grammarHeaderHeight: 30px;
 
-#grammarArea .grammarHeaderArea {
+.grammarAreaParent .grammarHeaderArea {
   position: absolute;
   overflow: scroll;
   left: 0px;
   right: 0px;
   top: 0px;
-  height: $grammarHeaderHeight;
+  height: 30px;
 }
 
-#grammarArea .grammarEditorArea {
+.grammarAreaParent .grammarEditorArea {
   position: absolute;
   overflow: scroll;
   left: 0px;
   right: 0px;
-  top: $grammarHeaderHeight;
+  top: 30px;
   bottom: 0px;
 }
 

@@ -1,4 +1,4 @@
-@import "../../fecommon/global";
+@import "../fecommon/global";
 @import "./vars";
 
 h1 {
@@ -31,7 +31,7 @@ h1 {
 }
 */
 
-#desktopArea {
+.desktopArea {
   position: absolute;
   left: 0px;
   top: $header-bar-height;
@@ -39,7 +39,7 @@ h1 {
   right: 0px;
 }
 
-#statusBar {
+.statusBar {
   position: absolute;
   overflow: hidden;
   height: $statusBarHeight;
@@ -51,4 +51,3 @@ h1 {
   padding: 0;
   margin: 0;
 }
-

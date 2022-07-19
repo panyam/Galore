@@ -36,7 +36,11 @@ const copsHeader = [
   ],
   [
     "script-src-elem",
-    ["'self'", "https://unpkg.com/ace-builds@1.4.12/src-noconflict/", "http://code.jquery.com/jquery-1.11.1.min.js"],
+    [
+      "'self'",
+      "https://unpkg.com/ace-builds@1.4.12/src-noconflict/",
+      "http://code.jquery.com/jquery-1.11.1.min.js"
+    ],
   ],
   [
     "style-src",

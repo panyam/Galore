@@ -2,7 +2,7 @@ import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
 import { Sym, Grammar, Str, Rule, RuleAction } from "./grammar";
 
-type Tape = TLEX.Tape;
+type Tape = TLEX.TapeInterface;
 
 const str2regex = (s: string | number): string => {
   if (typeof s === "number") return "" + s;
@@ -36,7 +36,7 @@ export enum TokenType {
 }
 
 export type NewSymbolCallback = TSU.Nullable<(label: string, assumedTerminal: boolean) => Sym | void>;
-export type TokenHandler = (token: TLEX.Token, tape: TLEX.Tape, owner: any) => TLEX.Token;
+export type TokenHandler = (token: TLEX.Token, tape: TLEX.TapeInterface, owner: any) => TLEX.Token;
 
 export interface LoaderConfig {
   grammar?: Grammar;
@@ -318,7 +318,7 @@ export class Loader {
 
   parse(input: string): void {
     const et = Tokenizer();
-    const ntFunc = (tape: Tape) => {
+    const ntFunc = (tape: Tape, owner: any) => {
       const out = et.next(tape, this);
       return out;
     };
@@ -326,7 +326,7 @@ export class Loader {
     this.parseGrammar(new TLEX.Tape(input));
   }
 
-  parseRegex(tape: TLEX.Tape, tag?: string, priority = 0, syntax = ""): TLEX.Rule {
+  parseRegex(tape: TLEX.TapeInterface, tag?: string, priority = 0, syntax = ""): TLEX.Rule {
     if (syntax == "") syntax = this.regexSyntax;
     if (syntax == "js") {
       const tokPattern = this.tokenizer.expectToken(tape, TokenType.STRING, TokenType.NUMBER, TokenType.REGEX);
@@ -379,7 +379,7 @@ export class Loader {
     }
   }
 
-  parseDirective(tape: Tape, directive: string): void {
+  parseDirective(tape: TLEX.TapeInterface, directive: string): void {
     if (directive == "start") {
       // override start directive
       const next = this.tokenizer.expectToken(tape, TokenType.IDENT);

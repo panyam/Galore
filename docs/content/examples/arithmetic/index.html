@@ -2,64 +2,112 @@
 title: Arithmetic Expressions
 description: Parsing arithmetic expressions with operator precedence
 section: examples
+useExampleRunner: true
 ---
 
 <h1>Arithmetic Expressions</h1>
 
-<p>This classic example demonstrates operator precedence and associativity.</p>
+<p>This classic example demonstrates how grammar structure naturally enforces operator precedence and associativity without explicit precedence declarations.</p>
 
-<h2>Grammar Definition</h2>
+<h2>Try It</h2>
 
-<pre><code class="language-text">Expr   -> Expr "+" Term | Expr "-" Term | Term
+<p>Edit the expression below and click <strong>Run</strong> to see the parse tree:</p>
+
+<div id="arithmetic-example"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const grammar = `Expr   -> Expr "+" Term | Expr "-" Term | Term
 Term   -> Term "*" Factor | Term "/" Factor | Factor
 Factor -> "(" Expr ")" | NUMBER
+NUMBER -> /[0-9]+(\\.[0-9]+)?/`;
 
-NUMBER -> /[0-9]+(\.[0-9]+)?/
-</code></pre>
+  const input = `1 + 2 * 3`;
 
-<h2>How It Works</h2>
+  new ExampleRunner('arithmetic-example', {
+    grammar: grammar,
+    input: input
+  });
+});
+</script>
 
-<p>The grammar structure enforces precedence:</p>
-<ul>
-    <li><code>*</code> and <code>/</code> bind tighter than <code>+</code> and <code>-</code></li>
-    <li>All operators are left-associative</li>
-    <li>Parentheses override precedence</li>
-</ul>
+<h2>How Precedence Works</h2>
 
-<h2>Implementation</h2>
+<p>The grammar structure enforces precedence through nesting:</p>
 
-<pre><code class="language-typescript">import * as G from "galore";
+<table class="precedence-table">
+    <thead>
+        <tr>
+            <th>Rule</th>
+            <th>Operators</th>
+            <th>Precedence</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>Expr</code></td>
+            <td><code>+</code> <code>-</code></td>
+            <td>Lowest</td>
+        </tr>
+        <tr>
+            <td><code>Term</code></td>
+            <td><code>*</code> <code>/</code></td>
+            <td>Higher</td>
+        </tr>
+        <tr>
+            <td><code>Factor</code></td>
+            <td><code>( )</code></td>
+            <td>Highest</td>
+        </tr>
+    </tbody>
+</table>
 
-const arithGrammar = `
-Expr   -> Expr "+" Term | Expr "-" Term | Term
-Term   -> Term "*" Factor | Term "/" Factor | Factor
-Factor -> "(" Expr ")" | NUMBER
+<h2>Parse Tree Structure</h2>
 
-NUMBER -> /[0-9]+(\.[0-9]+)?/
-`;
-
-const parser = G.newParser(arithGrammar, { type: "lalr" });
-
-// Parse expression
-const result = parser.parse("1 + 2 * 3");
-console.log(result); // Tree shows 2*3 computed first
-</code></pre>
-
-<h2>Parse Tree</h2>
-
-<p>For the input <code>1 + 2 * 3</code>, the parse tree shows:</p>
+<p>For the input <code>1 + 2 * 3</code>, notice how the parse tree groups <code>2 * 3</code> as a <code>Term</code> before adding <code>1</code>:</p>
 
 <pre><code>Expr
-  Expr
-    Term
-      Factor
-        NUMBER: "1"
-  "+"
-  Term
-    Term
-      Factor
-        NUMBER: "2"
-    "*"
-    Factor
-      NUMBER: "3"
-</code></pre>
+├── Expr
+│   └── Term
+│       └── Factor
+│           └── NUMBER: "1"
+├── "+"
+└── Term
+    ├── Term
+    │   └── Factor
+    │       └── NUMBER: "2"
+    ├── "*"
+    └── Factor
+        └── NUMBER: "3"</code></pre>
+
+<h2>Left Associativity</h2>
+
+<p>The grammar uses left-recursion (<code>Expr -> Expr "+" Term</code>), which makes operators left-associative. For <code>1 - 2 - 3</code>, this means <code>(1 - 2) - 3 = -4</code>, not <code>1 - (2 - 3) = 2</code>.</p>
+
+<h2>Example Expressions</h2>
+
+<p>Try these expressions:</p>
+<ul>
+    <li><code>1 + 2 + 3</code> - Left associative addition</li>
+    <li><code>10 - 3 - 2</code> - Left associative subtraction</li>
+    <li><code>2 * 3 + 4</code> - Multiplication before addition</li>
+    <li><code>(2 + 3) * 4</code> - Parentheses override precedence</li>
+    <li><code>2 * (3 + 4)</code> - Parentheses change evaluation order</li>
+</ul>
+
+<style>
+.precedence-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+.precedence-table th,
+.precedence-table td {
+    border: 1px solid var(--color-border);
+    padding: 0.5rem 1rem;
+    text-align: left;
+}
+.precedence-table th {
+    background: var(--color-bg-alt);
+}
+</style>

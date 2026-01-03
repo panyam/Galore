@@ -13,6 +13,7 @@ module.exports = (_env, options) => {
     entry: {
       DocsPage: path.join(__dirname, "./components/DocsPage.ts"),
       PlaygroundPage: path.join(__dirname, "./components/playground/PlaygroundPage.ts"),
+      ExampleRunner: path.join(__dirname, "./components/ExampleRunner.ts"),
     },
     module: {
       rules: [
@@ -82,6 +83,12 @@ module.exports = (_env, options) => {
       new HtmlWebpackPlugin({
         chunks: ["PlaygroundPage"],
         filename: path.resolve(__dirname, "./templates/gen.PlaygroundPage.html"),
+        templateContent: "",
+        minify: { collapseWhitespace: false },
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ["ExampleRunner"],
+        filename: path.resolve(__dirname, "./templates/gen.ExampleRunner.html"),
         templateContent: "",
         minify: { collapseWhitespace: false },
       }),

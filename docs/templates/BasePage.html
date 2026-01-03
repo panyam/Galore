@@ -56,9 +56,11 @@
     {{ template "Footer" . }}
     {{ end }}
 
-    <!-- JavaScript - conditionally include playground or docs page -->
+    <!-- JavaScript - conditionally include playground, example runner, or docs page -->
     {{ if .FrontMatter.usePlayground }}
     {{# include "gen.PlaygroundPage.html" #}}
+    {{ else if .FrontMatter.useExampleRunner }}
+    {{# include "gen.ExampleRunner.html" #}}
     {{ else }}
     {{# include "gen.DocsPage.html" #}}
     {{ end }}

@@ -1,0 +1,42 @@
+---
+title: "Getting Started"
+description: "Get started with Galore parser toolkit"
+---
+
+<h2>Installation</h2>
+
+<p>Install Galore using npm or yarn:</p>
+
+<pre><code class="language-bash">npm install galore
+# or
+yarn add galore
+</code></pre>
+
+<h2>Quick Start</h2>
+
+<p>Here's a simple example to get you started:</p>
+
+<pre><code class="language-typescript">import * as G from "galore";
+
+// Define a grammar for simple arithmetic
+const grammar = `
+  Expr -> Expr "+" Term | Term
+  Term -> Term "*" Factor | Factor
+  Factor -> "(" Expr ")" | NUMBER
+`;
+
+// Create an LALR parser
+const parser = G.newParser(grammar, { type: "lalr" });
+
+// Parse an expression
+const tree = parser.parse("1 + 2 * 3");
+console.log(tree);
+</code></pre>
+
+<h2>Next Steps</h2>
+
+<ul>
+    <li><a href="../playground/">Try the interactive playground</a></li>
+    <li><a href="../reference/">Read the reference documentation</a></li>
+    <li><a href="../examples/">See more examples</a></li>
+</ul>

@@ -1,0 +1,28 @@
+[
+  {
+    "name": "Getting Started",
+    "url": "getting-started/"
+  },
+  {
+    "name": "Playground",
+    "url": "playground/"
+  },
+  {
+    "name": "Reference",
+    "url": "reference/",
+    "children": [
+      { "name": "Grammar Syntax", "url": "reference/grammar-syntax/" },
+      { "name": "Parser Types", "url": "reference/parser-types/" },
+      { "name": "Parse Tables", "url": "reference/parse-tables/" }
+    ]
+  },
+  {
+    "name": "Examples",
+    "url": "examples/",
+    "children": [
+      { "name": "JSON Parser", "url": "examples/json-parser/" },
+      { "name": "Arithmetic", "url": "examples/arithmetic/" },
+      { "name": "Calculator", "url": "examples/calculator/" }
+    ]
+  }
+]

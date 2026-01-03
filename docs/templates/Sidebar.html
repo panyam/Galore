@@ -1,0 +1,48 @@
+{{ define "Sidebar" }}
+<aside class="sidebar">
+    <div class="sidebar-content">
+        {{ $section := .FrontMatter.section }}
+
+        <!-- Section Navigation -->
+        <nav class="section-nav">
+            {{ if eq $section "reference" }}
+            <div class="section-nav-content">
+                <h3>Reference</h3>
+                <ul>
+                    <li><a href="{{.Site.PathPrefix}}/reference/">Overview</a></li>
+                    <li><a href="{{.Site.PathPrefix}}/reference/grammar-syntax/">Grammar Syntax</a></li>
+                    <li><a href="{{.Site.PathPrefix}}/reference/parser-types/">Parser Types</a></li>
+                    <li><a href="{{.Site.PathPrefix}}/reference/parse-tables/">Parse Tables</a></li>
+                </ul>
+            </div>
+            {{ else if eq $section "examples" }}
+            <div class="section-nav-content">
+                <h3>Examples</h3>
+                <ul>
+                    <li><a href="{{.Site.PathPrefix}}/examples/">Overview</a></li>
+                    <li><a href="{{.Site.PathPrefix}}/examples/json-parser/">JSON Parser</a></li>
+                    <li><a href="{{.Site.PathPrefix}}/examples/arithmetic/">Arithmetic</a></li>
+                    <li><a href="{{.Site.PathPrefix}}/examples/calculator/">Calculator</a></li>
+                </ul>
+            </div>
+            {{ else }}
+            <!-- Default navigation for homepage and other pages -->
+            <div class="section-nav-content">
+                <h3>Getting Started</h3>
+                <ul>
+                    <li><a href="{{.Site.PathPrefix}}/getting-started/">Quick Start</a></li>
+                    <li><a href="{{.Site.PathPrefix}}/getting-started/installation/">Installation</a></li>
+                </ul>
+
+                <h3>Learn</h3>
+                <ul>
+                    <li><a href="{{.Site.PathPrefix}}/playground/">Playground</a></li>
+                    <li><a href="{{.Site.PathPrefix}}/reference/">Reference</a></li>
+                    <li><a href="{{.Site.PathPrefix}}/examples/">Examples</a></li>
+                </ul>
+            </div>
+            {{ end }}
+        </nav>
+    </div>
+</aside>
+{{ end }}

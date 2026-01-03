@@ -2,6 +2,23 @@
 
 ## Recently Completed
 
+### Documentation Site Migration (January 2026)
+- Created new `docs/` folder using s3gen static site generator
+- Replaced Gatsby/Hugo-based galorium with s3gen-based docs site
+- Key features:
+  - **s3gen v0.1.3** - Go-based static site generator
+  - **DockView** - Modern dockable panel layout for playground
+  - **Ace Editor** - Code editing for grammar and input
+  - **TypeScript + Webpack** - Component bundling with two entry points
+- Created templates: BasePage, Header, Sidebar, Content, Footer
+- Ported playground components to standalone TypeScript (no React)
+- Created GrammarSandbox component for embedding examples in docs
+- Full light/dark theme support with CSS custom properties
+- Build commands:
+  - `cd docs && pnpm build` - Build webpack bundles
+  - `cd docs && go run .` - Run dev server on :8085
+  - `cd docs && make gh-pages` - Deploy to GitHub Pages
+
 ### Tooling Migration (January 2026)
 - Migrated from TSLint to ESLint (TSLint was deprecated)
 - Upgraded all dependencies to latest versions:

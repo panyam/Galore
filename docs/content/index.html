@@ -1,0 +1,55 @@
+---
+title: ""
+description: "A toolbox for language analyzers and parser generators"
+hideTitle: true
+---
+
+<section class="hero">
+    <div class="hero-content">
+        <h1>Galore</h1>
+        <p class="hero-subtitle">A toolbox for language analyzers and parser generators</p>
+        <p class="hero-description">
+            Build parsers for custom languages with support for SLR, LALR, and LR(1) parsing algorithms.
+            Interactive playground included.
+        </p>
+        <div class="hero-actions">
+            <a href="getting-started/" class="btn btn-primary">Get Started</a>
+            <a href="playground/" class="btn btn-secondary">Try Playground</a>
+        </div>
+    </div>
+</section>
+
+<section class="features">
+    <div class="feature">
+        <h3>Multiple Parser Types</h3>
+        <p>Support for SLR, LALR, and LR(1) parsing algorithms. Choose the right parser for your grammar.</p>
+    </div>
+    <div class="feature">
+        <h3>Interactive Playground</h3>
+        <p>Test your grammars in real-time with our interactive playground. See parse trees and parse tables instantly.</p>
+    </div>
+    <div class="feature">
+        <h3>TypeScript Native</h3>
+        <p>Written in TypeScript with full type definitions. Works in Node.js and browsers.</p>
+    </div>
+</section>
+
+<section class="quick-example">
+    <h2>Quick Example</h2>
+    <pre><code class="language-typescript">import * as G from "galore";
+
+// Define a simple arithmetic grammar
+const grammar = `
+  Expr -> Expr "+" Term | Term
+  Term -> Term "*" Factor | Factor
+  Factor -> "(" Expr ")" | NUMBER
+`;
+
+// Create a parser
+const parser = G.newParser(grammar, { type: "lalr" });
+
+// Parse input
+const result = parser.parse("1 + 2 * 3");
+console.log(result);
+</code></pre>
+</section>

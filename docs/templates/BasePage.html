@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+{{# include "Header.html" #}}
+{{# include "Sidebar.html" #}}
+{{# include "Content.html" #}}
+{{# include "Footer.html" #}}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{ if .FrontMatter.description }}{{ .FrontMatter.description }}{{ else }}{{ (json "SiteMetadata.json" "siteDescription") }}{{ end }}">
+    <title>{{ if .FrontMatter.title }}{{ .FrontMatter.title }} - {{ end }}{{ (json "SiteMetadata.json" "siteName") }}</title>
+
+    <!-- Theme initialization (runs early to prevent flash) -->
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{.Site.PathPrefix}}/static/css/main.css">
+    {{ if .FrontMatter.customCSS }}
+    <link rel="stylesheet" href="{{ .FrontMatter.customCSS }}">
+    {{ end }}
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{.Site.PathPrefix}}/static/images/favicon.png">
+</head>
+<body class="{{ if .FrontMatter.bodyClass }}{{ .FrontMatter.bodyClass }}{{ end }}">
+    <!-- Header -->
+    {{ template "Header" . }}
+
+    {{ if .FrontMatter.fullWidth }}
+    <!-- Full width content (for playground) -->
+    <main class="main-content-full">
+        {{ template "Content" . }}
+    </main>
+    {{ else }}
+    <div class="page-container">
+        <!-- Sidebar -->
+        {{ template "Sidebar" . }}
+
+        <!-- Main Content -->
+        <main class="main-content">
+            {{ template "Content" . }}
+        </main>
+    </div>
+    {{ end }}
+
+    <!-- Footer -->
+    {{ if not .FrontMatter.hideFooter }}
+    {{ template "Footer" . }}
+    {{ end }}
+
+    <!-- JavaScript - conditionally include playground or docs page -->
+    {{ if .FrontMatter.usePlayground }}
+    {{# include "gen.PlaygroundPage.html" #}}
+    {{ else }}
+    {{# include "gen.DocsPage.html" #}}
+    {{ end }}
+
+    <!-- Theme toggle handler -->
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

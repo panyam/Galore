@@ -1,0 +1,60 @@
+---
+title: "Playground"
+description: "Interactive grammar and parser playground"
+usePlayground: true
+fullWidth: true
+hideFooter: true
+hideTitle: true
+bodyClass: "playground-page"
+---
+
+<div id="playground-container" class="playground-container">
+    <!-- DockView will be initialized here by PlaygroundPage.ts -->
+    <div id="dockview-container" class="dockview-container"></div>
+</div>
+
+<!-- Hidden panel templates -->
+<div style="display: none;">
+    <div id="grammar-panel-template" class="panel-content">
+        <div class="panel-toolbar">
+            <select id="grammar-select" class="grammar-select">
+                <option value="json">JSON</option>
+                <option value="arithmetic">Arithmetic</option>
+                <option value="calculator">Calculator</option>
+            </select>
+            <select id="parser-type-select" class="parser-type-select">
+                <option value="slr">SLR</option>
+                <option value="lalr" selected>LALR</option>
+                <option value="lr1">LR(1)</option>
+            </select>
+            <button id="compile-btn" class="btn btn-primary btn-sm">Compile</button>
+        </div>
+        <div id="grammar-editor" class="editor-container"></div>
+    </div>
+
+    <div id="input-panel-template" class="panel-content">
+        <div class="panel-toolbar">
+            <button id="parse-btn" class="btn btn-primary btn-sm">Parse</button>
+        </div>
+        <div id="input-editor" class="editor-container"></div>
+    </div>
+
+    <div id="parse-tree-panel-template" class="panel-content">
+        <div id="parse-tree-container" class="parse-tree-container"></div>
+    </div>
+
+    <div id="parse-table-panel-template" class="panel-content">
+        <div id="parse-table-container" class="parse-table-container"></div>
+    </div>
+
+    <div id="normalized-grammar-panel-template" class="panel-content">
+        <div id="normalized-grammar-editor" class="editor-container"></div>
+    </div>
+
+    <div id="console-panel-template" class="panel-content">
+        <div class="panel-toolbar">
+            <button id="clear-console-btn" class="btn btn-sm">Clear</button>
+        </div>
+        <div id="console-output" class="console-output"></div>
+    </div>
+</div>

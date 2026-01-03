@@ -1,0 +1,38 @@
+{{ define "Content" }}
+<article class="content">
+    <!-- Page Header -->
+    {{ if and .FrontMatter.title (not .FrontMatter.hideTitle) }}
+    <header class="content-header">
+        <h1>{{ .FrontMatter.title }}</h1>
+        {{ if .FrontMatter.description }}
+        <p class="lead">{{ .FrontMatter.description }}</p>
+        {{ end }}
+    </header>
+    {{ end }}
+
+    <!-- Page Content -->
+    <div class="content-body">
+        {{ BytesToString .Content | HTML }}
+    </div>
+
+    <!-- Previous/Next Navigation -->
+    {{ if or .FrontMatter.prev .FrontMatter.next }}
+    <footer class="content-footer">
+        <nav class="page-nav">
+            {{ if .FrontMatter.prev }}
+            <a href="{{ .FrontMatter.prev.url }}" class="page-nav-prev">
+                <span class="arrow">←</span>
+                <span class="text">{{ .FrontMatter.prev.title }}</span>
+            </a>
+            {{ end }}
+            {{ if .FrontMatter.next }}
+            <a href="{{ .FrontMatter.next.url }}" class="page-nav-next">
+                <span class="text">{{ .FrontMatter.next.title }}</span>
+                <span class="arrow">→</span>
+            </a>
+            {{ end }}
+        </nav>
+    </footer>
+    {{ end }}
+</article>
+{{ end }}

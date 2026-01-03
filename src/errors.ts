@@ -1,5 +1,9 @@
 export class ParseError extends Error {
-  constructor(message: string, public type: string, public value: any = null) {
+  constructor(
+    message: string,
+    public type: string,
+    public value: any = null,
+  ) {
     super(message);
     Object.setPrototypeOf(this, new.target.prototype);
   }

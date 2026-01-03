@@ -161,7 +161,11 @@ export class RuleAction {
 
 export class Rule {
   id: number;
-  constructor(public nt: Sym, public rhs: Str, public action: RuleAction | null = null) {
+  constructor(
+    public nt: Sym,
+    public rhs: Str,
+    public action: RuleAction | null = null,
+  ) {
     if (nt.isTerminal) {
       throw new Error("Cannot add rules to a terminal");
     }

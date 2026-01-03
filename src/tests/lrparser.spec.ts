@@ -4,7 +4,7 @@
 import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
 import { PTNode } from "../parser";
-import { Sym, Rule } from "../Grammar";
+import { Sym, Rule } from "../grammar";
 import { newLRParser as newParser } from "../factory";
 import { ParseError } from "../errors";
 

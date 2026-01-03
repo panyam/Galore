@@ -139,9 +139,9 @@ export function leftFactor(grammar: Grammar, nt: TSU.Nullable<Sym> = null): void
         const a = 3;
         if (prefix.length > 0) grammar.add(nt, prefix.copy());
       } else if (curr.children.size == 1 && !curr.isLeaf) {
-        const childNode = curr.children.values().next().value;
+        const childNode = curr.children.values().next().value!;
         TSU.assert(childNode.value != null);
-        lf(childNode, nt, prefix.append(childNode.value));
+        lf(childNode, nt, prefix.append(childNode.value!));
       } else {
         // see if we need a new symbol
         const newSym = curr.children.size > 0 ? grammar.newAuxNT() : null;

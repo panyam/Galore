@@ -206,7 +206,10 @@ export interface ParserContext {
 }
 
 export class Parser extends ParserBase {
-  constructor(public readonly parseTable: ParseTable, config: any = {}) {
+  constructor(
+    public readonly parseTable: ParseTable,
+    config: any = {},
+  ) {
     super();
   }
 

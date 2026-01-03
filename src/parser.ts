@@ -36,7 +36,12 @@ export type NextTokenCallback = (token: TLEX.Token) => TSU.Nullable<TLEX.Token>;
 
 export class PFNode {
   children: this[] = [];
-  constructor(public readonly id: number, public readonly sym: Sym, public value: any, ...children: PFNode[]) {
+  constructor(
+    public readonly id: number,
+    public readonly sym: Sym,
+    public value: any,
+    ...children: PFNode[]
+  ) {
     this.children = (children as this[]) || [];
   }
 

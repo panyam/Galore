@@ -48,7 +48,10 @@ export class SPPF {
 export class GSSVertex {
   gen = 0;
   outgoing: NumMap<PFNode> = {};
-  constructor(public readonly id: number, public readonly stateId: number) {}
+  constructor(
+    public readonly id: number,
+    public readonly stateId: number,
+  ) {}
 
   addEdge(another: GSSVertex, pfNode: PFNode): void {
     // TODO - See if a sorted list or set is needed
@@ -110,7 +113,10 @@ export class Parser extends ParserBase {
   R: [GSSVertex, Rule, GSSVertex[]][];
   Q: [GSSVertex, number][];
 
-  constructor(public readonly parseTable: ParseTable, config: any = {}) {
+  constructor(
+    public readonly parseTable: ParseTable,
+    config: any = {},
+  ) {
     super();
     this.flatten = config.flatten || false;
     this.beforeAddingChildNode = config.beforeAddingChildNode;

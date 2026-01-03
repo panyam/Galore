@@ -18,6 +18,8 @@ import "ace-builds/src-noconflict/theme-github";
 // Expose galore globally
 (window as any).G = G;
 
+const LAYOUT_STORAGE_KEY = "galore-playground-layout";
+
 export class PlaygroundPage {
   private dockview: DockviewApi | null = null;
   private eventHub = new EventHub();
@@ -50,16 +52,12 @@ export class PlaygroundPage {
 
     // Apply theme
     const isDarkMode = document.documentElement.classList.contains("dark");
-    container.className = isDarkMode
-      ? "dockview-theme-dark"
-      : "dockview-theme-light";
+    container.className = isDarkMode ? "dockview-theme-dark" : "dockview-theme-light";
 
     // Watch for theme changes
     const observer = new MutationObserver(() => {
       const isDark = document.documentElement.classList.contains("dark");
-      container.className = isDark
-        ? "dockview-theme-dark"
-        : "dockview-theme-light";
+      container.className = isDark ? "dockview-theme-dark" : "dockview-theme-light";
       this.updateEditorThemes(isDark);
     });
     observer.observe(document.documentElement, {
@@ -74,14 +72,47 @@ export class PlaygroundPage {
 
     this.dockview = dockviewComponent.api;
 
-    // Create default layout
-    this.createDefaultLayout();
+    // Try to restore saved layout, otherwise create default
+    if (!this.loadLayout()) {
+      this.createDefaultLayout();
+    }
+
+    // Listen for layout changes to persist them
+    this.dockview.onDidLayoutChange(() => {
+      this.saveLayout();
+    });
 
     // Setup event listeners
     this.setupEventListeners();
 
     // Load initial grammar
     this.selectGrammar(builtinGrammars.find((g) => g.selected) || builtinGrammars[0]);
+  }
+
+  private saveLayout(): void {
+    if (!this.dockview) return;
+    try {
+      const layout = this.dockview.toJSON();
+      localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(layout));
+    } catch (e) {
+      console.warn("Failed to save layout:", e);
+    }
+  }
+
+  private loadLayout(): boolean {
+    if (!this.dockview) return false;
+    try {
+      const saved = localStorage.getItem(LAYOUT_STORAGE_KEY);
+      if (saved) {
+        const layout = JSON.parse(saved);
+        this.dockview.fromJSON(layout);
+        return true;
+      }
+    } catch (e) {
+      console.warn("Failed to load layout:", e);
+      localStorage.removeItem(LAYOUT_STORAGE_KEY);
+    }
+    return false;
   }
 
   private createComponent(options: any): any {
@@ -106,14 +137,35 @@ export class PlaygroundPage {
   private createDefaultLayout(): void {
     if (!this.dockview) return;
 
-    // Grammar panel (left)
+    // Layout:
+    // Left Panel: Parse Tree
+    // Right Panel: Parse Table
+    // Center Panel (3 rows): Grammar/Normalized (tabbed), Input, Console
+
+    // Step 1: Create Grammar panel (will become center)
     this.dockview.addPanel({
       id: "grammar",
       component: "grammar",
       title: "Grammar",
     });
 
-    // Input panel (below grammar)
+    // Step 2: Add Parse Tree to LEFT (establishes left column)
+    this.dockview.addPanel({
+      id: "parseTree",
+      component: "parseTree",
+      title: "Parse Tree",
+      position: { direction: "left", referencePanel: "grammar" },
+    });
+
+    // Step 3: Add Parse Table to RIGHT (establishes right column)
+    this.dockview.addPanel({
+      id: "parseTable",
+      component: "parseTable",
+      title: "Parse Table",
+      position: { direction: "right", referencePanel: "grammar" },
+    });
+
+    // Step 4: Now add rows to center column (below grammar)
     this.dockview.addPanel({
       id: "input",
       component: "input",
@@ -121,36 +173,20 @@ export class PlaygroundPage {
       position: { direction: "below", referencePanel: "grammar" },
     });
 
-    // Parse tree panel (right of grammar)
-    this.dockview.addPanel({
-      id: "parseTree",
-      component: "parseTree",
-      title: "Parse Tree",
-      position: { direction: "right", referencePanel: "grammar" },
-    });
-
-    // Parse table panel (tabbed with parse tree)
-    this.dockview.addPanel({
-      id: "parseTable",
-      component: "parseTable",
-      title: "Parse Table",
-      position: { direction: "within", referencePanel: "parseTree" },
-    });
-
-    // Normalized grammar (tabbed with grammar)
-    this.dockview.addPanel({
-      id: "normalizedGrammar",
-      component: "normalizedGrammar",
-      title: "Normalized Grammar",
-      position: { direction: "within", referencePanel: "grammar" },
-    });
-
-    // Console (below input)
+    // Step 5: Console below input (center row 3)
     this.dockview.addPanel({
       id: "console",
       component: "console",
       title: "Console",
       position: { direction: "below", referencePanel: "input" },
+    });
+
+    // Step 6: Normalized grammar tabbed with grammar
+    this.dockview.addPanel({
+      id: "normalizedGrammar",
+      component: "normalizedGrammar",
+      title: "Normalized Grammar",
+      position: { direction: "within", referencePanel: "grammar" },
     });
   }
 
@@ -352,11 +388,19 @@ export class PlaygroundPage {
     const grammarText = this.grammarEditor.getValue();
 
     try {
-      this.currentParser = G.newParser(grammarText, { type: this.parserType as any });
-      this.currentGrammar = this.currentParser.parseTable?.grammar;
+      const startTime = performance.now();
+      // newParser returns [parser, tokenFunc, itemGraph]
+      const [parser] = G.newParser(grammarText, {
+        flatten: true,
+        type: this.parserType as any,
+      });
+      const elapsed = (performance.now() - startTime).toFixed(2);
+
+      this.currentParser = parser;
+      this.currentGrammar = parser.grammar;
 
       this.eventHub.emit(Events.GRAMMAR_COMPILED, this.currentParser, this.currentGrammar);
-      this.log(`Parser compiled (${this.parserType.toUpperCase()})`);
+      this.log(`Parser compiled (${this.parserType.toUpperCase()}) in ${elapsed}ms`);
 
       // Auto-parse if input exists
       if (this.inputEditor && this.inputEditor.getValue().trim()) {
@@ -397,28 +441,95 @@ export class PlaygroundPage {
       return;
     }
 
-    const pre = document.createElement("pre");
-    pre.className = "parse-tree-text";
-    pre.textContent = this.formatTree(result);
-    this.parseTreeContainer.appendChild(pre);
+    // Create SVG element
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.classList.add("parse-tree-svg");
+
+    // Render tree and get dimensions
+    const { element, width, height } = this.renderTreeNode(result, 0, 0);
+    svg.appendChild(element);
+
+    // Set SVG dimensions
+    svg.setAttribute("width", String(width + 40));
+    svg.setAttribute("height", String(height + 40));
+    svg.setAttribute("viewBox", `0 0 ${width + 40} ${height + 40}`);
+
+    this.parseTreeContainer.appendChild(svg);
   }
 
-  private formatTree(node: any, indent: string = ""): string {
-    if (!node) return "";
+  private renderTreeNode(
+    node: any,
+    x: number,
+    y: number
+  ): { element: SVGGElement; width: number; height: number } {
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
 
-    let result = indent + (node.sym?.label || "?");
-    if (node.value !== undefined && node.value !== null) {
-      result += `: ${JSON.stringify(node.value)}`;
+    const padding = 8;
+    const nodeHeight = 28;
+    const childIndent = 24;
+    const verticalGap = 8;
+
+    // Get label
+    let label = node.sym?.label || "?";
+    if (node.value !== undefined && node.value !== null && !node.children?.length) {
+      label += `: ${JSON.stringify(node.value)}`;
     }
-    result += "\n";
 
-    if (node.children) {
+    // Estimate text width (approximate)
+    const textWidth = label.length * 8 + padding * 2;
+
+    // Create node rectangle
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", String(x));
+    rect.setAttribute("y", String(y));
+    rect.setAttribute("width", String(textWidth));
+    rect.setAttribute("height", String(nodeHeight));
+    rect.setAttribute("rx", "4");
+    rect.setAttribute("ry", "4");
+    rect.classList.add("parse-tree-node");
+    if (node.children?.length) {
+      rect.classList.add("non-terminal");
+    } else {
+      rect.classList.add("terminal");
+    }
+    g.appendChild(rect);
+
+    // Create text
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("x", String(x + padding));
+    text.setAttribute("y", String(y + nodeHeight / 2 + 4));
+    text.classList.add("parse-tree-text");
+    text.textContent = label;
+    g.appendChild(text);
+
+    let totalWidth = textWidth;
+    let totalHeight = nodeHeight;
+
+    // Render children
+    if (node.children?.length) {
+      let childY = y + nodeHeight + verticalGap;
+      const childX = x + childIndent;
+
       for (const child of node.children) {
-        result += this.formatTree(child, indent + "  ");
+        // Draw connector line
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        const lineX = x + childIndent / 2;
+        const d = `M ${lineX} ${y + nodeHeight} V ${childY + nodeHeight / 2} H ${childX}`;
+        line.setAttribute("d", d);
+        line.classList.add("parse-tree-line");
+        g.appendChild(line);
+
+        // Render child node
+        const childResult = this.renderTreeNode(child, childX, childY);
+        g.appendChild(childResult.element);
+
+        totalWidth = Math.max(totalWidth, childIndent + childResult.width);
+        childY += childResult.height + verticalGap;
+        totalHeight = childY - y - verticalGap;
       }
     }
 
-    return result;
+    return { element: g, width: totalWidth, height: totalHeight };
   }
 
   private updateParseTable(): void {

@@ -1,0 +1,44 @@
+---
+title: Grammar Syntax
+description: Learn the syntax for defining grammars in Galore
+section: reference
+---
+
+<h1>Grammar Syntax</h1>
+
+<p>Galore uses a BNF-like syntax for defining grammars. This page covers the complete syntax reference.</p>
+
+<h2>Basic Rules</h2>
+
+<p>A grammar rule has the form:</p>
+
+<pre><code>NonTerminal -> production1 | production2 | ...</code></pre>
+
+<p>Each production is a sequence of symbols (terminals or non-terminals).</p>
+
+<h2>Terminals</h2>
+
+<p>Terminals can be:</p>
+<ul>
+    <li>String literals: <code>"keyword"</code> or <code>'keyword'</code></li>
+    <li>Regular expressions: <code>/[0-9]+/</code></li>
+    <li>Named tokens: <code>NUMBER</code>, <code>IDENTIFIER</code></li>
+</ul>
+
+<h2>Example Grammar</h2>
+
+<pre><code class="language-text">Expr -> Expr "+" Term | Term
+Term -> Term "*" Factor | Factor
+Factor -> "(" Expr ")" | NUMBER
+
+NUMBER -> /[0-9]+/
+</code></pre>
+
+<h2>Operator Precedence</h2>
+
+<p>You can define operator precedence and associativity using pragmas:</p>
+
+<pre><code class="language-text">%left "+" "-"
+%left "*" "/"
+%right "^"
+</code></pre>

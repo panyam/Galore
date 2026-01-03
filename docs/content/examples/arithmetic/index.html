@@ -1,0 +1,65 @@
+---
+title: Arithmetic Expressions
+description: Parsing arithmetic expressions with operator precedence
+section: examples
+---
+
+<h1>Arithmetic Expressions</h1>
+
+<p>This classic example demonstrates operator precedence and associativity.</p>
+
+<h2>Grammar Definition</h2>
+
+<pre><code class="language-text">Expr   -> Expr "+" Term | Expr "-" Term | Term
+Term   -> Term "*" Factor | Term "/" Factor | Factor
+Factor -> "(" Expr ")" | NUMBER
+
+NUMBER -> /[0-9]+(\.[0-9]+)?/
+</code></pre>
+
+<h2>How It Works</h2>
+
+<p>The grammar structure enforces precedence:</p>
+<ul>
+    <li><code>*</code> and <code>/</code> bind tighter than <code>+</code> and <code>-</code></li>
+    <li>All operators are left-associative</li>
+    <li>Parentheses override precedence</li>
+</ul>
+
+<h2>Implementation</h2>
+
+<pre><code class="language-typescript">import * as G from "galore";
+
+const arithGrammar = `
+Expr   -> Expr "+" Term | Expr "-" Term | Term
+Term   -> Term "*" Factor | Term "/" Factor | Factor
+Factor -> "(" Expr ")" | NUMBER
+
+NUMBER -> /[0-9]+(\.[0-9]+)?/
+`;
+
+const parser = G.newParser(arithGrammar, { type: "lalr" });
+
+// Parse expression
+const result = parser.parse("1 + 2 * 3");
+console.log(result); // Tree shows 2*3 computed first
+</code></pre>
+
+<h2>Parse Tree</h2>
+
+<p>For the input <code>1 + 2 * 3</code>, the parse tree shows:</p>
+
+<pre><code>Expr
+  Expr
+    Term
+      Factor
+        NUMBER: "1"
+  "+"
+  Term
+    Term
+      Factor
+        NUMBER: "2"
+    "*"
+    Factor
+      NUMBER: "3"
+</code></pre>

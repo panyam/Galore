@@ -307,7 +307,8 @@ code, pre {
 
 .main-content-full {
   flex: 1;
-  min-height: calc(100vh - var(--header-height));
+  height: calc(100vh - var(--header-height));
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -722,8 +723,23 @@ code, pre {
   overflow: hidden;
 }
 
+.playground-page .main-content-full {
+  padding: 0;
+}
+
+.playground-page .content,
+.playground-page .content-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
 .playground-container {
-  height: calc(100vh - var(--header-height));
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -731,6 +747,7 @@ code, pre {
 .dockview-container {
   flex: 1;
   min-height: 0;
+  width: 100%;
 }
 
 /* DockView Theme Overrides */

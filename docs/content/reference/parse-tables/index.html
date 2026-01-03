@@ -1,0 +1,53 @@
+---
+title: Parse Tables
+description: Understanding parse tables in Galore
+section: reference
+---
+
+<h1>Parse Tables</h1>
+
+<p>Parse tables are the core data structure used by LR parsers. They encode the state machine that drives the parsing process.</p>
+
+<h2>Table Structure</h2>
+
+<p>An LR parse table consists of two parts:</p>
+
+<h3>ACTION Table</h3>
+
+<p>Maps (state, terminal) pairs to actions:</p>
+<ul>
+    <li><strong>Shift n</strong>: Push the terminal and go to state n</li>
+    <li><strong>Reduce r</strong>: Apply grammar rule r</li>
+    <li><strong>Accept</strong>: Parsing complete</li>
+    <li><strong>Error</strong>: Syntax error</li>
+</ul>
+
+<h3>GOTO Table</h3>
+
+<p>Maps (state, non-terminal) pairs to states. Used after reductions.</p>
+
+<h2>Viewing Parse Tables</h2>
+
+<p>Galore provides utilities to visualize parse tables:</p>
+
+<pre><code class="language-typescript">import * as G from "galore";
+
+const parser = G.newParser(grammar, { type: "lalr" });
+
+// Get HTML representation
+const html = G.Printers.parseTableToHtml(parser.parseTable);
+
+// Get text representation
+const text = G.Printers.parseTableToText(parser.parseTable);
+</code></pre>
+
+<h2>Understanding Conflicts</h2>
+
+<p>When a parse table cell has multiple actions, you have a conflict:</p>
+
+<ul>
+    <li><strong>Shift-Reduce Conflict</strong>: Grammar is ambiguous about whether to shift or reduce</li>
+    <li><strong>Reduce-Reduce Conflict</strong>: Grammar is ambiguous about which rule to apply</li>
+</ul>
+
+<p>Use the Playground to visualize parse tables and identify conflicts.</p>

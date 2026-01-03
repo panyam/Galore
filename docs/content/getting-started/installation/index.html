@@ -1,0 +1,55 @@
+---
+title: Installation
+description: How to install Galore
+section: getting-started
+---
+
+<h1>Installation</h1>
+
+<h2>npm / pnpm / yarn</h2>
+
+<pre><code class="language-bash"># npm
+npm install galore
+
+# pnpm
+pnpm add galore
+
+# yarn
+yarn add galore
+</code></pre>
+
+<h2>Browser (CDN)</h2>
+
+<pre><code class="language-html">&lt;script src="https://unpkg.com/galore/dist/galore.min.js"&gt;&lt;/script&gt;
+</code></pre>
+
+<h2>TypeScript</h2>
+
+<p>Galore includes TypeScript type definitions out of the box. No additional <code>@types</code> package needed.</p>
+
+<pre><code class="language-typescript">import * as G from "galore";
+
+const parser = G.newParser(`
+  Expr -> Expr "+" Term | Term
+  Term -> NUMBER
+  NUMBER -> /[0-9]+/
+`, { type: "lalr" });
+
+const result = parser.parse("1 + 2");
+</code></pre>
+
+<h2>Requirements</h2>
+
+<ul>
+    <li>Node.js 14+ (for Node.js usage)</li>
+    <li>Modern browser with ES2015+ support (for browser usage)</li>
+</ul>
+
+<h2>Next Steps</h2>
+
+<p>Now that you have Galore installed, check out:</p>
+<ul>
+    <li><a href="/galore/getting-started/">Quick Start Guide</a></li>
+    <li><a href="/galore/playground/">Interactive Playground</a></li>
+    <li><a href="/galore/examples/">Example Grammars</a></li>
+</ul>

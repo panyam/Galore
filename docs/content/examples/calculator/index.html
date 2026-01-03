@@ -1,0 +1,83 @@
+---
+title: Calculator
+description: Building a working calculator with semantic actions
+section: examples
+---
+
+<h1>Calculator</h1>
+
+<p>This example extends the arithmetic grammar with semantic actions to evaluate expressions.</p>
+
+<h2>Grammar with Actions</h2>
+
+<pre><code class="language-typescript">import * as G from "galore";
+
+const calcGrammar = `
+Expr   -> Expr "+" Term   { $$ = $1 + $3 }
+       |  Expr "-" Term   { $$ = $1 - $3 }
+       |  Term            { $$ = $1 }
+
+Term   -> Term "*" Factor { $$ = $1 * $3 }
+       |  Term "/" Factor { $$ = $1 / $3 }
+       |  Factor          { $$ = $1 }
+
+Factor -> "(" Expr ")"    { $$ = $2 }
+       |  NUMBER          { $$ = parseFloat($1) }
+
+NUMBER -> /[0-9]+(\.[0-9]+)?/
+`;
+</code></pre>
+
+<h2>Complete Implementation</h2>
+
+<pre><code class="language-typescript">import * as G from "galore";
+
+// Define grammar
+const grammar = `
+Expr   -> Expr "+" Term | Expr "-" Term | Term
+Term   -> Term "*" Factor | Term "/" Factor | Factor
+Factor -> "(" Expr ")" | NUMBER
+NUMBER -> /[0-9]+(\.[0-9]+)?/
+`;
+
+// Create parser
+const parser = G.newParser(grammar, { type: "lalr" });
+
+// Parse and evaluate
+function evaluate(input: string): number {
+  const tree = parser.parse(input);
+  return evalNode(tree);
+}
+
+function evalNode(node: any): number {
+  if (!node) return 0;
+
+  const label = node.sym?.label;
+
+  if (label === "NUMBER") {
+    return parseFloat(node.value);
+  }
+
+  if (node.children) {
+    const values = node.children.map(evalNode);
+
+    // Find operator
+    for (const child of node.children) {
+      if (child.value === "+") return values[0] + values[2];
+      if (child.value === "-") return values[0] - values[2];
+      if (child.value === "*") return values[0] * values[2];
+      if (child.value === "/") return values[0] / values[2];
+    }
+
+    // No operator - return first meaningful value
+    return values.find(v => typeof v === "number" && !isNaN(v)) ?? 0;
+  }
+
+  return 0;
+}
+
+// Test
+console.log(evaluate("1 + 2 * 3"));   // 7
+console.log(evaluate("(1 + 2) * 3")); // 9
+console.log(evaluate("10 / 2 + 3")); // 8
+</code></pre>

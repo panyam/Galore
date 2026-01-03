@@ -1,0 +1,81 @@
+---
+title: Parser Types
+description: Understanding SLR, LALR, and LR(1) parsers in Galore
+section: reference
+---
+
+<h1>Parser Types</h1>
+
+<p>Galore supports three types of bottom-up parsers. Each has different trade-offs between power and complexity.</p>
+
+<h2>SLR (Simple LR)</h2>
+
+<p>The simplest LR parser. Uses FOLLOW sets to resolve conflicts.</p>
+
+<ul>
+    <li>Smallest parse tables</li>
+    <li>Fastest to construct</li>
+    <li>Can handle fewer grammars than LALR or LR(1)</li>
+</ul>
+
+<pre><code class="language-typescript">const parser = G.newParser(grammar, { type: "slr" });
+</code></pre>
+
+<h2>LALR (Look-Ahead LR)</h2>
+
+<p>The most commonly used parser type. Balances power and efficiency.</p>
+
+<ul>
+    <li>Same table size as SLR</li>
+    <li>More powerful than SLR</li>
+    <li>Used by tools like Yacc and Bison</li>
+</ul>
+
+<pre><code class="language-typescript">const parser = G.newParser(grammar, { type: "lalr" });
+</code></pre>
+
+<h2>LR(1) (Canonical LR)</h2>
+
+<p>The most powerful LR parser. Uses full lookahead information.</p>
+
+<ul>
+    <li>Largest parse tables</li>
+    <li>Can handle all deterministic context-free grammars</li>
+    <li>More memory intensive</li>
+</ul>
+
+<pre><code class="language-typescript">const parser = G.newParser(grammar, { type: "lr1" });
+</code></pre>
+
+<h2>Comparison</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Parser Type</th>
+            <th>Table Size</th>
+            <th>Power</th>
+            <th>Use Case</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>SLR</td>
+            <td>Small</td>
+            <td>Limited</td>
+            <td>Simple grammars</td>
+        </tr>
+        <tr>
+            <td>LALR</td>
+            <td>Small</td>
+            <td>Good</td>
+            <td>Most programming languages</td>
+        </tr>
+        <tr>
+            <td>LR(1)</td>
+            <td>Large</td>
+            <td>Full</td>
+            <td>Complex grammars</td>
+        </tr>
+    </tbody>
+</table>

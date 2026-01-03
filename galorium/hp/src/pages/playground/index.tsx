@@ -1,15 +1,15 @@
 import * as React from "react"
-import "./styles/composer.scss";
-import * as Styles from "../commonstyles"
+import "../../components/playground/styles/composer.scss";
+import * as Styles from "../../styles/commonstyles"
 import * as GL from "golden-layout";
-import { BaseComponent } from "./contexts"
-import { GrammarArea } from "./GrammarView"
-import { NormalizedGrammarArea } from "./NormalizedGrammarView"
-import { ConsoleArea } from "./ConsoleView"
-import { InputArea } from "./InputView"
-import { ParseTableView } from "./ParseTableView"
-import { ParseTreeView } from "./ParseTreeView"
-import * as configs from "./configs";
+import { BaseComponent } from "../../components/playground/contexts"
+import { GrammarArea } from "../../components/playground/GrammarView"
+import { NormalizedGrammarArea } from "../../components/playground/NormalizedGrammarView"
+import { ConsoleArea } from "../../components/playground/ConsoleView"
+import { InputArea } from "../../components/playground/InputView"
+import { ParseTableView } from "../../components/playground/ParseTableView"
+import { ParseTreeView } from "../../components/playground/ParseTreeView"
+import * as configs from "../../components/playground/configs";
 
 const LAYOUT_STATE_KEY = "galorium:savedState";
 

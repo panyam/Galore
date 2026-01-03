@@ -7,6 +7,20 @@
   "keywords": [
     "gatsby"
   ],
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "core-js",
+      "core-js-pure",
+      "es5-ext",
+      "gatsby",
+      "gatsby-cli",
+      "gatsby-telemetry",
+      "lmdb",
+      "msgpackr-extract",
+      "sharp"
+    ]
+  },
   "scripts": {
     "develop": "gatsby develop",
     "start": "gatsby develop",
@@ -31,7 +45,6 @@
     "gatsby-source-filesystem": "^4.18.1",
     "gatsby-transformer-sharp": "^4.18.1",
     "golden-layout": "^2.5.0",
-    "node-sass": "^7.0.1",
     "react": "^18.1.0",
     "react-ace": "^10.1.0",
     "react-dom": "^18.2.0",

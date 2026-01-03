@@ -7,7 +7,7 @@ import "dockview-core/dist/styles/dockview.css";
 
 import * as G from "galore";
 import { EventHub, Events } from "./EventHub";
-import { builtinGrammars, parserTypes } from "./configs";
+import { builtinGrammars, parserTypes } from "../configs";
 
 // Import Ace editor
 import * as ace from "ace-builds";

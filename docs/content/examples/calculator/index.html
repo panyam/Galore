@@ -7,7 +7,7 @@ useExampleRunner: true
 
 <h1>Calculator</h1>
 
-<p>This example extends the arithmetic grammar with semantic actions to evaluate expressions. The grammar defines operator precedence naturally through its structure, and the action code walks the parse tree to compute the result.</p>
+<p>This example shows a more advanced calculator grammar that supports variables, assignments, and function calls. The grammar defines operator precedence naturally through its structure.</p>
 
 <h2>Try It</h2>
 
@@ -17,19 +17,8 @@ useExampleRunner: true
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const grammar = `
-%token NUMBER /\d+/
-%skip /[ \t\n\f\r]+/
-
-Expr -> Expr "+" Term | Expr "-" Term | Term ;
-Term -> Term "*" Factor | Term "/" Factor | Factor ;
-Factor -> "(" Expr ")" | NUMBER`;
-
-  const input = `1 + 2 * 3`;
-
   const actionCode = `function evaluate(node) {
   if (!node) return 0;
-
   const label = node.sym?.label;
 
   // Terminal: NUMBER
@@ -77,8 +66,7 @@ Factor -> "(" Expr ")" | NUMBER`;
   }
 
   new ExampleRunner('calculator-example', {
-    grammar: grammar,
-    input: input,
+    grammarName: 'Calculator',
     actionCode: actionCode,
     actionFn: evaluate
   });
@@ -87,31 +75,26 @@ Factor -> "(" Expr ")" | NUMBER`;
 
 <h2>How It Works</h2>
 
-<h3>Grammar Structure</h3>
+<h3>Grammar Features</h3>
 
-<p>The grammar enforces operator precedence through its structure:</p>
+<p>This calculator grammar supports:</p>
 <ul>
-    <li><code>Expr</code> handles <code>+</code> and <code>-</code> (lowest precedence)</li>
-    <li><code>Term</code> handles <code>*</code> and <code>/</code> (higher precedence)</li>
-    <li><code>Factor</code> handles parentheses and numbers (highest precedence)</li>
+    <li><strong>Variables</strong> - Identifiers like <code>x</code>, <code>y</code>, <code>total</code></li>
+    <li><strong>Assignments</strong> - <code>x = 10</code></li>
+    <li><strong>Expressions</strong> - <code>x + y * 2</code></li>
+    <li><strong>Function calls</strong> - <code>sin(x)</code>, <code>max(a, b)</code></li>
+    <li><strong>Operator precedence</strong> - <code>*</code> and <code>/</code> bind tighter than <code>+</code> and <code>-</code></li>
 </ul>
 
 <h3>Evaluation</h3>
 
-<p>The <code>evaluate</code> function recursively walks the parse tree:</p>
-<ol>
-    <li>For <code>NUMBER</code> nodes, return the parsed float value</li>
-    <li>For nodes with children, recursively evaluate all children</li>
-    <li>Find the operator and apply it to the operands</li>
-    <li>For nodes without operators, return the first numeric value</li>
-</ol>
+<p>The <code>evaluate</code> function recursively walks the parse tree to compute numeric results. Note that this simple evaluator doesn't track variable assignments - a full implementation would need a symbol table.</p>
 
-<h2>Example Calculations</h2>
+<h2>Example Inputs</h2>
 
 <p>Try these inputs:</p>
 <ul>
-    <li><code>1 + 2 * 3</code> = 7 (multiplication first)</li>
-    <li><code>(1 + 2) * 3</code> = 9 (parentheses override)</li>
-    <li><code>10 / 2 + 3</code> = 8 (division first)</li>
-    <li><code>2.5 * 4</code> = 10 (floating point)</li>
+    <li><code>1 + 2 * 3</code> - Basic arithmetic</li>
+    <li><code>x = 10</code> - Variable assignment</li>
+    <li><code>x + y * 2</code> - Expression with variables</li>
 </ul>

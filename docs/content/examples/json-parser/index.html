@@ -17,27 +17,8 @@ useExampleRunner: true
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const grammar = `%token NUMBER /-?[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?/
-%token STRING /"[^"]*"/
-%skip /[ \\t\\n\\r]+/
-
-Value   -> Object | Array | STRING | NUMBER | "true" | "false" | "null"
-Object  -> "{" "}" | "{" Members "}"
-Members -> Pair | Members "," Pair
-Pair    -> STRING ":" Value
-Array   -> "[" "]" | "[" Elements "]"
-Elements -> Value | Elements "," Value`;
-
-  const input = `{
-  "name": "Galore",
-  "version": 1.0,
-  "features": ["parsing", "grammars"],
-  "active": true
-}`;
-
   new ExampleRunner('json-example', {
-    grammar: grammar,
-    input: input
+    grammarName: 'JSON'
   });
 });
 </script>
@@ -48,7 +29,7 @@ Elements -> Value | Elements "," Value`;
 
 <ul>
     <li><code>NUMBER</code> - JSON numbers with optional decimals and exponents</li>
-    <li><code>STRING</code> - Double-quoted strings (simplified, no escapes)</li>
+    <li><code>STRING</code> - Double-quoted strings</li>
     <li><code>%skip</code> - Whitespace is ignored</li>
 </ul>
 
@@ -56,18 +37,23 @@ Elements -> Value | Elements "," Value`;
 
 <p>The <code>Value</code> rule is the entry point and can be any JSON type:</p>
 <ul>
-    <li><code>Object</code> - Curly braces with key-value pairs</li>
-    <li><code>Array</code> - Square brackets with comma-separated values</li>
+    <li><code>Dict</code> - Curly braces with key-value pairs</li>
+    <li><code>List</code> - Square brackets with comma-separated values</li>
     <li><code>STRING</code> / <code>NUMBER</code> - Primitive types</li>
-    <li><code>"true"</code> / <code>"false"</code> / <code>"null"</code> - Keywords</li>
+    <li><code>Boolean</code> - <code>true</code> or <code>false</code></li>
+    <li><code>"null"</code> - Null value</li>
 </ul>
 
-<h3>Recursive Structures</h3>
+<h3>EBNF Features</h3>
 
-<p>Both <code>Members</code> and <code>Elements</code> use left-recursion to handle comma-separated lists:</p>
+<p>This grammar uses EBNF notation for cleaner rules:</p>
+<ul>
+    <li><code>[ ... ]</code> - Optional elements</li>
+    <li><code>( ... )*</code> - Zero or more repetitions</li>
+</ul>
 
-<pre><code>Members -> Pair | Members "," Pair
-Elements -> Value | Elements "," Value</code></pre>
+<pre><code>List -> "[" [ Value ( "," Value ) * ] "]" ;
+Dict -> "{" [ Pair ("," Pair)* ] "}" ;</code></pre>
 
 <h2>Example Inputs</h2>
 
@@ -77,4 +63,5 @@ Elements -> Value | Elements "," Value</code></pre>
     <li><code>[1, 2, 3]</code> - Array of numbers</li>
     <li><code>{"nested": {"a": 1}}</code> - Nested objects</li>
     <li><code>null</code> - Just a null value</li>
+    <li><code>true</code> - Boolean value</li>
 </ul>

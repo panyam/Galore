@@ -17,16 +17,8 @@ useExampleRunner: true
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const grammar = `Expr   -> Expr "+" Term | Expr "-" Term | Term
-Term   -> Term "*" Factor | Term "/" Factor | Factor
-Factor -> "(" Expr ")" | NUMBER
-NUMBER -> /[0-9]+(\\.[0-9]+)?/`;
-
-  const input = `1 + 2 * 3`;
-
   new ExampleRunner('arithmetic-example', {
-    grammar: grammar,
-    input: input
+    grammarName: 'Arithmetic'
   });
 });
 </script>

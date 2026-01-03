@@ -2,7 +2,7 @@
  * ExampleRunner - Interactive component for grammar examples
  *
  * Provides a 2-column layout with:
- * - Column 1: Grammar (read-only with copy button)
+ * - Column 1: Grammar (editable with copy button)
  * - Column 2: Input (editable) + Output (parse tree + action result)
  * - Below: Action code (read-only with copy button)
  * - Run button to compile, parse, and execute
@@ -14,10 +14,13 @@ import "ace-builds/src-noconflict/mode-text";
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-github";
+import { builtinGrammars, BuiltinGrammar } from "./configs";
 
 interface ExampleConfig {
-  grammar: string;
-  input: string;
+  // Either provide grammarName to look up from builtinGrammars, or provide grammar/input directly
+  grammarName?: string;
+  grammar?: string;
+  input?: string;
   actionCode?: string;
   actionFn?: (node: any) => any;
 }
@@ -25,6 +28,8 @@ interface ExampleConfig {
 export class ExampleRunner {
   private container: HTMLElement;
   private config: ExampleConfig;
+  private resolvedGrammar: string = "";
+  private resolvedInput: string = "";
 
   private grammarEditor: ace.Ace.Editor | null = null;
   private inputEditor: ace.Ace.Editor | null = null;
@@ -41,6 +46,23 @@ export class ExampleRunner {
     }
     this.container = container;
     this.config = config;
+
+    // Resolve grammar from builtinGrammars if grammarName is provided
+    if (config.grammarName) {
+      const builtin = builtinGrammars.find((g) => g.name === config.grammarName);
+      if (builtin) {
+        this.resolvedGrammar = builtin.grammar;
+        this.resolvedInput = config.input || builtin.sampleInput || "";
+      } else {
+        console.error(`Grammar "${config.grammarName}" not found in builtinGrammars`);
+        this.resolvedGrammar = config.grammar || "";
+        this.resolvedInput = config.input || "";
+      }
+    } else {
+      this.resolvedGrammar = config.grammar || "";
+      this.resolvedInput = config.input || "";
+    }
+
     this.init();
   }
 
@@ -138,7 +160,7 @@ export class ExampleRunner {
       this.grammarEditor = ace.edit(grammarContainer);
       this.grammarEditor.setTheme(theme);
       this.grammarEditor.session.setMode("ace/mode/text");
-      this.grammarEditor.setValue(this.config.grammar.trim(), -1);
+      this.grammarEditor.setValue(this.resolvedGrammar.trim(), -1);
       // Disable Temporarily:
       // this.grammarEditor.setReadOnly(true);
       this.grammarEditor.setOptions({
@@ -155,7 +177,7 @@ export class ExampleRunner {
       this.inputEditor = ace.edit(inputContainer);
       this.inputEditor.setTheme(theme);
       this.inputEditor.session.setMode("ace/mode/text");
-      this.inputEditor.setValue(this.config.input.trim(), -1);
+      this.inputEditor.setValue(this.resolvedInput.trim(), -1);
       this.inputEditor.setOptions({
         fontSize: "13px",
         showPrintMargin: false,

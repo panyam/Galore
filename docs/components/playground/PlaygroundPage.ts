@@ -43,6 +43,14 @@ export class PlaygroundPage {
     this.init();
   }
 
+  private isDarkMode(): boolean {
+    return document.documentElement.classList.contains("dark");
+  }
+
+  private getEditorTheme(): string {
+    return this.isDarkMode() ? "ace/theme/monokai" : "ace/theme/github";
+  }
+
   private init(): void {
     const container = document.getElementById("dockview-container");
     if (!container) {
@@ -51,12 +59,11 @@ export class PlaygroundPage {
     }
 
     // Apply theme
-    const isDarkMode = document.documentElement.classList.contains("dark");
-    container.className = isDarkMode ? "dockview-theme-dark" : "dockview-theme-light";
+    container.className = this.isDarkMode() ? "dockview-theme-dark" : "dockview-theme-light";
 
     // Watch for theme changes
     const observer = new MutationObserver(() => {
-      const isDark = document.documentElement.classList.contains("dark");
+      const isDark = this.isDarkMode();
       container.className = isDark ? "dockview-theme-dark" : "dockview-theme-light";
       this.updateEditorThemes(isDark);
     });
@@ -87,6 +94,11 @@ export class PlaygroundPage {
 
     // Load initial grammar
     this.selectGrammar(builtinGrammars.find((g) => g.selected) || builtinGrammars[0]);
+
+    // Apply initial theme to editors (after they're created)
+    // Use multiple timeouts to ensure editors are initialized
+    setTimeout(() => this.updateEditorThemes(this.isDarkMode()), 100);
+    setTimeout(() => this.updateEditorThemes(this.isDarkMode()), 500);
   }
 
   private saveLayout(): void {
@@ -232,7 +244,7 @@ export class PlaygroundPage {
         const editorContainer = element.querySelector("#grammar-editor") as HTMLElement;
         if (editorContainer) {
           this.grammarEditor = ace.edit(editorContainer);
-          this.grammarEditor.setTheme("ace/theme/monokai");
+          this.grammarEditor.setTheme(this.getEditorTheme());
           this.grammarEditor.session.setMode("ace/mode/text");
           this.grammarEditor.setOptions({
             fontSize: "14px",
@@ -265,7 +277,7 @@ export class PlaygroundPage {
         const editorContainer = element.querySelector("#input-editor") as HTMLElement;
         if (editorContainer) {
           this.inputEditor = ace.edit(editorContainer);
-          this.inputEditor.setTheme("ace/theme/monokai");
+          this.inputEditor.setTheme(this.getEditorTheme());
           this.inputEditor.session.setMode("ace/mode/text");
           this.inputEditor.setOptions({
             fontSize: "14px",
@@ -324,7 +336,7 @@ export class PlaygroundPage {
         const editorContainer = element.querySelector("#normalized-grammar-editor") as HTMLElement;
         if (editorContainer) {
           this.normalizedEditor = ace.edit(editorContainer);
-          this.normalizedEditor.setTheme("ace/theme/monokai");
+          this.normalizedEditor.setTheme(this.getEditorTheme());
           this.normalizedEditor.session.setMode("ace/mode/text");
           this.normalizedEditor.setReadOnly(true);
           this.normalizedEditor.setOptions({

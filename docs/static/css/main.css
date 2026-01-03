@@ -767,31 +767,78 @@ html:has(.playground-page),
 
 /* DockView Theme Overrides */
 .dockview-theme-light {
-  --dv-background-color: var(--color-bg);
-  --dv-paneview-header-background: var(--color-bg-alt);
-  --dv-tabs-container-background: var(--color-bg-alt);
-  --dv-activegroup-visiblepanel-tab-background: var(--color-bg);
-  --dv-activegroup-hiddenpanel-tab-background: var(--color-bg-alt);
-  --dv-inactivegroup-visiblepanel-tab-background: var(--color-bg-alt);
-  --dv-inactivegroup-hiddenpanel-tab-background: var(--color-bg-alt);
-  --dv-tab-color: var(--color-text-muted);
-  --dv-activegroup-visiblepanel-tab-color: var(--color-text);
-  --dv-separator-border: var(--color-border);
-  --dv-paneview-header-border-color: var(--color-border);
+  --dv-background-color: #ffffff;
+  --dv-paneview-header-background: #f1f5f9;
+  --dv-tabs-container-background: #f1f5f9;
+  --dv-activegroup-visiblepanel-tab-background: #ffffff;
+  --dv-activegroup-hiddenpanel-tab-background: #e2e8f0;
+  --dv-inactivegroup-visiblepanel-tab-background: #e2e8f0;
+  --dv-inactivegroup-hiddenpanel-tab-background: #cbd5e1;
+  --dv-tab-color: #64748b;
+  --dv-activegroup-visiblepanel-tab-color: #0f172a;
+  --dv-inactivegroup-visiblepanel-tab-color: #475569;
+  --dv-inactivegroup-hiddenpanel-tab-color: #64748b;
+  --dv-separator-border: #e2e8f0;
+  --dv-paneview-header-border-color: #e2e8f0;
+  --dv-drag-over-background-color: rgba(59, 130, 246, 0.1);
+  --dv-drag-over-border-color: #3b82f6;
+  --dv-group-view-background-color: #ffffff;
+  --dv-tabs-and-actions-container-background-color: #f1f5f9;
+  --dv-icon-hover-background-color: #e2e8f0;
+  --dv-floating-box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --dv-activegroup-hiddenpanel-tab-color: #64748b;
+}
+
+/* Force light mode on DockView elements */
+.dockview-theme-light .dv-tabs-container,
+.dockview-theme-light .dv-tabs-and-actions-container,
+.dockview-theme-light .tabs-and-actions-container,
+.dockview-theme-light [class*="tabs-container"],
+.dockview-theme-light [class*="header"] {
+  background-color: #f1f5f9 !important;
+}
+
+.dockview-theme-light .dv-tab,
+.dockview-theme-light [class*="tab"]:not([class*="table"]) {
+  background-color: #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+.dockview-theme-light .dv-tab.dv-active-tab,
+.dockview-theme-light .dv-tab.active-tab,
+.dockview-theme-light [class*="active-tab"] {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.dockview-theme-light .dv-groupview,
+.dockview-theme-light [class*="groupview"] {
+  background-color: #ffffff !important;
+}
+
+/* DockView default header styling for light mode */
+.dockview-theme-light .groupview > .tabs-and-actions-container {
+  background: #f1f5f9 !important;
 }
 
 .dockview-theme-dark {
-  --dv-background-color: var(--color-bg);
-  --dv-paneview-header-background: var(--color-bg-alt);
-  --dv-tabs-container-background: var(--color-bg-alt);
-  --dv-activegroup-visiblepanel-tab-background: var(--color-bg);
-  --dv-activegroup-hiddenpanel-tab-background: var(--color-bg-alt);
-  --dv-inactivegroup-visiblepanel-tab-background: var(--color-bg-alt);
-  --dv-inactivegroup-hiddenpanel-tab-background: var(--color-bg-alt);
-  --dv-tab-color: var(--color-text-muted);
-  --dv-activegroup-visiblepanel-tab-color: var(--color-text);
-  --dv-separator-border: var(--color-border);
-  --dv-paneview-header-border-color: var(--color-border);
+  --dv-background-color: #0f172a;
+  --dv-paneview-header-background: #1e293b;
+  --dv-tabs-container-background: #1e293b;
+  --dv-activegroup-visiblepanel-tab-background: #0f172a;
+  --dv-activegroup-hiddenpanel-tab-background: #1e293b;
+  --dv-inactivegroup-visiblepanel-tab-background: #1e293b;
+  --dv-inactivegroup-hiddenpanel-tab-background: #334155;
+  --dv-tab-color: #94a3b8;
+  --dv-activegroup-visiblepanel-tab-color: #f1f5f9;
+  --dv-separator-border: #334155;
+  --dv-paneview-header-border-color: #334155;
+  --dv-drag-over-background-color: rgba(59, 130, 246, 0.2);
+  --dv-drag-over-border-color: #3b82f6;
+  --dv-group-view-background-color: #0f172a;
+  --dv-tabs-and-actions-container-background-color: #1e293b;
+  --dv-icon-hover-background-color: #334155;
+  --dv-floating-box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
 /* Playground Panels */
@@ -829,6 +876,14 @@ html:has(.playground-page),
   padding: var(--spacing-md);
   overflow: auto;
   height: 100%;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.dark .parse-tree-container,
+.dark .parse-table-container {
+  background: #0f172a;
+  color: #f1f5f9;
 }
 
 /* Parse Tree SVG Styles */
@@ -859,7 +914,7 @@ html:has(.playground-page),
 }
 
 .parse-tree-line {
-  stroke: white;
+  stroke: #c41e3a;
   stroke-width: 2;
   fill: none;
 }
@@ -890,7 +945,7 @@ html:has(.playground-page),
 }
 
 .dark .parse-tree-line {
-  stroke: #e8e8e8;
+  stroke: #ffb6c1;
 }
 
 .console-output {
@@ -899,7 +954,12 @@ html:has(.playground-page),
   padding: var(--spacing-sm);
   font-family: var(--font-mono);
   font-size: 0.8rem;
-  background: var(--color-bg-code);
+  background: #f8fafc;
+  color: #334155;
+}
+
+.dark .console-output {
+  background: #1e293b;
   color: #e2e8f0;
 }
 

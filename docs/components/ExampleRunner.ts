@@ -286,15 +286,7 @@ export class ExampleRunner {
 
     let html = '<div class="example-results">';
 
-    // Parse tree
-    html += '<div class="example-result-section">';
-    html += '<div class="example-result-label">Parse Tree:</div>';
-    html += '<div class="example-parse-tree">';
-    html += this.renderParseTree(parseResult);
-    html += "</div>";
-    html += "</div>";
-
-    // Action result (if any)
+    // Action result (if any) - show first
     if (actionResult !== null) {
       html += '<div class="example-result-section">';
       html += '<div class="example-result-label">Result:</div>';
@@ -307,6 +299,14 @@ export class ExampleRunner {
       html += "</div>";
       html += "</div>";
     }
+
+    // Parse tree
+    html += '<div class="example-result-section">';
+    html += '<div class="example-result-label">Parse Tree:</div>';
+    html += '<div class="example-parse-tree">';
+    html += this.renderParseTree(parseResult);
+    html += "</div>";
+    html += "</div>";
 
     html += "</div>";
     this.outputContainer.innerHTML = html;

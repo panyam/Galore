@@ -17,94 +17,110 @@ useExampleRunner: true
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const actionCode = `// Symbol table for variables
-const vars = {};
-
-// Built-in functions
+  const actionCode = `// Built-in functions
 const funcs = {
-  sin: Math.sin,
-  cos: Math.cos,
-  tan: Math.tan,
-  sqrt: Math.sqrt,
-  abs: Math.abs,
-  floor: Math.floor,
-  ceil: Math.ceil,
-  round: Math.round,
-  log: Math.log,
-  exp: Math.exp,
-  pow: Math.pow,
-  min: Math.min,
-  max: Math.max,
-  pi: () => Math.PI,
-  e: () => Math.E
+  sin: Math.sin, cos: Math.cos, tan: Math.tan,
+  sqrt: Math.sqrt, abs: Math.abs,
+  floor: Math.floor, ceil: Math.ceil, round: Math.round,
+  log: Math.log, exp: Math.exp, pow: Math.pow,
+  min: Math.min, max: Math.max,
+  pi: () => Math.PI, e: () => Math.E
 };
 
-function evaluate(node) {
-  if (!node) return 0;
-  const label = node.sym?.label;
-
-  // Terminal: NUMBER
-  if (label === "NUMBER") {
-    return parseFloat(node.value);
+// Convert parse tree node back to source text
+function nodeToString(node) {
+  if (!node) return "";
+  if (node.value !== undefined && !node.children?.length) {
+    return node.value;
   }
-
-  // Terminal: ID (variable reference)
-  if (label === "ID") {
-    return vars[node.value] ?? 0;
-  }
-
-  // Non-terminal with children
   if (node.children) {
-    // Assignment: ID "=" Expr
+    return node.children.map(nodeToString).join(" ");
+  }
+  return "";
+}
+
+// Create fresh evaluator with new symbol table
+function createEvaluator() {
+  const vars = {};
+
+  function evaluate(node) {
+    if (!node) return null;
+    const label = node.sym?.label;
+
+    // Terminals
+    if (label === "NUMBER") return parseFloat(node.value);
+    if (label === "ID") return vars[node.value] ?? 0;
+
+    // Skip punctuation (no children)
+    if (!node.children?.length) return null;
+
+    // Assignment: ID "=" Expr (use positions)
     if (label === "Assignment") {
-      const varName = node.children[0].value;
-      const value = evaluate(node.children[2]);
-      vars[varName] = value;
-      return value;
+      const idNode = node.children[0]; // First child is ID
+      const exprNode = node.children[2]; // Third child is Expr
+      if (idNode && exprNode) {
+        const value = evaluate(exprNode);
+        vars[idNode.value] = value;
+        return { text: idNode.value + " = " + value, result: value };
+      }
     }
 
     // FuncCall: ID "(" args ")"
     if (label === "FuncCall") {
-      const funcName = node.children[0].value;
+      const funcName = node.children[0]?.value;
       const fn = funcs[funcName];
-      if (!fn) return NaN; // Unknown function
-      // Collect arguments (skip ID, "(", ")", and ",")
-      const args = node.children
-        .filter(c => c.sym?.label !== "ID" &&
-                    c.value !== "(" &&
-                    c.value !== ")" &&
-                    c.value !== ",")
-        .map(evaluate);
+      if (!fn) return NaN;
+      const args = node.children.slice(2, -1) // Skip ID, "(", and ")"
+        .filter(c => c.value !== ",")
+        .map(evaluate)
+        .map(v => typeof v === "object" ? v.result : v)
+        .filter(v => v !== null);
       return fn(...args);
     }
 
-    // Program: evaluate all, return last
+    // Program: evaluate all direct children (statements)
     if (label === "Program") {
-      let result = 0;
-      for (const child of node.children) {
-        result = evaluate(child);
+      const results = [];
+      for (const child of node.children || []) {
+        const text = nodeToString(child).trim();
+        if (text) {
+          const val = evaluate(child);
+          if (val !== null) {
+            const result = typeof val === "object" ? val.result : val;
+            results.push({ text, result });
+          }
+        }
       }
-      return result;
+      return results;
     }
 
     // Binary operators
-    const values = node.children.map(evaluate);
-    for (const child of node.children) {
-      if (child.value === "+") return values[0] + values[2];
-      if (child.value === "-") return values[0] - values[2];
-      if (child.value === "*") return values[0] * values[2];
-      if (child.value === "/") return values[0] / values[2];
+    for (let i = 0; i < node.children.length; i++) {
+      const op = node.children[i].value;
+      if (["+", "-", "*", "/"].includes(op)) {
+        let left = evaluate(node.children[i - 1]);
+        let right = evaluate(node.children[i + 1]);
+        left = typeof left === "object" ? left.result : left;
+        right = typeof right === "object" ? right.result : right;
+        if (op === "+") return left + right;
+        if (op === "-") return left - right;
+        if (op === "*") return left * right;
+        if (op === "/") return left / right;
+      }
     }
 
-    // Pass through (Statement, Factor, etc.)
-    return values.find(v => typeof v === "number") ?? 0;
+    // Pass through
+    for (const child of node.children) {
+      const val = evaluate(child);
+      if (val !== null) return val;
+    }
+    return null;
   }
 
-  return 0;
+  return evaluate;
 }`;
 
   // The actual function to execute
-  const vars = {};
   const funcs = {
     sin: Math.sin, cos: Math.cos, tan: Math.tan,
     sqrt: Math.sqrt, abs: Math.abs,
@@ -114,49 +130,107 @@ function evaluate(node) {
     pi: () => Math.PI, e: () => Math.E
   };
 
-  function evaluate(node) {
-    if (!node) return 0;
-    const label = node.sym?.label;
-    if (label === "NUMBER") return parseFloat(node.value);
-    if (label === "ID") return vars[node.value] ?? 0;
-    if (node.children) {
+  function nodeToString(node) {
+    if (!node) return "";
+    if (node.value !== undefined && !node.children?.length) return node.value;
+    if (node.children) return node.children.map(nodeToString).join(" ");
+    return "";
+  }
+
+  function createEvaluator() {
+    const vars = {};
+
+    function evaluate(node) {
+      if (!node) return null;
+      const label = node.sym?.label;
+
+      // Terminals
+      if (label === "NUMBER") return parseFloat(node.value);
+      if (label === "ID") return vars[node.value] ?? 0;
+
+      // Skip punctuation
+      if (!node.children?.length) return null;
+
+      // Assignment: ID "=" Expr
       if (label === "Assignment") {
-        const varName = node.children[0].value;
-        const value = evaluate(node.children[2]);
-        vars[varName] = value;
-        return value;
+        const idNode = node.children[0];
+        const exprNode = node.children[2];
+        if (idNode && exprNode) {
+          const value = evaluate(exprNode);
+          const numValue = typeof value === "object" ? value.result : value;
+          vars[idNode.value] = numValue;
+          return { text: idNode.value + " = " + numValue, result: numValue };
+        }
       }
+
+      // FuncCall: ID "(" args ")"
       if (label === "FuncCall") {
-        const funcName = node.children[0].value;
+        const funcName = node.children[0]?.value;
         const fn = funcs[funcName];
         if (!fn) return NaN;
-        const args = node.children
-          .filter(c => c.sym?.label !== "ID" &&
-                      c.value !== "(" && c.value !== ")" && c.value !== ",")
-          .map(evaluate);
+        const args = node.children.slice(2, -1)
+          .filter(c => c.value !== ",")
+          .map(evaluate)
+          .map(v => typeof v === "object" ? v.result : v)
+          .filter(v => v !== null);
         return fn(...args);
       }
+
+      // Program: evaluate all direct children (statements)
       if (label === "Program") {
-        let result = 0;
-        for (const child of node.children) result = evaluate(child);
-        return result;
+        const results = [];
+        const children = node.children || [];
+        for (let i = 0; i < children.length; i++) {
+          const child = children[i];
+          const text = nodeToString(child).trim();
+          if (text) {
+            const val = evaluate(child);
+            if (val !== null) {
+              const result = typeof val === "object" ? val.result : val;
+              results.push({ text, result });
+            }
+          }
+        }
+        return results.length > 0 ? results : [{ text: "No statements", result: null }];
       }
-      const values = node.children.map(evaluate);
+
+      // Binary operators
+      for (let i = 0; i < node.children.length; i++) {
+        const op = node.children[i].value;
+        if (["+", "-", "*", "/"].includes(op)) {
+          let left = evaluate(node.children[i - 1]);
+          let right = evaluate(node.children[i + 1]);
+          left = typeof left === "object" ? left.result : left;
+          right = typeof right === "object" ? right.result : right;
+          if (op === "+") return left + right;
+          if (op === "-") return left - right;
+          if (op === "*") return left * right;
+          if (op === "/") return left / right;
+        }
+      }
+
+      // Pass through
       for (const child of node.children) {
-        if (child.value === "+") return values[0] + values[2];
-        if (child.value === "-") return values[0] - values[2];
-        if (child.value === "*") return values[0] * values[2];
-        if (child.value === "/") return values[0] / values[2];
+        const val = evaluate(child);
+        if (val !== null) return val;
       }
-      return values.find(v => typeof v === "number") ?? 0;
+      return null;
     }
-    return 0;
+
+    return evaluate;
   }
 
   new ExampleRunner('calculator-example', {
     grammarName: 'Calculator',
     actionCode: actionCode,
-    actionFn: evaluate
+    actionFn: (node) => {
+      const result = createEvaluator()(node);
+      // Format as "statement => result" for display
+      if (Array.isArray(result)) {
+        return result.map(r => `${r.text}  →  ${r.result}`).join("\n");
+      }
+      return result;
+    }
   });
 });
 </script>

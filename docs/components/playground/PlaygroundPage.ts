@@ -550,6 +550,12 @@ export class PlaygroundPage {
     try {
       const html = G.Printers.parseTableToHtml(this.currentParser.parseTable);
       this.parseTableContainer.innerHTML = html;
+
+      // Count conflicts (cells with multipleActions class from Galore's printer)
+      const conflictCells = this.parseTableContainer.querySelectorAll("td.multipleActions");
+      if (conflictCells.length > 0) {
+        this.log(`Warning: ${conflictCells.length} conflict(s) found in parse table`, "error");
+      }
     } catch (e) {
       this.parseTableContainer.innerHTML = '<div class="error">Could not render parse table</div>';
     }

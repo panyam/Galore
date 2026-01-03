@@ -61,8 +61,8 @@ Statement -> Assignment | Expr ;
 Assignment -> ID "=" Expr ;
 Expr -> Expr "+" Term | Expr "-" Term | Term ;
 Term -> Term "*" Factor | Term "/" Factor | Factor ;
-Factor -> "(" Expr ")" | NUMBER | ID | FuncCall ;
-FuncCall -> ID "(" [ Expr ( "," Expr )* ] ")" ;
+Factor -> "(" Expr ")" | NUMBER | Atom ;
+Atom -> ID [ "(" [ Expr ( "," Expr )* ] ")" ] ;
     `.trim(),
     sampleInput: `x = 10
 y = 20
@@ -81,6 +81,34 @@ S -> x ;
 A -> ;
     `.trim(),
     sampleInput: "x b b",
+  },
+  {
+    name: "DanglingElse",
+    label: "Dangling Else (Conflict)",
+    grammar: `
+%token IF "if"
+%token THEN "then"
+%token ELSE "else"
+%token EXPR "expr"
+%token OTHER "other"
+%skip /[ \\t\\n\\f\\r]+/
+
+Stmt -> IF EXPR THEN Stmt
+      | IF EXPR THEN Stmt ELSE Stmt
+      | OTHER ;
+    `.trim(),
+    sampleInput: "if expr then if expr then other else other",
+  },
+  {
+    name: "AmbiguousExpr",
+    label: "Ambiguous Expr (Conflict)",
+    grammar: `
+%token NUMBER /\\d+/
+%skip /[ \\t\\n\\f\\r]+/
+
+E -> E "+" E | E "*" E | NUMBER ;
+    `.trim(),
+    sampleInput: "1 + 2 * 3",
   },
 ];
 

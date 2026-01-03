@@ -281,3 +281,17 @@ html:has(.playground-page),
   background: var(--color-bg-alt);
   font-weight: 600;
 }
+
+/* Conflict cells - highlight with warning color */
+.parse-table-container td.multipleActions {
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: 600;
+  border-color: #f59e0b;
+}
+
+.dark .parse-table-container td.multipleActions {
+  background: #78350f;
+  color: #fef3c7;
+  border-color: #f59e0b;
+}

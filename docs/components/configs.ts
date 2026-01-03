@@ -12,9 +12,30 @@ export interface BuiltinGrammar {
 
 export const builtinGrammars: BuiltinGrammar[] = [
   {
+    name: "Calculator",
+    label: "Calculator",
+    selected: true,
+    grammar: `
+%token NUMBER /\\d+(\\.\\d+)?/
+%token ID /[a-zA-Z_][a-zA-Z0-9_]*/
+%skip /[ \\t\\n\\f\\r]+/
+
+Program -> Statement* ;
+Statement -> Assignment | Expr ;
+Assignment -> ID "=" Expr ;
+Expr -> Expr "+" Term | Expr "-" Term | Term ;
+Term -> Term "*" Factor | Term "/" Factor | Factor ;
+Factor -> "(" Expr ")" | NUMBER | Atom ;
+Atom -> ID AtomTail ;
+AtomTail -> "(" [ Expr ( "," Expr )* ] ")" | ;
+    `.trim(),
+    sampleInput: `x = 10
+y = 20
+x + y * 2`,
+  },
+  {
     name: "JSON",
     label: "JSON",
-    selected: true,
     grammar: `
 %token NUMBER /-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?/
 %token STRING /".*?(?<!\\\\)"/
@@ -47,26 +68,6 @@ Term -> Term "*" Factor | Term "/" Factor | Factor ;
 Factor -> "(" Expr ")" | NUMBER ;
     `.trim(),
     sampleInput: "1 + 2 * 3",
-  },
-  {
-    name: "Calculator",
-    label: "Calculator",
-    grammar: `
-%token NUMBER /\\d+(\\.\\d+)?/
-%token ID /[a-zA-Z_][a-zA-Z0-9_]*/
-%skip /[ \\t\\n\\f\\r]+/
-
-Program -> Statement* ;
-Statement -> Assignment | Expr ;
-Assignment -> ID "=" Expr ;
-Expr -> Expr "+" Term | Expr "-" Term | Term ;
-Term -> Term "*" Factor | Term "/" Factor | Factor ;
-Factor -> "(" Expr ")" | NUMBER | Atom ;
-Atom -> ID [ "(" [ Expr ( "," Expr )* ] ")" ] ;
-    `.trim(),
-    sampleInput: `x = 10
-y = 20
-x + y * 2`,
   },
   {
     name: "FarshiG3",

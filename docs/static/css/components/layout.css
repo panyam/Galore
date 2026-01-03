@@ -1,0 +1,67 @@
+/* ============================================
+   Page Layout
+   ============================================ */
+
+.page-container {
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--spacing-xl);
+  gap: var(--spacing-xl);
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+}
+
+.sidebar-content {
+  position: sticky;
+  top: calc(var(--header-height) + var(--spacing-xl));
+}
+
+.section-nav h3 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
+}
+
+.section-nav h3:first-child {
+  margin-top: 0;
+}
+
+.section-nav ul {
+  list-style: none;
+}
+
+.section-nav li a {
+  display: block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.section-nav li a:hover {
+  color: var(--color-text);
+  background: var(--color-bg-alt);
+  text-decoration: none;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  max-width: var(--content-max-width);
+}
+
+.main-content-full {
+  flex: 1;
+  height: calc(100vh - var(--header-height));
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}

@@ -1,0 +1,44 @@
+/* ============================================
+   Responsive Styles
+   ============================================ */
+
+@media (max-width: 1024px) {
+  .page-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+
+  .sidebar-content {
+    position: static;
+  }
+
+  .sandbox-panels {
+    grid-template-columns: 1fr;
+  }
+
+  .sandbox-panel {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .sandbox-panel:last-child {
+    border-bottom: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-nav {
+    display: none;
+  }
+
+  .hero h1 {
+    font-size: 2.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.25rem;
+  }
+}

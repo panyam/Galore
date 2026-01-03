@@ -1,0 +1,72 @@
+/* ============================================
+   Content
+   ============================================ */
+
+.content-header {
+  margin-bottom: var(--spacing-xl);
+}
+
+.content-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: var(--spacing-sm);
+}
+
+.content-header .lead {
+  font-size: 1.25rem;
+  color: var(--color-text-muted);
+}
+
+.content-body {
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.content-body h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-md);
+}
+
+.content-body h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+}
+
+.content-body p {
+  margin-bottom: var(--spacing-md);
+}
+
+.content-body ul, .content-body ol {
+  margin-bottom: var(--spacing-md);
+  padding-left: var(--spacing-lg);
+}
+
+.content-body li {
+  margin-bottom: var(--spacing-xs);
+}
+
+.content-body pre {
+  background: var(--color-bg-code);
+  color: #e2e8f0;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  margin-bottom: var(--spacing-md);
+}
+
+.content-body code {
+  background: var(--color-bg-alt);
+  padding: 0.2em 0.4em;
+  border-radius: var(--radius-sm);
+  font-size: 0.9em;
+}
+
+.content-body pre code {
+  background: none;
+  padding: 0;
+}

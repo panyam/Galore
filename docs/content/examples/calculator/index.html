@@ -17,7 +17,29 @@ useExampleRunner: true
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const actionCode = `function evaluate(node) {
+  const actionCode = `// Symbol table for variables
+const vars = {};
+
+// Built-in functions
+const funcs = {
+  sin: Math.sin,
+  cos: Math.cos,
+  tan: Math.tan,
+  sqrt: Math.sqrt,
+  abs: Math.abs,
+  floor: Math.floor,
+  ceil: Math.ceil,
+  round: Math.round,
+  log: Math.log,
+  exp: Math.exp,
+  pow: Math.pow,
+  min: Math.min,
+  max: Math.max,
+  pi: () => Math.PI,
+  e: () => Math.E
+};
+
+function evaluate(node) {
   if (!node) return 0;
   const label = node.sym?.label;
 
@@ -26,11 +48,47 @@ document.addEventListener('DOMContentLoaded', function() {
     return parseFloat(node.value);
   }
 
+  // Terminal: ID (variable reference)
+  if (label === "ID") {
+    return vars[node.value] ?? 0;
+  }
+
   // Non-terminal with children
   if (node.children) {
-    const values = node.children.map(evaluate);
+    // Assignment: ID "=" Expr
+    if (label === "Assignment") {
+      const varName = node.children[0].value;
+      const value = evaluate(node.children[2]);
+      vars[varName] = value;
+      return value;
+    }
 
-    // Find operator and compute
+    // FuncCall: ID "(" args ")"
+    if (label === "FuncCall") {
+      const funcName = node.children[0].value;
+      const fn = funcs[funcName];
+      if (!fn) return NaN; // Unknown function
+      // Collect arguments (skip ID, "(", ")", and ",")
+      const args = node.children
+        .filter(c => c.sym?.label !== "ID" &&
+                    c.value !== "(" &&
+                    c.value !== ")" &&
+                    c.value !== ",")
+        .map(evaluate);
+      return fn(...args);
+    }
+
+    // Program: evaluate all, return last
+    if (label === "Program") {
+      let result = 0;
+      for (const child of node.children) {
+        result = evaluate(child);
+      }
+      return result;
+    }
+
+    // Binary operators
+    const values = node.children.map(evaluate);
     for (const child of node.children) {
       if (child.value === "+") return values[0] + values[2];
       if (child.value === "-") return values[0] - values[2];
@@ -38,21 +96,51 @@ document.addEventListener('DOMContentLoaded', function() {
       if (child.value === "/") return values[0] / values[2];
     }
 
-    // No operator - return first meaningful value
-    return values.find(v => typeof v === "number" && !isNaN(v)) ?? 0;
+    // Pass through (Statement, Factor, etc.)
+    return values.find(v => typeof v === "number") ?? 0;
   }
 
   return 0;
 }`;
 
   // The actual function to execute
+  const vars = {};
+  const funcs = {
+    sin: Math.sin, cos: Math.cos, tan: Math.tan,
+    sqrt: Math.sqrt, abs: Math.abs,
+    floor: Math.floor, ceil: Math.ceil, round: Math.round,
+    log: Math.log, exp: Math.exp, pow: Math.pow,
+    min: Math.min, max: Math.max,
+    pi: () => Math.PI, e: () => Math.E
+  };
+
   function evaluate(node) {
     if (!node) return 0;
     const label = node.sym?.label;
-    if (label === "NUMBER") {
-      return parseFloat(node.value);
-    }
+    if (label === "NUMBER") return parseFloat(node.value);
+    if (label === "ID") return vars[node.value] ?? 0;
     if (node.children) {
+      if (label === "Assignment") {
+        const varName = node.children[0].value;
+        const value = evaluate(node.children[2]);
+        vars[varName] = value;
+        return value;
+      }
+      if (label === "FuncCall") {
+        const funcName = node.children[0].value;
+        const fn = funcs[funcName];
+        if (!fn) return NaN;
+        const args = node.children
+          .filter(c => c.sym?.label !== "ID" &&
+                      c.value !== "(" && c.value !== ")" && c.value !== ",")
+          .map(evaluate);
+        return fn(...args);
+      }
+      if (label === "Program") {
+        let result = 0;
+        for (const child of node.children) result = evaluate(child);
+        return result;
+      }
       const values = node.children.map(evaluate);
       for (const child of node.children) {
         if (child.value === "+") return values[0] + values[2];
@@ -60,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (child.value === "*") return values[0] * values[2];
         if (child.value === "/") return values[0] / values[2];
       }
-      return values.find(v => typeof v === "number" && !isNaN(v)) ?? 0;
+      return values.find(v => typeof v === "number") ?? 0;
     }
     return 0;
   }
@@ -88,13 +176,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <h3>Evaluation</h3>
 
-<p>The <code>evaluate</code> function recursively walks the parse tree to compute numeric results. Note that this simple evaluator doesn't track variable assignments - a full implementation would need a symbol table.</p>
+<p>The <code>evaluate</code> function recursively walks the parse tree to compute numeric results. It maintains a symbol table for variables and supports built-in math functions.</p>
 
 <h2>Example Inputs</h2>
 
 <p>Try these inputs:</p>
 <ul>
-    <li><code>1 + 2 * 3</code> - Basic arithmetic</li>
-    <li><code>x = 10</code> - Variable assignment</li>
-    <li><code>x + y * 2</code> - Expression with variables</li>
+    <li><code>1 + 2 * 3</code> - Basic arithmetic (result: 7)</li>
+    <li><code>x = 10
+y = 20
+x + y</code> - Variables (result: 30)</li>
+    <li><code>sqrt(16) + abs(-5)</code> - Function calls (result: 9)</li>
+    <li><code>sin(pi() / 2)</code> - Trig functions (result: 1)</li>
+    <li><code>pow(2, 10)</code> - Power function (result: 1024)</li>
+    <li><code>max(10, 20, 5)</code> - Multi-argument function</li>
 </ul>
+
+<h3>Available Functions</h3>
+<p><code>sin</code>, <code>cos</code>, <code>tan</code>, <code>sqrt</code>, <code>abs</code>, <code>floor</code>, <code>ceil</code>, <code>round</code>, <code>log</code>, <code>exp</code>, <code>pow</code>, <code>min</code>, <code>max</code>, <code>pi</code>, <code>e</code></p>

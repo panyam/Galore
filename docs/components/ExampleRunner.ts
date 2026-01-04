@@ -10,10 +10,10 @@
 
 import * as G from "galore";
 import ace from "ace-builds";
-import "ace-builds/src-noconflict/mode-text";
-import "ace-builds/src-noconflict/mode-javascript";
-import "ace-builds/src-noconflict/theme-monokai";
-import "ace-builds/src-noconflict/theme-github";
+import "ace-builds/src-min-noconflict/mode-text";
+import "ace-builds/src-min-noconflict/mode-javascript";
+import "ace-builds/src-min-noconflict/theme-monokai";
+import "ace-builds/src-min-noconflict/theme-github";
 import { builtinGrammars, BuiltinGrammar } from "./configs";
 import { ActionCompiler, ActionRunResult } from "./ActionCompiler";
 

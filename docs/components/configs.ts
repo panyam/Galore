@@ -146,6 +146,41 @@ Term -> Term "*" Factor | Term "/" Factor | Factor ;
 Factor -> "(" Expr ")" | NUMBER ;
     `.trim(),
     sampleInput: "1 + 2 * 3",
+    actionCode: `// Simple arithmetic evaluator
+function evaluate(n) {
+  if (!n) return 0;
+  const sym = n.sym?.label;
+  const kids = n.children || [];
+
+  if (sym === "NUMBER") return parseInt(n.value);
+
+  if (sym === "Expr" || sym === "Term") {
+    if (kids.length === 3) {
+      const l = evaluate(kids[0]);
+      const op = kids[1].value;
+      const r = evaluate(kids[2]);
+      if (op === "+") return l + r;
+      if (op === "-") return l - r;
+      if (op === "*") return l * r;
+      if (op === "/") return l / r;
+    }
+  }
+
+  if (sym === "Factor") {
+    // Either NUMBER or "(" Expr ")"
+    const inner = kids.find(c => c.sym?.label !== "(" && c.sym?.label !== ")");
+    return evaluate(inner || kids[0]);
+  }
+
+  // Default: recurse
+  for (const c of kids) {
+    const v = evaluate(c);
+    if (v !== undefined) return v;
+  }
+  return 0;
+}
+
+return evaluate(node);`,
   },
   {
     name: "FarshiG3",

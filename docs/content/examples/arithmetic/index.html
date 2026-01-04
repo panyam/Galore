@@ -17,57 +17,9 @@ useExampleRunner: true
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const actionCode = `function evaluate(node) {
-  if (!node) return 0;
-  const label = node.sym?.label;
-
-  // Terminal: NUMBER
-  if (label === "NUMBER") {
-    return parseFloat(node.value);
-  }
-
-  // Non-terminal with children
-  if (node.children) {
-    const values = node.children.map(evaluate);
-
-    // Find operator and compute
-    for (const child of node.children) {
-      if (child.value === "+") return values[0] + values[2];
-      if (child.value === "-") return values[0] - values[2];
-      if (child.value === "*") return values[0] * values[2];
-      if (child.value === "/") return values[0] / values[2];
-    }
-
-    // No operator - return first meaningful value
-    return values.find(v => typeof v === "number" && !isNaN(v)) ?? 0;
-  }
-
-  return 0;
-}`;
-
-  function evaluate(node) {
-    if (!node) return 0;
-    const label = node.sym?.label;
-    if (label === "NUMBER") {
-      return parseFloat(node.value);
-    }
-    if (node.children) {
-      const values = node.children.map(evaluate);
-      for (const child of node.children) {
-        if (child.value === "+") return values[0] + values[2];
-        if (child.value === "-") return values[0] - values[2];
-        if (child.value === "*") return values[0] * values[2];
-        if (child.value === "/") return values[0] / values[2];
-      }
-      return values.find(v => typeof v === "number" && !isNaN(v)) ?? 0;
-    }
-    return 0;
-  }
-
+  // Uses action code from builtinGrammars (configs.ts)
   new ExampleRunner('arithmetic-example', {
-    grammarName: 'Arithmetic',
-    actionCode: actionCode,
-    actionFn: evaluate
+    grammarName: 'Arithmetic'
   });
 });
 </script>

@@ -98,5 +98,10 @@ module.exports = (_env, options) => {
         chunks: "all",
       },
     },
+    performance: {
+      // Ace Editor and DockView are large libraries, so increase the limits
+      maxAssetSize: 600000, // 600 KiB
+      maxEntrypointSize: 1000000, // 1 MiB
+    },
   };
 };

@@ -10,12 +10,12 @@ import { EventHub, Events } from "./EventHub";
 import { builtinGrammars, parserTypes } from "../configs";
 import { ActionCompiler } from "../ActionCompiler";
 
-// Import Ace editor
+// Import Ace editor (use minified builds for smaller bundle)
 import * as ace from "ace-builds";
-import "ace-builds/src-noconflict/mode-text";
-import "ace-builds/src-noconflict/mode-javascript";
-import "ace-builds/src-noconflict/theme-monokai";
-import "ace-builds/src-noconflict/theme-github";
+import "ace-builds/src-min-noconflict/mode-text";
+import "ace-builds/src-min-noconflict/mode-javascript";
+import "ace-builds/src-min-noconflict/theme-monokai";
+import "ace-builds/src-min-noconflict/theme-github";
 
 // Expose galore globally
 (window as any).G = G;

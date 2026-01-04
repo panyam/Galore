@@ -1,0 +1,315 @@
+---
+title: Semantic Actions
+description: Building ASTs and evaluating expressions with rule handlers
+section: reference
+---
+
+<h1>Semantic Actions</h1>
+
+<p>Semantic actions allow you to build abstract syntax trees (ASTs), evaluate expressions, or perform custom logic as the parser reduces rules.</p>
+
+<h2>Overview</h2>
+
+<p>There are two ways to attach actions to grammar rules:</p>
+
+<ol>
+    <li><strong>Grammar-level actions</strong> - Declared in the grammar DSL with <code>{ handler }</code></li>
+    <li><strong>Context callbacks</strong> - Provided via <code>ParserContext</code> when calling <code>parse()</code></li>
+</ol>
+
+<h2>Grammar-Level Actions</h2>
+
+<p>Attach actions directly to productions in your grammar:</p>
+
+<pre><code class="language-text">Expr -> Expr "+" Term { add }
+      | Expr "-" Term { subtract }
+      | Term { $1 }
+      ;</code></pre>
+
+<h3>Child References</h3>
+
+<p>Use <code>{ $N }</code> to return the value of the Nth child (1-indexed):</p>
+
+<pre><code class="language-text">// Return the expression inside parentheses
+Factor -> "(" Expr ")" { $2 } ;
+
+// Pass through the first child's value
+Term -> Factor { $1 } ;</code></pre>
+
+<h3>Named Handlers</h3>
+
+<p>Use <code>{ handlerName }</code> to call a function you provide:</p>
+
+<pre><code class="language-text">Expr -> Expr "+" Term { add } ;
+Expr -> NUMBER { num } ;</code></pre>
+
+<p>Provide the handlers via <code>ruleHandlers</code>:</p>
+
+<pre><code class="language-typescript">const result = parser.parse("1 + 2", {
+  ruleHandlers: {
+    add: (rule, parent, ...children) => {
+      return children[0].value + children[2].value;
+    },
+    num: (rule, parent, ...children) => {
+      return parseInt(children[0].value);
+    }
+  }
+});</code></pre>
+
+<h2>RuleActionHandler Signature</h2>
+
+<p>Named handlers receive the following arguments:</p>
+
+<pre><code class="language-typescript">type RuleActionHandler = (
+  rule: Rule,           // The grammar rule being reduced
+  parent: PTNode,       // The node being created for this reduction
+  ...children: PTNode[] // All child nodes from the production
+) => any;               // Return value becomes parent.value</code></pre>
+
+<h3>Accessing Child Values</h3>
+
+<pre><code class="language-typescript">const handlers = {
+  binop: (rule, parent, ...children) => {
+    const left = children[0].value;    // First child's semantic value
+    const op = children[1].value;      // Operator token value
+    const right = children[2].value;   // Third child's semantic value
+
+    switch (op) {
+      case '+': return left + right;
+      case '-': return left - right;
+      case '*': return left * right;
+      case '/': return left / right;
+    }
+  }
+};</code></pre>
+
+<h2>PTNode Structure</h2>
+
+<p>Parse tree nodes (<code>PTNode</code>) contain:</p>
+
+<table>
+    <thead>
+        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>sym</code></td>
+            <td><code>Sym</code></td>
+            <td>The grammar symbol (terminal or non-terminal)</td>
+        </tr>
+        <tr>
+            <td><code>value</code></td>
+            <td><code>any</code></td>
+            <td>Semantic value (token value or handler result)</td>
+        </tr>
+        <tr>
+            <td><code>children</code></td>
+            <td><code>PTNode[]</code></td>
+            <td>Child nodes (empty for terminals)</td>
+        </tr>
+        <tr>
+            <td><code>parent</code></td>
+            <td><code>PTNode | null</code></td>
+            <td>Parent node reference</td>
+        </tr>
+        <tr>
+            <td><code>id</code></td>
+            <td><code>number</code></td>
+            <td>Unique node identifier</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>PTNode Methods</h3>
+
+<pre><code class="language-typescript">// Get child at index (negative indexes from end)
+node.childAt(0)      // First child
+node.childAt(-1)     // Last child
+
+// Check if terminal
+node.isTerminal      // true for leaf nodes
+
+// Debug output
+node.debugValue()    // Returns tree structure for debugging</code></pre>
+
+<h2>ParserContext Callbacks</h2>
+
+<p>The <code>ParserContext</code> interface provides hooks for more advanced control:</p>
+
+<pre><code class="language-typescript">interface ParserContext {
+  // Named handlers for grammar actions
+  ruleHandlers: { [name: string]: RuleActionHandler };
+
+  // Called before each child is added to parent
+  beforeAddingChildNode?: (parent: PTNode, child: PTNode) => PTNode[];
+
+  // Called after a rule is reduced (fallback if no action)
+  onReduction?: (node: PTNode, rule: Rule) => PTNode;
+
+  // Called for each token before parsing
+  onNextToken?: (token: Token) => Token | null;
+
+  // Resolve conflicts between multiple actions
+  actionResolver?: ActionResolverCallback;
+
+  // Handle tokenizer errors
+  onTokenError?: TokenErrorCallback;
+
+  // Whether to build the parse tree (default: true)
+  buildParseTree?: boolean;
+
+  // Copy single child's value to parent (default: true)
+  copySingleChild?: boolean;
+}</code></pre>
+
+<h3>beforeAddingChildNode</h3>
+
+<p>Filter or transform nodes before they're added to the parse tree:</p>
+
+<pre><code class="language-typescript">const result = parser.parse(input, {
+  ruleHandlers: {},
+  beforeAddingChildNode: (parent, child) => {
+    // Filter out whitespace tokens
+    if (child.sym.label === 'WS') {
+      return [];  // Don't add this child
+    }
+
+    // Flatten single-child nodes
+    if (child.children.length === 1) {
+      return [child.children[0]];
+    }
+
+    return [child];  // Add as-is
+  }
+});</code></pre>
+
+<h3>onReduction</h3>
+
+<p>Default handler called when a rule has no explicit action:</p>
+
+<pre><code class="language-typescript">const result = parser.parse(input, {
+  ruleHandlers: {},
+  onReduction: (node, rule) => {
+    console.log(`Reduced: ${rule.nt.label} -> ${rule.rhs.syms.map(s => s.label).join(' ')}`);
+
+    // Build AST nodes
+    if (rule.nt.label === 'BinExpr') {
+      node.value = {
+        type: 'BinaryExpression',
+        left: node.children[0].value,
+        operator: node.children[1].value,
+        right: node.children[2].value
+      };
+    }
+
+    return node;
+  }
+});</code></pre>
+
+<h3>onNextToken</h3>
+
+<p>Process or filter tokens as they're read:</p>
+
+<pre><code class="language-typescript">const result = parser.parse(input, {
+  ruleHandlers: {},
+  onNextToken: (token) => {
+    // Convert string token values to numbers
+    if (token.tag === 'NUMBER') {
+      token.value = parseFloat(token.value);
+    }
+
+    // Filter out comments (return null to skip)
+    if (token.tag === 'COMMENT') {
+      return null;
+    }
+
+    return token;
+  }
+});</code></pre>
+
+<h2>Value Propagation</h2>
+
+<p>By default, Galore automatically propagates values up the tree:</p>
+
+<ol>
+    <li><strong>Terminal nodes</strong> - <code>value</code> is the token's matched text</li>
+    <li><strong>Single-child rules</strong> - Child's value is copied to parent (if <code>copySingleChild: true</code>)</li>
+    <li><strong>Explicit actions</strong> - Handler's return value becomes <code>node.value</code></li>
+</ol>
+
+<pre><code class="language-text">// With copySingleChild: true (default)
+// The value bubbles up automatically through single-child productions
+
+Factor -> NUMBER ;  // Factor.value = NUMBER.value
+Term -> Factor ;    // Term.value = Factor.value
+Expr -> Term ;      // Expr.value = Term.value</code></pre>
+
+<h2>Complete Example</h2>
+
+<pre><code class="language-typescript">import { newParser } from "galore";
+
+const grammar = `
+  %token NUMBER /[0-9]+/
+  %skip /[ \\t\\n]+/
+
+  Expr -> Expr "+" Term { add }
+        | Expr "-" Term { sub }
+        | Term { $1 }
+        ;
+
+  Term -> Term "*" Factor { mul }
+        | Term "/" Factor { div }
+        | Factor { $1 }
+        ;
+
+  Factor -> "(" Expr ")" { $2 }
+          | NUMBER { num }
+          ;
+`;
+
+const [parser] = newParser(grammar, { type: "lalr" });
+
+const result = parser.parse("2 + 3 * 4", {
+  ruleHandlers: {
+    num: (rule, parent, ...children) => parseInt(children[0].value),
+    add: (rule, parent, ...children) => children[0].value + children[2].value,
+    sub: (rule, parent, ...children) => children[0].value - children[2].value,
+    mul: (rule, parent, ...children) => children[0].value * children[2].value,
+    div: (rule, parent, ...children) => children[0].value / children[2].value,
+  }
+});
+
+console.log(result.value);  // 14  (2 + (3 * 4))
+</code></pre>
+
+<h2>Building ASTs</h2>
+
+<p>Use handlers to build a proper AST instead of a concrete parse tree:</p>
+
+<pre><code class="language-typescript">const handlers = {
+  binop: (rule, parent, ...children) => ({
+    type: 'BinaryExpression',
+    operator: children[1].value,
+    left: children[0].value,
+    right: children[2].value
+  }),
+
+  num: (rule, parent, ...children) => ({
+    type: 'NumericLiteral',
+    value: parseInt(children[0].value)
+  }),
+
+  ident: (rule, parent, ...children) => ({
+    type: 'Identifier',
+    name: children[0].value
+  })
+};
+
+// Parsing "x + 1" produces:
+// {
+//   type: 'BinaryExpression',
+//   operator: '+',
+//   left: { type: 'Identifier', name: 'x' },
+//   right: { type: 'NumericLiteral', value: 1 }
+// }
+</code></pre>

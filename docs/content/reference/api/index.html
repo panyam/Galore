@@ -1,0 +1,349 @@
+---
+title: API Reference
+description: Complete API reference for Galore
+section: reference
+---
+
+<h1>API Reference</h1>
+
+<p>This page documents the main entry points and classes in Galore.</p>
+
+<h2>Creating Parsers</h2>
+
+<h3>newParser()</h3>
+
+<p>The main entry point for creating a parser from a grammar DSL string:</p>
+
+<pre><code class="language-typescript">import { newParser } from "galore";
+
+const [parser, tokenFunc, itemGraph] = newParser(grammarString, options);
+</code></pre>
+
+<h4>Parameters</h4>
+
+<table>
+    <thead>
+        <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>grammarString</code></td>
+            <td><code>string</code></td>
+            <td>Grammar definition in DSL format</td>
+        </tr>
+        <tr>
+            <td><code>options</code></td>
+            <td><code>object</code></td>
+            <td>Configuration options (see below)</td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>Options</h4>
+
+<table>
+    <thead>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>type</code></td>
+            <td><code>"slr" | "lalr" | "lr1"</code></td>
+            <td><code>"lalr"</code></td>
+            <td>Parser algorithm to use</td>
+        </tr>
+        <tr>
+            <td><code>tokenizer</code></td>
+            <td><code>NextTokenFunc</code></td>
+            <td>auto-generated</td>
+            <td>Custom tokenizer function</td>
+        </tr>
+        <tr>
+            <td><code>debug</code></td>
+            <td><code>"all" | "lexer" | "parser"</code></td>
+            <td>none</td>
+            <td>Enable debug output</td>
+        </tr>
+        <tr>
+            <td><code>leftRecursive</code></td>
+            <td><code>boolean</code></td>
+            <td><code>true</code></td>
+            <td>Use left recursion for EBNF expansions</td>
+        </tr>
+        <tr>
+            <td><code>auxNTPrefix</code></td>
+            <td><code>string</code></td>
+            <td><code>"$"</code></td>
+            <td>Prefix for auxiliary non-terminals</td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>Returns</h4>
+
+<p>A tuple of three values:</p>
+
+<ol>
+    <li><code>parser</code> - The <code>Parser</code> instance</li>
+    <li><code>tokenFunc</code> - The generated tokenizer function (or <code>null</code> if custom provided)</li>
+    <li><code>itemGraph</code> - The <code>LRItemGraph</code> (useful for debugging)</li>
+</ol>
+
+<h4>Example</h4>
+
+<pre><code class="language-typescript">import { newParser } from "galore";
+
+const [parser, tokenFunc, itemGraph] = newParser(`
+  %token NUMBER /[0-9]+/
+  %skip /[ \\t\\n]+/
+
+  Expr -> Expr "+" Term | Term ;
+  Term -> NUMBER ;
+`, { type: "lalr" });
+
+const result = parser.parse("1 + 2 + 3");
+console.log(result.value);
+</code></pre>
+
+<h2>Parser Class</h2>
+
+<h3>parse()</h3>
+
+<p>Parse an input string and return the parse tree root:</p>
+
+<pre><code class="language-typescript">const result = parser.parse(input, context?);</code></pre>
+
+<h4>Parameters</h4>
+
+<table>
+    <thead>
+        <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>input</code></td>
+            <td><code>string | Tape</code></td>
+            <td>Input to parse</td>
+        </tr>
+        <tr>
+            <td><code>context</code></td>
+            <td><code>ParserContext</code></td>
+            <td>Optional parsing context with handlers</td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>Returns</h4>
+
+<p><code>PTNode | null</code> - The root of the parse tree, or <code>null</code> if parsing failed.</p>
+
+<p>See <a href="/galore/reference/semantic-actions/">Semantic Actions</a> for details on <code>ParserContext</code>.</p>
+
+<h2>Grammar Class</h2>
+
+<p>The <code>Grammar</code> class can be used to build grammars programmatically instead of using the DSL.</p>
+
+<h3>Creating Symbols</h3>
+
+<pre><code class="language-typescript">import { Grammar } from "galore";
+
+const g = new Grammar();
+
+// Create terminals
+const PLUS = g.newTerm("+");
+const NUMBER = g.newTerm("NUMBER");
+
+// Create non-terminals
+const Expr = g.newNT("Expr");
+const Term = g.newNT("Term");
+
+// Alternative: get or create
+const sym1 = g.T("keyword");    // Get or create terminal
+const sym2 = g.NT("Statement"); // Get or create non-terminal
+</code></pre>
+
+<h3>Adding Rules</h3>
+
+<pre><code class="language-typescript">import { Grammar, Str } from "galore";
+
+const g = new Grammar();
+const Expr = g.newNT("Expr");
+const Term = g.newNT("Term");
+const NUMBER = g.newTerm("NUMBER");
+const PLUS = g.newTerm("+");
+
+// Add production: Expr -> Expr "+" Term
+g.add(Expr, new Str(Expr, PLUS, Term));
+
+// Add production: Expr -> Term
+g.add(Expr, new Str(Term));
+
+// Add production: Term -> NUMBER
+g.add(Term, new Str(NUMBER));
+</code></pre>
+
+<h3>Helper Methods</h3>
+
+<pre><code class="language-typescript">// Sequence: A B C
+const seq = g.seq(A, B, C);
+
+// Alternation: (A | B | C) - creates auxiliary NT
+const choice = g.anyof(A, B, C);
+
+// Optional: A? - creates auxiliary NT
+const optional = g.opt(A);
+
+// Zero or more: A* - creates auxiliary NT
+const star = g.atleast0(A);
+
+// One or more: A+ - creates auxiliary NT
+const plus = g.atleast1(A);
+</code></pre>
+
+<h3>Querying the Grammar</h3>
+
+<pre><code class="language-typescript">// Get symbol by label
+const sym = g.getSym("Expr");
+
+// Get symbol by ID
+const sym2 = g.getSymById(5);
+
+// Check symbol types
+g.isTerminal("NUMBER");  // true
+g.isNT("Expr");          // true
+
+// Get all symbols
+g.terminals;        // All terminal symbols
+g.nonTerminals;     // User-defined non-terminals
+g.auxNonTerminals;  // Auxiliary non-terminals (from EBNF)
+g.allSymbols;       // All symbols
+
+// Get rules for a non-terminal
+const rules = g.rulesForNT(Expr);
+
+// Iterate through rules
+g.forEachRule(null, (rule, index) => {
+  console.log(rule.debugString);
+});
+</code></pre>
+
+<h3>Grammar Analysis</h3>
+
+<pre><code class="language-typescript">// First, Follow, and Nullable sets
+const firsts = g.firstSets;
+const follows = g.followSets;
+const nullables = g.nullables;
+
+// Check if symbol is nullable
+nullables.has(Expr);
+
+// Get first set for a symbol
+firsts.getSet(Expr);
+
+// Get follow set for a symbol
+follows.getSet(Expr);
+</code></pre>
+
+<h2>PTNode Class</h2>
+
+<p>Parse tree nodes returned by the parser:</p>
+
+<pre><code class="language-typescript">class PTNode {
+  sym: Sym;              // The grammar symbol
+  value: any;            // Semantic value
+  children: PTNode[];    // Child nodes
+  parent: PTNode | null; // Parent node
+  id: number;            // Unique node ID
+
+  // Check if terminal (leaf node)
+  get isTerminal(): boolean;
+
+  // Get child by index (negative = from end)
+  childAt(index: number): PTNode;
+
+  // Debug output
+  debugValue(): any;
+}
+</code></pre>
+
+<h2>ParseTable Class</h2>
+
+<p>Represents the LR parse table:</p>
+
+<pre><code class="language-typescript">class ParseTable {
+  grammar: Grammar;
+
+  // Check if table has conflicts
+  get hasConflicts(): boolean;
+
+  // Get actions for a state and symbol
+  getActions(stateId: number, symbol: Sym): LRAction[];
+}
+</code></pre>
+
+<h2>LRAction Types</h2>
+
+<pre><code class="language-typescript">enum LRActionType {
+  ACCEPT,  // Accept input (parsing complete)
+  SHIFT,   // Shift token and go to state
+  REDUCE,  // Reduce by rule
+  GOTO     // Non-terminal transition
+}
+
+class LRAction {
+  tag: LRActionType;
+  gotoState: number | null;  // For SHIFT and GOTO
+  rule: Rule | null;         // For REDUCE
+
+  toString(): string;  // "S5", "R3", "Acc", etc.
+}
+</code></pre>
+
+<h2>Exports</h2>
+
+<p>Galore exports the following from its main entry point:</p>
+
+<pre><code class="language-typescript">// Main entry point
+export { newParser } from "galore";
+
+// Core classes
+export { Grammar, Sym, Str, Rule, RuleAction } from "galore";
+export { Parser, ParseTable, LRAction, LRActionType } from "galore";
+export { PTNode, PFNode } from "galore";
+export { ParseError } from "galore";
+
+// Analysis
+export { FirstSets, FollowSets, NullableSet } from "galore";
+export { LRItemGraph, LRItemSet, LRItem } from "galore";
+
+// Namespaced exports
+export { DSL } from "galore";       // Grammar DSL loader
+export { Analyzer } from "galore";  // Grammar transformations
+export { Printers } from "galore";  // Debug output utilities
+export { LL } from "galore";        // LL parser (experimental)
+</code></pre>
+
+<h2>TypeScript Types</h2>
+
+<pre><code class="language-typescript">// Tokenizer function type
+type NextTokenFunc = (tape: Tape, owner: any) => Token | null;
+
+// Rule action handler
+type RuleActionHandler = (
+  rule: Rule,
+  parent: PTNode,
+  ...children: PTNode[]
+) => any;
+
+// Parser context
+interface ParserContext {
+  ruleHandlers: { [name: string]: RuleActionHandler };
+  beforeAddingChildNode?: BeforeAddingChildCallback;
+  onReduction?: RuleReductionCallback;
+  onNextToken?: NextTokenCallback;
+  actionResolver?: ActionResolverCallback;
+  onTokenError?: TokenErrorCallback;
+  buildParseTree?: boolean;
+  copySingleChild?: boolean;
+}
+</code></pre>

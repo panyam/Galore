@@ -10,5 +10,5 @@ export * from "./parser";
 export * from "./lr";
 export * from "./lritems";
 export * from "./ptables";
-export { newLRParser as newParser } from "./factory";
+export { newLRParser as newParser, newParseTable, ParserOptions } from "./factory";
 export { ParseError } from "./errors";

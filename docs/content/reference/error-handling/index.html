@@ -1,0 +1,221 @@
+---
+title: Error Handling
+description: Handling parse errors and debugging grammars
+section: reference
+---
+
+<h1>Error Handling</h1>
+
+<p>This page covers error handling, debugging, and troubleshooting in Galore.</p>
+
+<h2>ParseError</h2>
+
+<p>When parsing fails, Galore throws a <code>ParseError</code>:</p>
+
+<pre><code class="language-typescript">import { newParser, ParseError } from "galore";
+
+const [parser] = newParser(grammar);
+
+try {
+  const result = parser.parse("invalid input");
+} catch (err) {
+  if (err instanceof ParseError) {
+    console.log(err.message);  // Error description
+    console.log(err.type);     // Error type (e.g., "UnexpectedToken")
+    console.log(err.value);    // Additional context
+  }
+}
+</code></pre>
+
+<h3>Error Types</h3>
+
+<table>
+    <thead>
+        <tr><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>UnexpectedToken</code></td>
+            <td>Parser encountered a token it didn't expect</td>
+        </tr>
+        <tr>
+            <td><code>TokenizerError</code></td>
+            <td>Lexer couldn't match input (from TLEX)</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>Error Value</h3>
+
+<p>The <code>value</code> property contains context about the error:</p>
+
+<pre><code class="language-typescript">catch (err) {
+  if (err instanceof ParseError && err.type === "UnexpectedToken") {
+    const { state, token } = err.value;
+    console.log(`State: ${state}`);
+    console.log(`Token: ${token.tag} = "${token.value}"`);
+    console.log(`Position: ${token.start}-${token.end}`);
+  }
+}
+</code></pre>
+
+<h2>Error Callbacks</h2>
+
+<h3>onTokenError</h3>
+
+<p>Handle lexer errors (invalid characters) without throwing:</p>
+
+<pre><code class="language-typescript">const result = parser.parse(input, {
+  ruleHandlers: {},
+  onTokenError: (err, tape) => {
+    console.warn(`Skipping invalid character at position ${tape.offset}`);
+
+    // Skip the invalid character and continue
+    tape.advance();
+
+    // Return true to retry tokenization
+    return true;
+  }
+});
+</code></pre>
+
+<p>Return <code>true</code> to retry after handling, or <code>false</code> (or throw) to abort.</p>
+
+<h3>actionResolver</h3>
+
+<p>Handle parse table conflicts at runtime:</p>
+
+<pre><code class="language-typescript">const result = parser.parse(input, {
+  ruleHandlers: {},
+  actionResolver: (actions, stack, tokenbuffer) => {
+    // Multiple actions available (conflict)
+    console.log("Conflict:", actions.map(a => a.toString()));
+
+    // Choose based on context
+    // Prefer shift over reduce (default behavior for many parsers)
+    const shift = actions.find(a => a.tag === LRActionType.SHIFT);
+    if (shift) return shift;
+
+    // Otherwise take first action
+    return actions[0];
+  }
+});
+</code></pre>
+
+<h2>Debug Output</h2>
+
+<p>Enable debug output to see lexer and parser internals:</p>
+
+<pre><code class="language-typescript">const [parser] = newParser(grammar, {
+  type: "lalr",
+  debug: "all"  // "all" | "lexer" | "parser"
+});
+</code></pre>
+
+<h3>Debug Options</h3>
+
+<table>
+    <thead>
+        <tr><th>Value</th><th>Output</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>"lexer"</code></td>
+            <td>Tokenizer program and token stream</td>
+        </tr>
+        <tr>
+            <td><code>"parser"</code></td>
+            <td>Parse table and state transitions</td>
+        </tr>
+        <tr>
+            <td><code>"all"</code></td>
+            <td>Both lexer and parser output</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>Common Errors</h2>
+
+<h3>Unexpected Token</h3>
+
+<p>The parser received a token that doesn't match any expected symbol in the current state.</p>
+
+<p><strong>Causes:</strong></p>
+<ul>
+    <li>Input doesn't match the grammar</li>
+    <li>Missing token definition</li>
+    <li>Incorrect grammar rule</li>
+</ul>
+
+<p><strong>Debugging:</strong></p>
+<ol>
+    <li>Check the token that caused the error</li>
+    <li>Verify the grammar accepts that token in context</li>
+    <li>Use the <a href="/galore/playground/">Playground</a> to test the grammar</li>
+</ol>
+
+<h3>Action Handler Not Found</h3>
+
+<pre><code class="language-text">Error: Action handler not found: handlerName</code></pre>
+
+<p>A grammar rule has a <code>{ handlerName }</code> action but no matching function in <code>ruleHandlers</code>.</p>
+
+<p><strong>Fix:</strong> Provide all required handlers:</p>
+
+<pre><code class="language-typescript">parser.parse(input, {
+  ruleHandlers: {
+    handlerName: (rule, parent, ...children) => {
+      // Handle the reduction
+    }
+  }
+});
+</code></pre>
+
+<h3>Multiple Actions Found</h3>
+
+<pre><code class="language-text">Error: Multiple actions found.</code></pre>
+
+<p>The parse table has a conflict (shift-reduce or reduce-reduce) and no <code>actionResolver</code> was provided.</p>
+
+<p><strong>Fix:</strong> Either resolve the grammar conflict or provide an <code>actionResolver</code>:</p>
+
+<pre><code class="language-typescript">parser.parse(input, {
+  ruleHandlers: {},
+  actionResolver: (actions) => actions[0]  // Take first action
+});
+</code></pre>
+
+<p>See <a href="/galore/reference/parse-tables/">Parse Tables</a> for conflict resolution strategies.</p>
+
+<h3>Invalid Token Tag</h3>
+
+<pre><code class="language-text">Error: Invalid token tag: UNKNOWN</code></pre>
+
+<p>The lexer produced a token with a tag that doesn't match any terminal in the grammar.</p>
+
+<p><strong>Fix:</strong> Ensure token names match between lexer and grammar.</p>
+
+<h2>Using the Playground</h2>
+
+<p>The <a href="/galore/playground/">Interactive Playground</a> is the best tool for debugging grammars:</p>
+
+<ul>
+    <li><strong>Parse table visualization</strong> - See all states and actions</li>
+    <li><strong>Conflict highlighting</strong> - Cells with conflicts are highlighted in amber</li>
+    <li><strong>LR item hints</strong> - Hover over states to see item sets</li>
+    <li><strong>Live parsing</strong> - Test inputs and see parse trees immediately</li>
+</ul>
+
+<h2>Checking for Conflicts</h2>
+
+<p>Programmatically check if a grammar has conflicts:</p>
+
+<pre><code class="language-typescript">import { newParser } from "galore";
+
+const [parser, tokenFunc, itemGraph] = newParser(grammar, { type: "lalr" });
+
+if (parser.parseTable.hasConflicts) {
+  console.log("Grammar has conflicts!");
+  console.log(parser.parseTable.conflictActions);
+}
+</code></pre>

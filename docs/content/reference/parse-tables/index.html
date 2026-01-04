@@ -1,6 +1,6 @@
 ---
 title: Parse Tables
-description: Understanding parse tables in Galore
+description: Understanding and debugging LR parse tables
 section: reference
 ---
 
@@ -15,39 +15,251 @@ section: reference
 <h3>ACTION Table</h3>
 
 <p>Maps (state, terminal) pairs to actions:</p>
-<ul>
-    <li><strong>Shift n</strong>: Push the terminal and go to state n</li>
-    <li><strong>Reduce r</strong>: Apply grammar rule r</li>
-    <li><strong>Accept</strong>: Parsing complete</li>
-    <li><strong>Error</strong>: Syntax error</li>
-</ul>
+
+<table>
+    <thead>
+        <tr><th>Action</th><th>Notation</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Shift</td>
+            <td><code>S5</code></td>
+            <td>Push terminal, go to state 5</td>
+        </tr>
+        <tr>
+            <td>Reduce</td>
+            <td><code>R3</code></td>
+            <td>Reduce by rule 3</td>
+        </tr>
+        <tr>
+            <td>Accept</td>
+            <td><code>Acc</code></td>
+            <td>Parsing complete (success)</td>
+        </tr>
+        <tr>
+            <td>Error</td>
+            <td>(empty)</td>
+            <td>No action = syntax error</td>
+        </tr>
+    </tbody>
+</table>
 
 <h3>GOTO Table</h3>
 
-<p>Maps (state, non-terminal) pairs to states. Used after reductions.</p>
+<p>Maps (state, non-terminal) pairs to states. After a reduction creates a non-terminal, GOTO tells the parser which state to enter.</p>
 
 <h2>Viewing Parse Tables</h2>
 
 <p>Galore provides utilities to visualize parse tables:</p>
 
-<pre><code class="language-typescript">import * as G from "galore";
+<pre><code class="language-typescript">import { newParser, Printers } from "galore";
 
-const parser = G.newParser(grammar, { type: "lalr" });
+const [parser, tokenFunc, itemGraph] = newParser(grammar, { type: "lalr" });
 
-// Get HTML representation
-const html = G.Printers.parseTableToHtml(parser.parseTable);
+// Get HTML representation with LR item hints
+const html = Printers.parseTableToHtml(parser.parseTable, { itemGraph });
 
 // Get text representation
-const text = G.Printers.parseTableToText(parser.parseTable);
+const text = Printers.parseTableToText(parser.parseTable);
 </code></pre>
+
+<h3>Using the Playground</h3>
+
+<p>The <a href="/galore/playground/">Interactive Playground</a> shows parse tables with:</p>
+
+<ul>
+    <li><strong>LR item hints</strong> - Each state shows its first LR item (e.g., "0: $accept -> . Program")</li>
+    <li><strong>Full item sets on hover</strong> - See all items in a state by hovering</li>
+    <li><strong>Conflict highlighting</strong> - Cells with conflicts appear in amber</li>
+</ul>
 
 <h2>Understanding Conflicts</h2>
 
-<p>When a parse table cell has multiple actions, you have a conflict:</p>
+<p>A conflict occurs when a parse table cell has multiple actions. This means the grammar is ambiguous - the parser can't decide what to do.</p>
+
+<h3>Shift-Reduce Conflict</h3>
+
+<p>The parser can't decide whether to shift the next token or reduce the current production.</p>
+
+<p><strong>Classic Example: Dangling Else</strong></p>
+
+<pre><code class="language-text">Stmt -> "if" Expr "then" Stmt
+      | "if" Expr "then" Stmt "else" Stmt
+      | OTHER
+      ;</code></pre>
+
+<p>When parsing <code>if E then if E then S else S</code>, after seeing <code>if E then if E then S</code> and looking at <code>else</code>:</p>
 
 <ul>
-    <li><strong>Shift-Reduce Conflict</strong>: Grammar is ambiguous about whether to shift or reduce</li>
-    <li><strong>Reduce-Reduce Conflict</strong>: Grammar is ambiguous about which rule to apply</li>
+    <li><strong>Shift</strong>: Attach <code>else</code> to inner <code>if</code> (most languages do this)</li>
+    <li><strong>Reduce</strong>: Complete inner <code>if</code>, attach <code>else</code> to outer <code>if</code></li>
 </ul>
 
-<p>Use the Playground to visualize parse tables and identify conflicts.</p>
+<h3>Reduce-Reduce Conflict</h3>
+
+<p>The parser can't decide which rule to use for reduction.</p>
+
+<p><strong>Example: Ambiguous Expression</strong></p>
+
+<pre><code class="language-text">Expr -> Expr "+" Expr
+      | Expr "*" Expr
+      | NUMBER
+      ;</code></pre>
+
+<p>When parsing <code>1 + 2 * 3</code>, after <code>1 + 2</code> with <code>*</code> lookahead, should we:</p>
+
+<ul>
+    <li>Reduce <code>1 + 2</code> to Expr (then multiply by 3)?</li>
+    <li>Shift <code>*</code> (then add 1 to 2*3)?</li>
+</ul>
+
+<h2>Resolving Conflicts</h2>
+
+<h3>1. Grammar Restructuring</h3>
+
+<p>The cleanest solution is to rewrite the grammar to eliminate ambiguity:</p>
+
+<pre><code class="language-text">// Ambiguous
+Expr -> Expr "+" Expr | Expr "*" Expr | NUMBER ;
+
+// Unambiguous (precedence via grammar structure)
+Expr -> Expr "+" Term | Term ;
+Term -> Term "*" Factor | Factor ;
+Factor -> NUMBER ;</code></pre>
+
+<p>This encodes precedence directly: multiplication binds tighter because it's resolved at a "deeper" level.</p>
+
+<h3>2. Left Factoring</h3>
+
+<p>When multiple rules share a common prefix, factor it out:</p>
+
+<pre><code class="language-text">// Conflict-prone
+Stmt -> "if" Expr "then" Stmt
+      | "if" Expr "then" Stmt "else" Stmt
+      ;
+
+// Left-factored
+Stmt -> "if" Expr "then" Stmt ElseOpt ;
+ElseOpt -> "else" Stmt | ;</code></pre>
+
+<h3>3. Precedence Directives (Not Yet Implemented)</h3>
+
+<p>Yacc/Bison-style <code>%left</code>, <code>%right</code>, <code>%nonassoc</code> directives are not yet implemented in Galore's DSL. Use grammar restructuring instead.</p>
+
+<h3>4. Runtime Conflict Resolution</h3>
+
+<p>Handle conflicts at parse time with an <code>actionResolver</code>:</p>
+
+<pre><code class="language-typescript">parser.parse(input, {
+  ruleHandlers: {},
+  actionResolver: (actions, stack, tokenbuffer) => {
+    // Prefer shift over reduce (common default)
+    const shift = actions.find(a => a.tag === LRActionType.SHIFT);
+    if (shift) return shift;
+
+    // For reduce-reduce, prefer longer rule
+    const reduces = actions.filter(a => a.tag === LRActionType.REDUCE);
+    if (reduces.length > 1) {
+      reduces.sort((a, b) => b.rule!.rhs.length - a.rule!.rhs.length);
+    }
+
+    return reduces[0] || actions[0];
+  }
+});
+</code></pre>
+
+<h2>Detecting Conflicts</h2>
+
+<p>Check if a grammar has conflicts programmatically:</p>
+
+<pre><code class="language-typescript">const [parser, tokenFunc, itemGraph] = newParser(grammar, { type: "lalr" });
+
+if (parser.parseTable.hasConflicts) {
+  console.log("Conflicts found:");
+
+  // conflictActions[stateId][symbolLabel] = true
+  for (const [stateId, symbols] of Object.entries(parser.parseTable.conflictActions)) {
+    for (const symbol of Object.keys(symbols)) {
+      console.log(`  State ${stateId}, symbol "${symbol}"`);
+    }
+  }
+}
+</code></pre>
+
+<h2>LR Item Sets</h2>
+
+<p>Each parse state corresponds to an LR item set. Understanding items helps debug conflicts.</p>
+
+<h3>LR Item Notation</h3>
+
+<p>An LR item shows how much of a rule has been seen:</p>
+
+<pre><code class="language-text">Expr -> Expr . "+" Term    // Dot shows current position
+        ↑
+        We've seen "Expr", expecting "+"</code></pre>
+
+<h3>Accessing Item Sets</h3>
+
+<pre><code class="language-typescript">const [parser, tokenFunc, itemGraph] = newParser(grammar, { type: "lalr" });
+
+// Iterate over states
+for (const itemSet of itemGraph.itemSets) {
+  console.log(`State ${itemSet.id}:`);
+
+  for (const item of itemSet.items.values()) {
+    console.log(`  ${item.debugString}`);
+  }
+}
+</code></pre>
+
+<h2>Parser Types and Conflicts</h2>
+
+<p>Different parser types handle conflicts differently:</p>
+
+<table>
+    <thead>
+        <tr><th>Type</th><th>Conflict Behavior</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>SLR</td>
+            <td>Uses FOLLOW sets for lookahead; may report false conflicts</td>
+        </tr>
+        <tr>
+            <td>LALR</td>
+            <td>More precise lookahead; fewer false conflicts</td>
+        </tr>
+        <tr>
+            <td>LR(1)</td>
+            <td>Most precise; no false conflicts, but larger tables</td>
+        </tr>
+    </tbody>
+</table>
+
+<p>If SLR reports conflicts, try LALR or LR(1) - the conflict may be a false positive.</p>
+
+<h2>Example: Debugging a Conflict</h2>
+
+<p>Here's a workflow for debugging a shift-reduce conflict:</p>
+
+<ol>
+    <li>Open the grammar in the <a href="/galore/playground/">Playground</a></li>
+    <li>Look for amber-highlighted cells in the parse table</li>
+    <li>Hover over the conflicting state to see its LR items</li>
+    <li>Identify which rules are competing</li>
+    <li>Restructure the grammar or add an <code>actionResolver</code></li>
+</ol>
+
+<pre><code class="language-text">// Example: This grammar has a shift-reduce conflict
+Expr -> Expr "+" Expr
+      | NUMBER
+      ;
+
+// The conflict is in the state after seeing "Expr + Expr":
+//   Expr -> Expr "+" Expr .     (reduce?)
+//   Expr -> Expr . "+" Expr     (shift "+"?)
+
+// Fix: Use grammar structure for precedence
+Expr -> Expr "+" Term | Term ;
+Term -> NUMBER ;
+</code></pre>

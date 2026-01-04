@@ -1,0 +1,150 @@
+---
+title: Tokenization
+description: How Galore handles lexical analysis with TLEX
+section: reference
+---
+
+<h1>Tokenization</h1>
+
+<p>Galore uses <a href="https://github.com/panyam/tlex">TLEX</a> for lexical analysis. This page covers the basics of token definition in Galore. For advanced lexer features, see the TLEX documentation.</p>
+
+<h2>Defining Tokens</h2>
+
+<h3>%token Directive</h3>
+
+<p>Define named tokens with regex patterns:</p>
+
+<pre><code class="language-text">%token NUMBER /[0-9]+/
+%token IDENT /[a-zA-Z_][a-zA-Z0-9_]*/
+%token STRING /"([^"\\]|\\.)*"/</code></pre>
+
+<h3>Inline Tokens</h3>
+
+<p>String literals and regex patterns in rules are automatically tokenized:</p>
+
+<pre><code class="language-text">// These create tokens automatically:
+Stmt -> "if" "(" Expr ")" Stmt ;
+Number -> /[0-9]+/ ;</code></pre>
+
+<h2>Skipping Whitespace and Comments</h2>
+
+<p>Use <code>%skip</code> to define patterns that are consumed but don't produce tokens:</p>
+
+<pre><code class="language-text">// Skip whitespace
+%skip /[ \t\n\r]+/
+
+// Skip line comments
+%skip /\/\/.*/
+
+// Skip block comments
+%skip /\/\*[\s\S]*?\*\//</code></pre>
+
+<h2>Regex Pattern Syntax</h2>
+
+<p>By default, Galore uses JavaScript regex syntax:</p>
+
+<table>
+    <thead>
+        <tr><th>Pattern</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><code>[0-9]+</code></td><td>One or more digits</td></tr>
+        <tr><td><code>[a-zA-Z_]\w*</code></td><td>Identifier</td></tr>
+        <tr><td><code>"[^"]*"</code></td><td>Double-quoted string (simple)</td></tr>
+        <tr><td><code>\/\/.* </code></td><td>Line comment</td></tr>
+        <tr><td><code>\s+</code></td><td>Whitespace</td></tr>
+    </tbody>
+</table>
+
+<h3>Regex Flags</h3>
+
+<p>Append flags after the closing <code>/</code>:</p>
+
+<pre><code class="language-text">%skip /\/\*.*?\*\//s   // 's' flag: dot matches newlines
+%skip /\/\/.*$/m       // 'm' flag: multiline mode</code></pre>
+
+<h2>Reusable Patterns</h2>
+
+<p>Use <code>%define</code> to create named patterns for composition:</p>
+
+<pre><code class="language-text">%define DIGIT [0-9]
+%define ALPHA [a-zA-Z]
+
+%token NUMBER /{DIGIT}+/
+%token IDENT /{ALPHA}({ALPHA}|{DIGIT})*/</code></pre>
+
+<h2>Flex-Style Syntax</h2>
+
+<p>Switch to flex-style patterns with <code>%resyntax</code>:</p>
+
+<pre><code class="language-text">%resyntax flex
+
+%token NUMBER [0-9]+
+%skip [ \t\n]+</code></pre>
+
+<p>In flex mode, patterns extend to end of line without delimiters.</p>
+
+<h2>Token Priority</h2>
+
+<p>When multiple patterns match, TLEX uses priority rules:</p>
+
+<ol>
+    <li>Longer matches win over shorter matches</li>
+    <li>Earlier-defined patterns win over later ones</li>
+    <li>String literals have higher priority than regex patterns</li>
+</ol>
+
+<pre><code class="language-text">// "if" will match as keyword, not as IDENT
+%token IDENT /[a-zA-Z]+/
+Stmt -> "if" Expr "then" Stmt ;</code></pre>
+
+<h2>Token Handlers</h2>
+
+<p>Attach handlers to tokens for custom processing:</p>
+
+<pre><code class="language-text">%token NUMBER /[0-9]+/ { parseNumber }</code></pre>
+
+<p>Provide the handler when loading the grammar:</p>
+
+<pre><code class="language-typescript">import { DSL } from "galore";
+
+const [grammar, tokenFunc] = DSL.load(grammarString, {
+  tokenHandlers: {
+    parseNumber: (token, tape, owner) => {
+      token.value = parseInt(token.value);
+      return token;
+    }
+  }
+});
+</code></pre>
+
+<h2>Custom Tokenizers</h2>
+
+<p>Provide your own tokenizer instead of using the auto-generated one:</p>
+
+<pre><code class="language-typescript">import { newParser } from "galore";
+import * as TLEX from "tlex";
+
+// Create custom tokenizer
+const myTokenizer = new TLEX.Tokenizer();
+myTokenizer.add(/[0-9]+/, { tag: "NUMBER" });
+myTokenizer.add(/[a-z]+/, { tag: "IDENT" });
+myTokenizer.add(/\s+/, {}, () => null);  // Skip whitespace
+
+const [parser] = newParser(grammar, {
+  tokenizer: myTokenizer.next.bind(myTokenizer)
+});
+</code></pre>
+
+<h2>TLEX Documentation</h2>
+
+<p>For advanced features like:</p>
+
+<ul>
+    <li>Lexer modes and state management</li>
+    <li>Token priority and conflict resolution</li>
+    <li>Custom token transformations</li>
+    <li>Debugging and visualization</li>
+</ul>
+
+<p>See the <a href="https://github.com/panyam/tlex">TLEX documentation</a>.</p>

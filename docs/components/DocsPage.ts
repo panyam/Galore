@@ -1,10 +1,11 @@
 /**
  * DocsPage.ts - Main entry point for documentation pages
- * Discovers and initializes grammar sandbox elements on the page
+ * Discovers and initializes grammar sandbox elements and code blocks on the page
  */
 
 import * as G from "galore";
 import { GrammarSandbox } from "./GrammarSandbox";
+import { initCodeBlocks } from "./CodeBlock";
 
 // Expose galore globally for debugging
 (window as any).G = G;
@@ -14,6 +15,7 @@ export class DocsPage {
 
   constructor() {
     this.initSandboxes();
+    this.initCodeBlocks();
   }
 
   private initSandboxes(): void {
@@ -30,7 +32,13 @@ export class DocsPage {
       this.sandboxes.push(sandbox);
     });
 
-    console.log(`DocsPage: Initialized ${this.sandboxes.length} grammar sandboxes`);
+    if (this.sandboxes.length > 0) {
+      console.log(`DocsPage: Initialized ${this.sandboxes.length} grammar sandboxes`);
+    }
+  }
+
+  private initCodeBlocks(): void {
+    initCodeBlocks();
   }
 }
 

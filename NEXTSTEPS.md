@@ -2,6 +2,50 @@
 
 ## Recently Completed
 
+### Documentation Improvements (January 2026)
+- Enhanced **Grammar DSL Reference** (`docs/content/reference/grammar-syntax/`)
+  - Complete DSL syntax: rules, tokens, directives, EBNF extensions
+  - Token directives: `%token`, `%skip`, `%define`, `%start`, `%resyntax`
+  - EBNF extensions: `*`, `+`, `?`, `()`, `[]`
+  - Comments: `//` and `/* */`
+  - Noted: `%left`/`%right`/`%nonassoc` NOT YET IMPLEMENTED
+
+- Created **Semantic Actions** page (`docs/content/reference/semantic-actions/`)
+  - Action syntax: `{ $1 }`, `{ functionName }`
+  - ParserContext callbacks: `ruleHandlers`, `beforeAddingChildNode`, `onReduction`, `onNextToken`
+  - PTNode structure and methods
+
+- Created **API Reference** page (`docs/content/reference/api/`)
+  - Entry points: `newParser()`, `newParseTable()`
+  - Parser options with TypeScript interface
+  - Grammar class API
+  - Type definitions
+
+- Created **Tokenization** page (`docs/content/reference/tokenization/`)
+  - Brief intro to TLEX integration
+  - Basic `%token` and `%skip` usage
+  - Link to TLEX repo for advanced features
+
+- Created **Error Handling** page (`docs/content/reference/error-handling/`)
+  - `ParseError` class usage
+  - Error callbacks: `onTokenError`, `actionResolver`
+  - Debug options and troubleshooting
+
+- Enhanced **Parse Tables** page (`docs/content/reference/parse-tables/`)
+  - Conflict types: shift-reduce, reduce-reduce
+  - Resolution strategies: grammar restructuring, left-factoring
+  - LR item set debugging
+
+- Added **CodeBlock component** with copy button
+  - `docs/components/CodeBlock.ts` - Adds copy functionality to code blocks
+  - CSS styling in `docs/static/css/components/content.css`
+  - Auto-initialized on all documentation pages
+
+- Improved **source file JSDoc comments**
+  - `src/factory.ts` - Added ParserOptions interface with full documentation
+  - `src/errors.ts` - Enhanced ParseError documentation
+  - Exported ParserOptions from index.ts
+
 ### Editable Action Code (January 2026)
 - Added editable JavaScript action code to both PlaygroundPage and ExampleRunner
 - Created shared `ActionCompiler` module (`docs/components/ActionCompiler.ts`) for:

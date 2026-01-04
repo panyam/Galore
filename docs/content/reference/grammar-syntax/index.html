@@ -1,44 +1,267 @@
 ---
 title: Grammar Syntax
-description: Learn the syntax for defining grammars in Galore
+description: Complete reference for the Galore grammar DSL
 section: reference
 ---
 
 <h1>Grammar Syntax</h1>
 
-<p>Galore uses a BNF-like syntax for defining grammars. This page covers the complete syntax reference.</p>
+<p>Galore uses an extended BNF syntax for defining grammars. This page is the complete syntax reference.</p>
 
-<h2>Basic Rules</h2>
+<h2>Basic Rule Syntax</h2>
 
-<p>A grammar rule has the form:</p>
+<p>A grammar rule defines a non-terminal and its possible productions:</p>
 
-<pre><code>NonTerminal -> production1 | production2 | ...</code></pre>
+<pre><code class="language-text">NonTerminal -> production1 | production2 | ... ;</code></pre>
 
-<p>Each production is a sequence of symbols (terminals or non-terminals).</p>
-
-<h2>Terminals</h2>
-
-<p>Terminals can be:</p>
+<p>Key points:</p>
 <ul>
-    <li>String literals: <code>"keyword"</code> or <code>'keyword'</code></li>
-    <li>Regular expressions: <code>/[0-9]+/</code></li>
-    <li>Named tokens: <code>NUMBER</code>, <code>IDENTIFIER</code></li>
+    <li>Rules end with a <strong>semicolon</strong> <code>;</code></li>
+    <li>Productions are separated by <code>|</code> (pipe)</li>
+    <li>You can also use <code>:</code> instead of <code>-></code></li>
 </ul>
 
-<h2>Example Grammar</h2>
+<h3>Example</h3>
 
-<pre><code class="language-text">Expr -> Expr "+" Term | Term
-Term -> Term "*" Factor | Factor
-Factor -> "(" Expr ")" | NUMBER
+<pre><code class="language-text">Expr -> Expr "+" Term | Term ;
+Term -> Term "*" Factor | Factor ;
+Factor -> "(" Expr ")" | NUMBER ;</code></pre>
 
-NUMBER -> /[0-9]+/
-</code></pre>
+<h2>Symbols</h2>
+
+<h3>Non-Terminals</h3>
+
+<p>Non-terminals are symbols that have productions. By convention, they start with an uppercase letter:</p>
+
+<pre><code class="language-text">Expr, Term, Statement, Program</code></pre>
+
+<p>Any identifier that appears on the left side of a rule (<code>-></code>) is automatically recognized as a non-terminal.</p>
+
+<h3>Terminals (Tokens)</h3>
+
+<p>Terminals can be defined in several ways:</p>
+
+<table>
+    <thead>
+        <tr><th>Type</th><th>Syntax</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>String literal</td>
+            <td><code>"..."</code> or <code>'...'</code></td>
+            <td><code>"if"</code>, <code>"+"</code>, <code>'while'</code></td>
+        </tr>
+        <tr>
+            <td>Regex pattern</td>
+            <td><code>/pattern/flags</code></td>
+            <td><code>/[0-9]+/</code>, <code>/[a-zA-Z_]\w*/</code></td>
+        </tr>
+        <tr>
+            <td>Named token</td>
+            <td><code>%token NAME /pattern/</code></td>
+            <td><code>%token NUMBER /[0-9]+/</code></td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>Inline Tokens</h4>
+
+<p>String literals and regex patterns used directly in rules are automatically added to the lexer:</p>
+
+<pre><code class="language-text">// These create tokens automatically
+Stmt -> "if" "(" Expr ")" Stmt ;
+Number -> /[0-9]+/ ;</code></pre>
+
+<h2>Directives</h2>
+
+<p>Directives configure the grammar and lexer. They start with <code>%</code>.</p>
+
+<h3>%token - Named Token Definition</h3>
+
+<p>Defines a named terminal with a pattern:</p>
+
+<pre><code class="language-text">%token NUMBER /[0-9]+/
+%token STRING /"([^"\\]|\\.)*"/
+%token IDENT /[a-zA-Z_][a-zA-Z0-9_]*/</code></pre>
+
+<p>The pattern can be a regex (<code>/pattern/</code>) or a string literal (<code>"literal"</code>).</p>
+
+<h3>%skip - Skipped Patterns</h3>
+
+<p>Defines patterns to skip (whitespace, comments):</p>
+
+<pre><code class="language-text">%skip /[ \t\n\r]+/           // Whitespace
+%skip /\/\/[^\n]*/           // Line comments
+%skip /\/\*[\s\S]*?\*\//     // Block comments</code></pre>
+
+<p>Skipped patterns are consumed but don't produce tokens.</p>
+
+<h3>%define - Reusable Patterns</h3>
+
+<p>Defines a named pattern that can be referenced in other patterns (using TLEX syntax):</p>
+
+<pre><code class="language-text">%define DIGIT [0-9]
+%define ALPHA [a-zA-Z]
+%token NUMBER /{DIGIT}+/
+%token IDENT /{ALPHA}({ALPHA}|{DIGIT})*/</code></pre>
+
+<h3>%start - Start Symbol</h3>
+
+<p>Explicitly sets the start symbol (default is the first non-terminal):</p>
+
+<pre><code class="language-text">%start Program
+
+Program -> Statement* ;</code></pre>
+
+<h3>%resyntax - Regex Syntax</h3>
+
+<p>Chooses between regex syntaxes:</p>
+
+<pre><code class="language-text">%resyntax js     // JavaScript regex (default)
+%resyntax flex   // Flex-style patterns</code></pre>
+
+<p>With <code>flex</code> syntax, patterns don't need delimiters and extend to end of line:</p>
+
+<pre><code class="language-text">%resyntax flex
+%token NUMBER [0-9]+
+%tokenflex STRING \"([^\"\\]|\\.)*\"</code></pre>
+
+<h2>EBNF Extensions</h2>
+
+<p>Galore supports EBNF notation for common patterns:</p>
+
+<table>
+    <thead>
+        <tr><th>Operator</th><th>Meaning</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>*</code></td>
+            <td>Zero or more</td>
+            <td><code>Statement*</code></td>
+        </tr>
+        <tr>
+            <td><code>+</code></td>
+            <td>One or more</td>
+            <td><code>Expr+</code></td>
+        </tr>
+        <tr>
+            <td><code>?</code></td>
+            <td>Optional (zero or one)</td>
+            <td><code>ElseClause?</code></td>
+        </tr>
+        <tr>
+            <td><code>( )</code></td>
+            <td>Grouping</td>
+            <td><code>(Expr ("," Expr)*)</code></td>
+        </tr>
+        <tr>
+            <td><code>[ ]</code></td>
+            <td>Optional group</td>
+            <td><code>["else" Stmt]</code></td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>Examples</h3>
+
+<pre><code class="language-text">// Zero or more statements
+Program -> Statement* ;
+
+// One or more expressions separated by commas
+ExprList -> Expr ("," Expr)* ;
+
+// Optional else clause
+IfStmt -> "if" "(" Expr ")" Stmt ["else" Stmt] ;
+
+// Alternation within grouping
+BinOp -> ("+" | "-" | "*" | "/") ;</code></pre>
+
+<h3>Implementation Note</h3>
+
+<p>EBNF operators are expanded to auxiliary non-terminals internally. For example:</p>
+
+<pre><code class="language-text">// This:
+List -> Item* ;
+
+// Becomes (with left recursion):
+$List_star -> $List_star Item | ;
+List -> $List_star ;</code></pre>
+
+<h2>Semantic Actions</h2>
+
+<p>Attach handlers to rules for building ASTs or evaluating expressions:</p>
+
+<pre><code class="language-text">Expr -> Expr "+" Term { add }
+      | Term { $1 }
+      ;</code></pre>
+
+<h3>Action Syntax</h3>
+
+<ul>
+    <li><code>{ $N }</code> - Return the Nth child (1-indexed)</li>
+    <li><code>{ handlerName }</code> - Call a named handler function</li>
+</ul>
+
+<p>See <a href="/galore/reference/semantic-actions/">Semantic Actions</a> for details on implementing handlers.</p>
+
+<h2>Comments</h2>
+
+<p>Galore supports C-style comments:</p>
+
+<pre><code class="language-text">// Line comment
+
+/*
+   Block comment
+   can span multiple lines
+*/
+
+Expr -> Term ;  // Inline comment</code></pre>
 
 <h2>Operator Precedence</h2>
 
-<p>You can define operator precedence and associativity using pragmas:</p>
+<p><strong>Note:</strong> Directive-based precedence (<code>%left</code>, <code>%right</code>, <code>%nonassoc</code>) is not yet implemented.</p>
 
-<pre><code class="language-text">%left "+" "-"
-%left "*" "/"
-%right "^"
-</code></pre>
+<p>Use grammar structure to encode precedence. Lower rules have higher precedence:</p>
+
+<pre><code class="language-text">// Precedence from lowest to highest:
+// 1. Addition/Subtraction (lowest)
+// 2. Multiplication/Division
+// 3. Parentheses (highest)
+
+Expr   -> Expr ("+" | "-") Term | Term ;
+Term   -> Term ("*" | "/") Factor | Factor ;
+Factor -> "(" Expr ")" | NUMBER ;</code></pre>
+
+<p>In this grammar, <code>*</code> and <code>/</code> bind tighter than <code>+</code> and <code>-</code> because they're resolved at a deeper level of the grammar hierarchy.</p>
+
+<h2>Complete Example</h2>
+
+<pre><code class="language-text">// Calculator grammar with all features
+
+%token NUMBER /-?[0-9]+(\.[0-9]+)?/
+%token ID /[a-zA-Z_][a-zA-Z0-9_]*/
+%skip /[ \t\n\r]+/
+%skip /\/\/.*/
+
+%start Program
+
+Program -> Statement* ;
+
+Statement -> ID "=" Expr ";"
+           | Expr ";"
+           ;
+
+Expr -> Expr ("+" | "-") Term { binop }
+      | Term { $1 }
+      ;
+
+Term -> Term ("*" | "/") Factor { binop }
+      | Factor { $1 }
+      ;
+
+Factor -> "(" Expr ")" { $2 }
+        | "-" Factor { negate }
+        | NUMBER { num }
+        | ID { ident }
+        ;</code></pre>

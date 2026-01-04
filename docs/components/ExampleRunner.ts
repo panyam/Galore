@@ -16,6 +16,7 @@ import "ace-builds/src-min-noconflict/theme-monokai";
 import "ace-builds/src-min-noconflict/theme-github";
 import { builtinGrammars, BuiltinGrammar } from "./configs";
 import { ActionCompiler, ActionRunResult } from "./ActionCompiler";
+import { initPageSetup } from "./common/pageSetup";
 
 interface ExampleConfig {
   // Either provide grammarName to look up from builtinGrammars, or provide grammar/input directly
@@ -422,6 +423,9 @@ export class ExampleRunner {
 
 // Auto-initialize from data attributes
 document.addEventListener("DOMContentLoaded", () => {
+  // Initialize common page setup (sidebar highlighting, etc.)
+  initPageSetup();
+
   const containers = document.querySelectorAll("[data-example-runner]");
   containers.forEach((container) => {
     const id = container.id;

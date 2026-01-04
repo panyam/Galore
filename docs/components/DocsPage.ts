@@ -6,6 +6,7 @@
 import * as G from "galore";
 import { GrammarSandbox } from "./GrammarSandbox";
 import { initCodeBlocks } from "./CodeBlock";
+import { initPageSetup } from "./common/pageSetup";
 
 // Expose galore globally for debugging
 (window as any).G = G;
@@ -16,6 +17,7 @@ export class DocsPage {
   constructor() {
     this.initSandboxes();
     this.initCodeBlocks();
+    initPageSetup();
   }
 
   private initSandboxes(): void {

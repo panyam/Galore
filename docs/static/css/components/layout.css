@@ -52,6 +52,12 @@
   text-decoration: none;
 }
 
+.section-nav li a.active {
+  color: var(--color-primary);
+  background: var(--color-primary-subtle, rgba(99, 102, 241, 0.1));
+  font-weight: 500;
+}
+
 .main-content {
   flex: 1;
   min-width: 0;

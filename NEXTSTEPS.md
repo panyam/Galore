@@ -2,6 +2,19 @@
 
 ## Recently Completed
 
+### Playground Parse Table Enhancements (January 2026)
+- Added LR item hints to parse table states (like yacc/bison output)
+  - Each state header shows state number + first LR item (e.g., "0: $accept -> • Program")
+  - Full item list shown as tooltip on hover
+- Added conflict highlighting in parse table
+  - Cells with multiple actions (shift/reduce or reduce/reduce) highlighted in amber
+  - State header cells with any conflicts also highlighted with amber background
+- Added example grammars with known conflicts:
+  - "Dangling Else" - Classic shift-reduce conflict
+  - "Ambiguous Expr" - Shift-reduce from missing precedence
+- Fixed Calculator grammar shift-reduce conflict by factoring: `Atom -> ID AtomTail`
+- Enhanced `parseTableToHtml` in `src/printers.ts` to accept `itemGraph` config
+
 ### Documentation Site Migration (January 2026)
 - Created new `docs/` folder using s3gen static site generator
 - Replaced Gatsby/Hugo-based galorium with s3gen-based docs site

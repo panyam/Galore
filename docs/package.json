@@ -1,6 +1,6 @@
 {
   "name": "galore-docs",
-  "version": "0.0.70",
+  "version": "1.0.1",
   "description": "Documentation site for the Galore parser toolkit",
   "private": true,
   "scripts": {

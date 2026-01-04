@@ -41,6 +41,11 @@
   - CSS styling in `docs/static/css/components/content.css`
   - Auto-initialized on all documentation pages
 
+- Added **active sidebar link highlighting**
+  - Current page highlighted in sidebar navigation with primary color
+  - Shared `docs/components/common/pageSetup.ts` for common page initialization
+  - Works on all doc pages (Reference and Examples sections)
+
 - Improved **source file JSDoc comments**
   - `src/factory.ts` - Added ParserOptions interface with full documentation
   - `src/errors.ts` - Enhanced ParseError documentation

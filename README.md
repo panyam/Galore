@@ -51,4 +51,4 @@ The documentation includes several runnable examples:
 
 ## License
 
-ISC
+MIT

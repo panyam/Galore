@@ -1,6 +1,6 @@
 {
   "name": "galore",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "Sriram Panyam",
   "description": "A toolbox for languages analyzers and parser generators.",
   "homepage": "https://github.com/panyam/Galore#readme",

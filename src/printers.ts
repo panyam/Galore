@@ -1,7 +1,18 @@
 import { LRActionType, ParseTable as LRParseTable } from "./lr";
+import { LRItemGraph } from "./lritems";
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 export function parseTableToHtml(parseTable: LRParseTable, config: any = {}): string {
   const parseTableClass = config.parseTableClass || "parseTable";
+  const itemGraph: LRItemGraph | null = config.itemGraph || null;
   const symbols = config.gotoSymbolSorter
     ? [...parseTable.grammar.allSymbols].sort(config.gotoSymbolSorter)
     : parseTable.grammar.allSymbols;
@@ -16,7 +27,32 @@ export function parseTableToHtml(parseTable: LRParseTable, config: any = {}): st
   const numStates = Object.keys(parseTable.actions).length;
   for (let i = 0; i < numStates; i++) {
     out += "<tr>";
-    out += `<td class = "stateHeaderCell" stateID = "${i}">${i}</td>`;
+    // Show state number and optionally the items in this state
+    let stateLabel = `${i}`;
+    let stateTitle = "";
+    if (itemGraph && i < itemGraph.itemSets.size) {
+      const itemSet = itemGraph.itemSets.get(i);
+      const items = itemSet.debugValue as string[];
+      stateTitle = items.join("\n");
+      // Show first item as a hint (the "kernel" item)
+      if (items.length > 0) {
+        // Extract just the production part (after the " - ")
+        const firstItem = items[0];
+        const match = firstItem.match(/^\d+\s*-\s*(.+)$/);
+        const hint = match ? match[1] : firstItem;
+        stateLabel = `<div class="stateNum">${i}</div><div class="stateHint">${escapeHtml(hint)}</div>`;
+      }
+    }
+    // Check if this state has any conflicts
+    let stateHasConflicts = false;
+    for (const sym of symbols) {
+      if (parseTable.getActions(i, sym).length > 1) {
+        stateHasConflicts = true;
+        break;
+      }
+    }
+    const stateHeaderClass = stateHasConflicts ? "stateHeaderCell hasConflicts" : "stateHeaderCell";
+    out += `<td class = "${stateHeaderClass}" stateID = "${i}" title="${escapeHtml(stateTitle)}">${stateLabel}</td>`;
     for (const sym of symbols) {
       // Add action here
       const actions = parseTable.getActions(i, sym);

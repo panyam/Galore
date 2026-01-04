@@ -295,3 +295,64 @@ html:has(.playground-page),
   color: #fef3c7;
   border-color: #f59e0b;
 }
+
+/* State header cells with item hints */
+.parse-table-container .stateHeaderCell {
+  text-align: left;
+  padding: 4px 8px;
+  background: var(--color-bg-alt);
+  font-weight: 500;
+  min-width: 120px;
+  cursor: help;
+}
+
+.parse-table-container .stateNum {
+  font-weight: 700;
+  color: var(--color-primary, #3b82f6);
+  font-size: 0.9em;
+}
+
+.parse-table-container .stateHint {
+  font-size: 0.75em;
+  color: var(--color-text-muted, #64748b);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.dark .parse-table-container .stateNum {
+  color: #60a5fa;
+}
+
+.dark .parse-table-container .stateHint {
+  color: #94a3b8;
+}
+
+/* Highlight state header cells that have conflicts */
+.parse-table-container .stateHeaderCell.hasConflicts {
+  background: #fef3c7;
+  border-left: 3px solid #f59e0b;
+}
+
+.parse-table-container .stateHeaderCell.hasConflicts .stateNum {
+  color: #92400e;
+}
+
+.parse-table-container .stateHeaderCell.hasConflicts .stateHint {
+  color: #b45309;
+}
+
+.dark .parse-table-container .stateHeaderCell.hasConflicts {
+  background: #78350f;
+  border-left: 3px solid #f59e0b;
+}
+
+.dark .parse-table-container .stateHeaderCell.hasConflicts .stateNum {
+  color: #fef3c7;
+}
+
+.dark .parse-table-container .stateHeaderCell.hasConflicts .stateHint {
+  color: #fcd34d;
+}

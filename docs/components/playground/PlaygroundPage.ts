@@ -27,6 +27,7 @@ export class PlaygroundPage {
   // State
   private currentParser: any = null;
   private currentGrammar: any = null;
+  private currentItemGraph: any = null;
   private parserType: string = "lalr";
 
   // Editors
@@ -402,7 +403,7 @@ export class PlaygroundPage {
     try {
       const startTime = performance.now();
       // newParser returns [parser, tokenFunc, itemGraph]
-      const [parser] = G.newParser(grammarText, {
+      const [parser, , itemGraph] = G.newParser(grammarText, {
         flatten: true,
         type: this.parserType as any,
       });
@@ -410,6 +411,7 @@ export class PlaygroundPage {
 
       this.currentParser = parser;
       this.currentGrammar = parser.grammar;
+      this.currentItemGraph = itemGraph;
 
       this.eventHub.emit(Events.GRAMMAR_COMPILED, this.currentParser, this.currentGrammar);
       this.log(`Parser compiled (${this.parserType.toUpperCase()}) in ${elapsed}ms`);
@@ -548,7 +550,9 @@ export class PlaygroundPage {
     if (!this.parseTableContainer || !this.currentParser) return;
 
     try {
-      const html = G.Printers.parseTableToHtml(this.currentParser.parseTable);
+      const html = G.Printers.parseTableToHtml(this.currentParser.parseTable, {
+        itemGraph: this.currentItemGraph,
+      });
       this.parseTableContainer.innerHTML = html;
 
       // Count conflicts (cells with multipleActions class from Galore's printer)

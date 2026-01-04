@@ -2,6 +2,28 @@
 
 ## Recently Completed
 
+### Editable Action Code (January 2026)
+- Added editable JavaScript action code to both PlaygroundPage and ExampleRunner
+- Created shared `ActionCompiler` module (`docs/components/ActionCompiler.ts`) for:
+  - Compiling user-provided JavaScript using `new Function('node', code)`
+  - Compile-time error detection with Ace Editor line markers
+  - Runtime error detection with line numbers
+  - Status indicator (✓ success / ✗ error)
+- PlaygroundPage enhancements:
+  - Added "Actions" panel (tabbed with Input)
+  - Auto-runs action after parsing
+  - Persists action code per grammar when switching
+  - Results displayed in Console with proper newline formatting
+- ExampleRunner enhancements:
+  - Action editor now editable (was read-only)
+  - Uses compiled action when code is modified, falls back to config.actionFn
+  - Shows compile/runtime errors with line information
+- Added `actionCode` field to `BuiltinGrammar` interface in `configs.ts`
+- Calculator grammar updated:
+  - Added semicolon statement delimiters for conflict-free parsing
+  - Action code evaluates and formats as "stmt → result" per line
+- Simplified calculator example page to use shared action code from configs
+
 ### Playground Parse Table Enhancements (January 2026)
 - Added LR item hints to parse table states (like yacc/bison output)
   - Each state header shows state number + first LR item (e.g., "0: $accept -> • Program")

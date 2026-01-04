@@ -200,6 +200,12 @@
   color: #166534;
 }
 
+.example-action-result pre {
+  margin: 0;
+  font-family: var(--font-mono);
+  white-space: pre-wrap;
+}
+
 .dark .example-action-result {
   background: #14532d;
   border-color: #166534;
@@ -208,6 +214,63 @@
 
 .example-actions {
   border-top: 1px solid var(--color-border);
+}
+
+/* Action status indicator */
+.example-action-status {
+  margin-left: auto;
+  margin-right: var(--spacing-sm);
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.example-action-status.success,
+.action-status.success {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.example-action-status.error,
+.action-status.error {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.dark .example-action-status.success,
+.dark .action-status.success {
+  color: #86efac;
+  background: #14532d;
+}
+
+.dark .example-action-status.error,
+.dark .action-status.error {
+  color: #fca5a5;
+  background: #7f1d1d;
+}
+
+/* Action error display */
+.example-action-error {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm);
+  color: #b91c1c;
+}
+
+.dark .example-action-error {
+  background: #7f1d1d;
+  border-color: #b91c1c;
+  color: #fca5a5;
+}
+
+.example-error-line {
+  color: #6b7280;
+  font-size: 0.9em;
+}
+
+.dark .example-error-line {
+  color: #9ca3af;
 }
 
 /* Responsive */

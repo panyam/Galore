@@ -8,10 +8,12 @@ import "dockview-core/dist/styles/dockview.css";
 import * as G from "galore";
 import { EventHub, Events } from "./EventHub";
 import { builtinGrammars, parserTypes } from "../configs";
+import { ActionCompiler } from "../ActionCompiler";
 
 // Import Ace editor
 import * as ace from "ace-builds";
 import "ace-builds/src-noconflict/mode-text";
+import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-github";
 
@@ -34,11 +36,18 @@ export class PlaygroundPage {
   private grammarEditor: ace.Ace.Editor | null = null;
   private inputEditor: ace.Ace.Editor | null = null;
   private normalizedEditor: ace.Ace.Editor | null = null;
+  private actionEditor: ace.Ace.Editor | null = null;
 
   // DOM refs
   private parseTreeContainer: HTMLElement | null = null;
   private parseTableContainer: HTMLElement | null = null;
   private consoleOutput: HTMLElement | null = null;
+
+  // Action state
+  private actionCompiler: ActionCompiler | null = null;
+  private lastParseResult: any = null;
+  private actionCodeStorage: Map<string, string> = new Map();
+  private currentGrammarName: string = "";
 
   constructor() {
     this.init();
@@ -142,6 +151,8 @@ export class PlaygroundPage {
         return this.createNormalizedGrammarPanel();
       case "console":
         return this.createConsolePanel();
+      case "actions":
+        return this.createActionsPanel();
       default:
         return { element: document.createElement("div") };
     }
@@ -200,6 +211,14 @@ export class PlaygroundPage {
       component: "normalizedGrammar",
       title: "Normalized Grammar",
       position: { direction: "within", referencePanel: "grammar" },
+    });
+
+    // Step 7: Actions panel tabbed with input
+    this.dockview.addPanel({
+      id: "actions",
+      component: "actions",
+      title: "Actions",
+      position: { direction: "within", referencePanel: "input" },
     });
   }
 
@@ -373,6 +392,69 @@ export class PlaygroundPage {
     };
   }
 
+  private createActionsPanel(): any {
+    const template = document.getElementById("actions-panel-template");
+    if (!template) return { element: document.createElement("div") };
+
+    const element = template.cloneNode(true) as HTMLElement;
+    element.style.display = "flex";
+    element.style.flexDirection = "column";
+    element.style.height = "100%";
+
+    return {
+      element,
+      init: () => {
+        // Setup Ace editor for JavaScript
+        const editorContainer = element.querySelector("#action-editor") as HTMLElement;
+        if (editorContainer) {
+          this.actionEditor = ace.edit(editorContainer);
+          this.actionEditor.setTheme(this.getEditorTheme());
+          this.actionEditor.session.setMode("ace/mode/javascript");
+          this.actionEditor.setOptions({
+            fontSize: "14px",
+            showPrintMargin: false,
+          });
+
+          // Setup ActionCompiler
+          const statusEl = element.querySelector("#action-status") as HTMLElement;
+          this.actionCompiler = new ActionCompiler(this.actionEditor, statusEl);
+        }
+
+        // Run action button
+        const runBtn = element.querySelector("#run-action-btn");
+        if (runBtn) {
+          runBtn.addEventListener("click", () => this.runAction());
+        }
+      },
+    };
+  }
+
+  private runAction(): void {
+    if (!this.actionCompiler) {
+      this.log("No action compiler available", "error");
+      return;
+    }
+
+    if (!this.lastParseResult) {
+      this.log("No parse result available. Parse some input first.", "error");
+      return;
+    }
+
+    const result = this.actionCompiler.run(this.lastParseResult);
+    if (result.success) {
+      if (result.result !== null) {
+        // For strings, display directly; for other types, use JSON
+        const displayValue = typeof result.result === "string"
+          ? result.result
+          : JSON.stringify(result.result);
+        this.log(`Action result:\n${displayValue}`, "success");
+      }
+    } else if (result.error) {
+      const lineInfo = result.line !== null ? ` (line ${result.line + 1})` : "";
+      this.log(`Action error: ${result.error}${lineInfo}`, "error");
+    }
+  }
+
   private setupEventListeners(): void {
     this.eventHub.on(Events.GRAMMAR_COMPILED, (parser: any, grammar: any) => {
       this.log("Grammar compiled successfully");
@@ -386,12 +468,30 @@ export class PlaygroundPage {
   }
 
   private selectGrammar(grammar: any): void {
+    // Save current action code before switching
+    if (this.currentGrammarName && this.actionEditor) {
+      this.actionCodeStorage.set(this.currentGrammarName, this.actionEditor.getValue());
+    }
+
+    this.currentGrammarName = grammar.name;
+
     if (this.grammarEditor) {
       this.grammarEditor.setValue(grammar.grammar, -1);
     }
     if (this.inputEditor && grammar.sampleInput) {
       this.inputEditor.setValue(grammar.sampleInput, -1);
     }
+
+    // Restore action code: check storage first, then grammar default, then empty
+    if (this.actionEditor) {
+      const savedCode = this.actionCodeStorage.get(grammar.name);
+      const defaultCode = grammar.actionCode || "";
+      this.actionEditor.setValue(savedCode ?? defaultCode, -1);
+      // Trigger recompile
+      this.actionCompiler?.compile();
+    }
+
+    this.lastParseResult = null;
     this.eventHub.emit(Events.GRAMMAR_SELECTED, grammar);
   }
 
@@ -438,9 +538,16 @@ export class PlaygroundPage {
       const result = this.currentParser.parse(input);
       const elapsed = (performance.now() - startTime).toFixed(2);
 
+      this.lastParseResult = result; // Store for action execution
       this.log(`Parsed in ${elapsed}ms`);
       this.eventHub.emit(Events.INPUT_PARSED, result);
+
+      // Auto-run action if we have one
+      if (this.actionCompiler?.hasCompiledAction()) {
+        this.runAction();
+      }
     } catch (e: any) {
+      this.lastParseResult = null;
       this.log(`Parse error: ${e.message}`, "error");
     }
   }
@@ -577,6 +684,7 @@ export class PlaygroundPage {
     this.grammarEditor?.setTheme(theme);
     this.inputEditor?.setTheme(theme);
     this.normalizedEditor?.setTheme(theme);
+    this.actionEditor?.setTheme(theme);
   }
 
   private log(message: string, level: string = "info"): void {

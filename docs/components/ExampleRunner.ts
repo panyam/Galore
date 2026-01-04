@@ -15,6 +15,7 @@ import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-github";
 import { builtinGrammars, BuiltinGrammar } from "./configs";
+import { ActionCompiler, ActionRunResult } from "./ActionCompiler";
 
 interface ExampleConfig {
   // Either provide grammarName to look up from builtinGrammars, or provide grammar/input directly
@@ -30,6 +31,7 @@ export class ExampleRunner {
   private config: ExampleConfig;
   private resolvedGrammar: string = "";
   private resolvedInput: string = "";
+  private resolvedActionCode: string = "";
 
   private grammarEditor: ace.Ace.Editor | null = null;
   private inputEditor: ace.Ace.Editor | null = null;
@@ -37,6 +39,9 @@ export class ExampleRunner {
   private outputContainer: HTMLElement | null = null;
 
   private currentParser: G.Parser | null = null;
+  private actionCompiler: ActionCompiler | null = null;
+  private actionCodeModified: boolean = false;
+  private originalActionCode: string = "";
 
   constructor(containerId: string, config: ExampleConfig) {
     const container = document.getElementById(containerId);
@@ -53,14 +58,17 @@ export class ExampleRunner {
       if (builtin) {
         this.resolvedGrammar = builtin.grammar;
         this.resolvedInput = config.input || builtin.sampleInput || "";
+        this.resolvedActionCode = config.actionCode || builtin.actionCode || "";
       } else {
         console.error(`Grammar "${config.grammarName}" not found in builtinGrammars`);
         this.resolvedGrammar = config.grammar || "";
         this.resolvedInput = config.input || "";
+        this.resolvedActionCode = config.actionCode || "";
       }
     } else {
       this.resolvedGrammar = config.grammar || "";
       this.resolvedInput = config.input || "";
+      this.resolvedActionCode = config.actionCode || "";
     }
 
     this.init();
@@ -130,11 +138,12 @@ export class ExampleRunner {
           </div>
         </div>
         ${
-          this.config.actionCode
+          this.resolvedActionCode
             ? `
         <div class="example-actions">
           <div class="example-panel-header">
             <span class="example-panel-title">Action Code</span>
+            <span class="example-action-status" id="example-action-status"></span>
             <button class="example-copy-btn" data-target="action" title="Copy action code">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -186,21 +195,32 @@ export class ExampleRunner {
       });
     }
 
-    // Action editor (read-only, if action code provided)
-    if (this.config.actionCode) {
+    // Action editor (editable, if action code provided)
+    if (this.resolvedActionCode) {
       const actionContainer = this.container.querySelector("#example-action-editor") as HTMLElement;
       if (actionContainer) {
         this.actionEditor = ace.edit(actionContainer);
         this.actionEditor.setTheme(theme);
         this.actionEditor.session.setMode("ace/mode/javascript");
-        this.actionEditor.setValue(this.config.actionCode.trim(), -1);
-        this.actionEditor.setReadOnly(true);
+        this.originalActionCode = this.resolvedActionCode.trim();
+        this.actionEditor.setValue(this.originalActionCode, -1);
         this.actionEditor.setOptions({
           fontSize: "13px",
           showPrintMargin: false,
           maxLines: 25,
           minLines: 5,
         });
+
+        // Track modifications
+        this.actionEditor.session.on("change", () => {
+          this.actionCodeModified = this.actionEditor!.getValue() !== this.originalActionCode;
+        });
+
+        // Setup ActionCompiler
+        const statusEl = this.container.querySelector("#example-action-status") as HTMLElement;
+        this.actionCompiler = new ActionCompiler(this.actionEditor, statusEl);
+        // Initial compilation
+        this.actionCompiler.compile();
       }
     }
 
@@ -288,36 +308,73 @@ export class ExampleRunner {
 
       // Run action if provided
       let actionResult: any = null;
-      if (this.config.actionFn && parseResult) {
+      let actionError: { message: string; line?: number } | null = null;
+
+      // Use ActionCompiler if code was modified, otherwise fall back to config.actionFn
+      if (this.actionCompiler && this.actionCodeModified && parseResult) {
+        // User modified the code - use the compiled version
+        const runResult = this.actionCompiler.run(parseResult);
+        if (runResult.success) {
+          actionResult = runResult.result;
+        } else if (runResult.error) {
+          actionError = { message: runResult.error, line: runResult.line ?? undefined };
+        }
+      } else if (this.config.actionFn && parseResult) {
+        // Use the config's action function (original behavior)
         try {
           actionResult = this.config.actionFn(parseResult);
         } catch (e: any) {
-          actionResult = { error: e.message };
+          actionError = { message: e.message };
+        }
+      } else if (this.actionCompiler && parseResult) {
+        // No actionFn, use ActionCompiler
+        const runResult = this.actionCompiler.run(parseResult);
+        if (runResult.success) {
+          actionResult = runResult.result;
+        } else if (runResult.error) {
+          actionError = { message: runResult.error, line: runResult.line ?? undefined };
         }
       }
 
       // Display results
-      this.displayResults(parseResult, actionResult);
+      this.displayResults(parseResult, actionResult, actionError);
     } catch (e: any) {
       this.outputContainer.innerHTML = `<div class="example-error">${this.escapeHtml(e.message)}</div>`;
     }
   }
 
-  private displayResults(parseResult: any, actionResult: any): void {
+  private displayResults(
+    parseResult: any,
+    actionResult: any,
+    actionError: { message: string; line?: number } | null = null,
+  ): void {
     if (!this.outputContainer) return;
 
     let html = '<div class="example-results">';
 
+    // Action error (if any) - show first with line marker
+    if (actionError) {
+      html += '<div class="example-result-section">';
+      html += '<div class="example-result-label">Action Error:</div>';
+      html += '<div class="example-action-error">';
+      html += `<span class="example-error">${this.escapeHtml(actionError.message)}</span>`;
+      if (actionError.line !== undefined) {
+        html += `<span class="example-error-line"> (line ${actionError.line + 1})</span>`; // Display as 1-indexed
+      }
+      html += "</div>";
+      html += "</div>";
+    }
+
     // Action result (if any) - show first
-    if (actionResult !== null) {
+    if (actionResult !== null && !actionError) {
       html += '<div class="example-result-section">';
       html += '<div class="example-result-label">Result:</div>';
       html += '<div class="example-action-result">';
-      if (typeof actionResult === "object" && actionResult?.error) {
-        html += `<span class="example-error">${this.escapeHtml(actionResult.error)}</span>`;
-      } else {
-        html += `<span class="example-value">${this.escapeHtml(JSON.stringify(actionResult, null, 2))}</span>`;
-      }
+      // For strings, display directly (preserving newlines); for other types, use JSON
+      const displayValue = typeof actionResult === "string"
+        ? actionResult
+        : JSON.stringify(actionResult, null, 2);
+      html += `<pre class="example-value">${this.escapeHtml(displayValue)}</pre>`;
       html += "</div>";
       html += "</div>";
     }

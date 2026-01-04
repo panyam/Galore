@@ -248,6 +248,7 @@ html:has(.playground-page),
 
 .console-entry {
   padding: 2px 0;
+  white-space: pre-wrap;
 }
 
 .console-time {
@@ -355,4 +356,32 @@ html:has(.playground-page),
 
 .dark .parse-table-container .stateHeaderCell.hasConflicts .stateHint {
   color: #fcd34d;
+}
+
+/* Action Status Indicator */
+.action-status {
+  margin-left: auto;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.action-status.success {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.action-status.error {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.dark .action-status.success {
+  color: #86efac;
+  background: #14532d;
+}
+
+.dark .action-status.error {
+  color: #fca5a5;
+  background: #7f1d1d;
 }

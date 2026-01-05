@@ -14,7 +14,10 @@ checklinks:
 		echo "You are trying to deploy with symlinks. Remove them first and make sure versions exist" && false ;	\
 	fi
 
-build: resymlink webpack
+build: resymlink copycss webpack
+
+copycss:
+	cp node_modules/@panyam/tsappkit/dist/docs/DocsPage.css static/css/tsappkit-docs.css
 
 resymlink:
 	mkdir -p locallinks

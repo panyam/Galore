@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@panyam/tsappkit':
         specifier: file:../../../golang/goapplib/tsappkit
-        version: file:../../../golang/goapplib/tsappkit
+        version: file:../../../golang/goapplib/tsappkit(ace-builds@1.43.5)
       '@panyam/tsutils':
         specifier: '*'
         version: 0.0.71
@@ -596,6 +596,11 @@ packages:
 
   '@panyam/tsappkit@file:../../../golang/goapplib/tsappkit':
     resolution: {directory: ../../../golang/goapplib/tsappkit, type: directory}
+    peerDependencies:
+      ace-builds: ^1.0.0
+    peerDependenciesMeta:
+      ace-builds:
+        optional: true
 
   '@panyam/tsutils@0.0.71':
     resolution: {integrity: sha512-SRzh/4u9IMc586ZHiXgLiOnjvQh7H3JMmrQSsjMbvgTmiaylmf7Oeuvxa4v4YPrNTEydaSGJrzFfwyKYFPGIjw==}
@@ -2502,7 +2507,9 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@panyam/tsappkit@file:../../../golang/goapplib/tsappkit': {}
+  '@panyam/tsappkit@file:../../../golang/goapplib/tsappkit(ace-builds@1.43.5)':
+    optionalDependencies:
+      ace-builds: 1.43.5
 
   '@panyam/tsutils@0.0.71':
     dependencies:

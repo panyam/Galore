@@ -15,8 +15,8 @@ import "ace-builds/src-min-noconflict/mode-javascript";
 import "ace-builds/src-min-noconflict/theme-monokai";
 import "ace-builds/src-min-noconflict/theme-github";
 import { builtinGrammars, BuiltinGrammar } from "./configs";
-import { ActionCompiler, ActionRunResult } from "./ActionCompiler";
-import { initPageSetup } from "@panyam/tsappkit";
+import { ActionCompiler, initPageSetup } from "@panyam/tsappkit/docs";
+import type { ActionRunResult } from "@panyam/tsappkit/docs";
 
 interface ExampleConfig {
   // Either provide grammarName to look up from builtinGrammars, or provide grammar/input directly

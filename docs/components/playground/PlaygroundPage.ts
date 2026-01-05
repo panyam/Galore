@@ -8,7 +8,7 @@ import "dockview-core/dist/styles/dockview.css";
 import * as G from "galore";
 import { EventHub, Events } from "./EventHub";
 import { builtinGrammars, parserTypes } from "../configs";
-import { ActionCompiler } from "../ActionCompiler";
+import { ActionCompiler } from "@panyam/tsappkit/docs";
 
 // Import Ace editor (use minified builds for smaller bundle)
 import * as ace from "ace-builds";

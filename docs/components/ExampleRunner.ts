@@ -16,7 +16,7 @@ import "ace-builds/src-min-noconflict/theme-monokai";
 import "ace-builds/src-min-noconflict/theme-github";
 import { builtinGrammars, BuiltinGrammar } from "./configs";
 import { ActionCompiler, ActionRunResult } from "./ActionCompiler";
-import { initPageSetup } from "./common/pageSetup";
+import { initPageSetup } from "@panyam/tsappkit";
 
 interface ExampleConfig {
   // Either provide grammarName to look up from builtinGrammars, or provide grammar/input directly
@@ -300,7 +300,6 @@ export class ExampleRunner {
       // Compile grammar
       const [parser] = G.newParser(grammarText, {
         type: "lalr",
-        flatten: true,
       });
       this.currentParser = parser;
 

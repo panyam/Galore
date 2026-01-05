@@ -29,6 +29,7 @@
     "galore": "file:../",
     "dockview-core": "^4.3.1",
     "ace-builds": "^1.32.0",
-    "@panyam/tsutils": "*"
+    "@panyam/tsutils": "*",
+    "@panyam/tsappkit": "file:../../../golang/goapplib/tsappkit"
   }
 }

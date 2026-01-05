@@ -504,7 +504,6 @@ export class PlaygroundPage {
       const startTime = performance.now();
       // newParser returns [parser, tokenFunc, itemGraph]
       const [parser, , itemGraph] = G.newParser(grammarText, {
-        flatten: true,
         type: this.parserType as any,
       });
       const elapsed = (performance.now() - startTime).toFixed(2);

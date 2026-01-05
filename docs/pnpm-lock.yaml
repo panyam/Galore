@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@panyam/tsappkit':
+        specifier: file:../../../golang/goapplib/tsappkit
+        version: file:../../../golang/goapplib/tsappkit
       '@panyam/tsutils':
         specifier: '*'
         version: 0.0.71
@@ -590,6 +593,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@panyam/tsappkit@file:../../../golang/goapplib/tsappkit':
+    resolution: {directory: ../../../golang/goapplib/tsappkit, type: directory}
 
   '@panyam/tsutils@0.0.71':
     resolution: {integrity: sha512-SRzh/4u9IMc586ZHiXgLiOnjvQh7H3JMmrQSsjMbvgTmiaylmf7Oeuvxa4v4YPrNTEydaSGJrzFfwyKYFPGIjw==}
@@ -2495,6 +2501,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@panyam/tsappkit@file:../../../golang/goapplib/tsappkit': {}
 
   '@panyam/tsutils@0.0.71':
     dependencies:

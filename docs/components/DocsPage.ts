@@ -5,8 +5,7 @@
 
 import * as G from "galore";
 import { GrammarSandbox } from "./GrammarSandbox";
-import { initCodeBlocks } from "./CodeBlock";
-import { initPageSetup } from "./common/pageSetup";
+import { initCodeBlocks, initPageSetup } from "@panyam/tsappkit";
 
 // Expose galore globally for debugging
 (window as any).G = G;

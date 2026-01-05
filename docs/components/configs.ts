@@ -26,7 +26,7 @@ Statement -> Assignment ";" | Expr ";" ;
 Assignment -> ID "=" Expr ;
 Expr -> Expr "+" Term | Expr "-" Term | Term ;
 Term -> Term "*" Factor | Term "/" Factor | Factor ;
-Factor -> ParenExpr | NUMBER | FuncCall ;
+Factor -> ParenExpr | NUMBER | FuncCall | "-" Factor ;
 FuncCall -> ID | ID ParenExpr | ID CommaExprList ;
 CommaExprList -> "(" Expr ( "," Expr ) + ")" | "(" ")";
 ParenExpr -> "(" Expr ")" ;
@@ -77,17 +77,52 @@ function evaluate(n) {
     }
   }
 
-  if (sym === "Factor" || sym === "ParenExpr") {
-    return evaluate(kids.find(c =>
-      c.sym?.label !== "(" && c.sym?.label !== ")"
-    ) || kids[0]);
+  if (sym === "Factor") {
+    // Factor -> ParenExpr | NUMBER | FuncCall (1 child) or "-" Factor (2 children)
+    if (kids.length === 1) {
+      return evaluate(kids[0]);
+    } else if (kids.length === 2) {
+      // Unary minus: "-" Factor
+      return -evaluate(kids[1]);
+    }
+    return 0;
+  }
+
+  if (sym === "ParenExpr") {
+    // ParenExpr -> "(" Expr ")" (3 children, middle is Expr)
+    return evaluate(kids[1]);
   }
 
   if (sym === "FuncCall") {
+    const funcName = kids[0].value;
+
+    // FuncCall -> ID (just a variable reference)
     if (kids.length === 1) {
-      return vars[kids[0].value] ?? 0;
+      return vars[funcName] ?? 0;
     }
-    return 0; // Function calls not supported in simple version
+
+    // FuncCall -> ID ParenExpr (single argument function)
+    if (kids.length === 2 && kids[1].sym?.label === "ParenExpr") {
+      const arg = evaluate(kids[1]);
+      if (typeof Math[funcName] === 'function') {
+        return Math[funcName](arg);
+      }
+      return 0;
+    }
+
+    // FuncCall -> ID CommaExprList (multiple argument function)
+    if (kids.length === 2 && kids[1].sym?.label === "CommaExprList") {
+      const argList = kids[1].children || [];
+      const args = argList
+        .filter(c => c.sym?.label === "Expr")
+        .map(c => evaluate(c));
+      if (typeof Math[funcName] === 'function') {
+        return Math[funcName](...args);
+      }
+      return 0;
+    }
+
+    return 0;
   }
 
   if (sym === "Statement") {
@@ -143,7 +178,7 @@ Boolean -> "true" | "false" ;
 
 Expr -> Expr "+" Term | Expr "-" Term | Term ;
 Term -> Term "*" Factor | Term "/" Factor | Factor ;
-Factor -> "(" Expr ")" | NUMBER ;
+Factor -> "(" Expr ")" | NUMBER | "-" Factor ;
     `.trim(),
     sampleInput: "1 + 2 * 3",
     actionCode: `// Simple arithmetic evaluator
@@ -167,9 +202,17 @@ function evaluate(n) {
   }
 
   if (sym === "Factor") {
-    // Either NUMBER or "(" Expr ")"
-    const inner = kids.find(c => c.sym?.label !== "(" && c.sym?.label !== ")");
-    return evaluate(inner || kids[0]);
+    // NUMBER (1 child), "(" Expr ")" (3 children), or "-" Factor (2 children)
+    if (kids.length === 1) {
+      return evaluate(kids[0]);
+    } else if (kids.length === 2) {
+      // Unary minus: "-" Factor
+      return -evaluate(kids[1]);
+    } else if (kids.length === 3) {
+      // Parenthesized expression: middle child is the Expr
+      return evaluate(kids[1]);
+    }
+    return 0;
   }
 
   // Default: recurse

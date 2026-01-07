@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Building a working calculator with semantic actions">
+    <title>Calculator - Galore</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/galore/static/css/tsappkit-docs.css">
+    <link rel="stylesheet" href="/galore/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/galore/static/images/favicon.png">
+</head>
+<body class="">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/galore/">
+                <span class="logo-text">Galore</span>
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/galore/getting-started/" class="nav-link">
+                    
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/galore/playground/" class="nav-link">
+                    
+                    Playground
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/galore/reference/" class="nav-link">
+                    
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/galore/reference/grammar-syntax/" class="dropdown-item">Grammar Syntax</a>
+                    
+                    <a href="/galore/reference/semantic-actions/" class="dropdown-item">Semantic Actions</a>
+                    
+                    <a href="/galore/reference/api/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/galore/reference/tokenization/" class="dropdown-item">Tokenization</a>
+                    
+                    <a href="/galore/reference/parser-types/" class="dropdown-item">Parser Types</a>
+                    
+                    <a href="/galore/reference/parse-tables/" class="dropdown-item">Parse Tables</a>
+                    
+                    <a href="/galore/reference/error-handling/" class="dropdown-item">Error Handling</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/galore/examples/" class="nav-link">
+                    
+                    Examples
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/galore/examples/json-parser/" class="dropdown-item">JSON Parser</a>
+                    
+                    <a href="/galore/examples/arithmetic/" class="dropdown-item">Arithmetic</a>
+                    
+                    <a href="/galore/examples/calculator/" class="dropdown-item">Calculator</a>
+                    
+                </div>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/Galore" class="btn-github" target="_blank" rel="noopener">
+                GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        <nav class="section-nav">
+            
+            <div class="section-nav-content">
+                <h3>Examples</h3>
+                <ul>
+                    <li><a href="/galore/examples/">Overview</a></li>
+                    <li><a href="/galore/examples/json-parser/">JSON Parser</a></li>
+                    <li><a href="/galore/examples/arithmetic/">Arithmetic</a></li>
+                    <li><a href="/galore/examples/calculator/">Calculator</a></li>
+                </ul>
+            </div>
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Calculator</h1>
+        
+        <p class="lead">Building a working calculator with semantic actions</p>
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<h1>Calculator</h1>
+
+<p>This example shows a more advanced calculator grammar that supports variables, assignments, and function calls. The grammar defines operator precedence naturally through its structure.</p>
+
+<h2>Try It</h2>
+
+<p>Edit the input below and click <strong>Run</strong> to see the parse tree and computed result:</p>
+
+<div id="calculator-example"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  
+  new ExampleRunner('calculator-example', {
+    grammarName: 'Calculator'
+  });
+});
+</script>
+
+<h2>How It Works</h2>
+
+<h3>Grammar Features</h3>
+
+<p>This calculator grammar supports:</p>
+<ul>
+    <li><strong>Variables</strong> - Identifiers like <code>x</code>, <code>y</code>, <code>total</code></li>
+    <li><strong>Assignments</strong> - <code>x = 10</code></li>
+    <li><strong>Expressions</strong> - <code>x + y * 2</code></li>
+    <li><strong>Function calls</strong> - <code>sin(x)</code>, <code>max(a, b)</code></li>
+    <li><strong>Operator precedence</strong> - <code>*</code> and <code>/</code> bind tighter than <code>+</code> and <code>-</code></li>
+</ul>
+
+<h3>Evaluation</h3>
+
+<p>The <code>evaluate</code> function recursively walks the parse tree to compute numeric results. It maintains a symbol table for variables and supports built-in math functions.</p>
+
+<h2>Example Inputs</h2>
+
+<p>Try these inputs:</p>
+<ul>
+    <li><code>1 + 2 * 3</code> - Basic arithmetic (result: 7)</li>
+    <li><code>x = 10
+y = 20
+x + y</code> - Variables (result: 30)</li>
+    <li><code>sqrt(16) + abs(-5)</code> - Function calls (result: 9)</li>
+    <li><code>sin(pi() / 2)</code> - Trig functions (result: 1)</li>
+    <li><code>pow(2, 10)</code> - Power function (result: 1024)</li>
+    <li><code>max(10, 20, 5)</code> - Multi-argument function</li>
+</ul>
+
+<h3>Available Functions</h3>
+<p><code>sin</code>, <code>cos</code>, <code>tan</code>, <code>sqrt</code>, <code>abs</code>, <code>floor</code>, <code>ceil</code>, <code>round</code>, <code>log</code>, <code>exp</code>, <code>pow</code>, <code>min</code>, <code>max</code>, <code>pi</code>, <code>e</code></p>
+
+    </div>
+
+    
+    
+</article>
+
+        </main>
+    </div>
+    
+
+    
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Galore</h4>
+            <p>A toolbox for language analyzers and parser generators</p>
+            <p class="version">Version 1.0.6</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/galore/getting-started/">Getting Started</a></li>
+                <li><a href="/galore/playground/">Playground</a></li>
+                <li><a href="/galore/reference/">Reference</a></li>
+                <li><a href="/galore/examples/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/Galore" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="https://github.com/panyam/Galore/issues" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="https://www.npmjs.com/package/galore" target="_blank" rel="noopener">npm Package</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/Galore/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+    
+
+    
+    
+    <head><script defer="defer" src="/galore/static/js/gen/906.c098f4cfaf2592ea34fc.js"></script><script defer="defer" src="/galore/static/js/gen/553.876ab0df0c7700be11f3.js"></script><script defer="defer" src="/galore/static/js/gen/72.1aea8dbe74767dc33c43.js"></script><script defer="defer" src="/galore/static/js/gen/ExampleRunner.3d03d1d49ebaf0c462c2.js"></script></head>
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

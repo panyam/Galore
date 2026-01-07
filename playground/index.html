@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive grammar and parser playground">
+    <title>Playground - Galore</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/galore/static/css/tsappkit-docs.css">
+    <link rel="stylesheet" href="/galore/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/galore/static/images/favicon.png">
+</head>
+<body class="playground-page">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/galore/">
+                <span class="logo-text">Galore</span>
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/galore/getting-started/" class="nav-link">
+                    
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/galore/playground/" class="nav-link">
+                    
+                    Playground
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/galore/reference/" class="nav-link">
+                    
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/galore/reference/grammar-syntax/" class="dropdown-item">Grammar Syntax</a>
+                    
+                    <a href="/galore/reference/semantic-actions/" class="dropdown-item">Semantic Actions</a>
+                    
+                    <a href="/galore/reference/api/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/galore/reference/tokenization/" class="dropdown-item">Tokenization</a>
+                    
+                    <a href="/galore/reference/parser-types/" class="dropdown-item">Parser Types</a>
+                    
+                    <a href="/galore/reference/parse-tables/" class="dropdown-item">Parse Tables</a>
+                    
+                    <a href="/galore/reference/error-handling/" class="dropdown-item">Error Handling</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/galore/examples/" class="nav-link">
+                    
+                    Examples
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/galore/examples/json-parser/" class="dropdown-item">JSON Parser</a>
+                    
+                    <a href="/galore/examples/arithmetic/" class="dropdown-item">Arithmetic</a>
+                    
+                    <a href="/galore/examples/calculator/" class="dropdown-item">Calculator</a>
+                    
+                </div>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/Galore" class="btn-github" target="_blank" rel="noopener">
+                GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    
+    <main class="main-content-full">
+        
+<article class="content">
+    
+    
+
+    
+    <div class="content-body">
+        
+<div id="playground-container" class="playground-container">
+    
+    <div id="dockview-container" class="dockview-container" style="height: 100%"></div>
+</div>
+
+
+<div style="display: none;">
+    <div id="grammar-panel-template" class="panel-content">
+        <div class="panel-toolbar">
+            <select id="grammar-select" class="grammar-select">
+                <option value="json">JSON</option>
+                <option value="arithmetic">Arithmetic</option>
+                <option value="calculator">Calculator</option>
+            </select>
+            <select id="parser-type-select" class="parser-type-select">
+                <option value="slr">SLR</option>
+                <option value="lalr" selected>LALR</option>
+                <option value="lr1">LR(1)</option>
+            </select>
+            <button id="compile-btn" class="btn btn-primary btn-sm">Compile</button>
+        </div>
+        <div id="grammar-editor" class="editor-container"></div>
+    </div>
+
+    <div id="input-panel-template" class="panel-content">
+        <div class="panel-toolbar">
+            <button id="parse-btn" class="btn btn-primary btn-sm">Parse</button>
+        </div>
+        <div id="input-editor" class="editor-container"></div>
+    </div>
+
+    <div id="parse-tree-panel-template" class="panel-content">
+        <div id="parse-tree-container" class="parse-tree-container"></div>
+    </div>
+
+    <div id="parse-table-panel-template" class="panel-content">
+        <div id="parse-table-container" class="parse-table-container"></div>
+    </div>
+
+    <div id="normalized-grammar-panel-template" class="panel-content">
+        <div id="normalized-grammar-editor" class="editor-container"></div>
+    </div>
+
+    <div id="console-panel-template" class="panel-content">
+        <div class="panel-toolbar">
+            <button id="clear-console-btn" class="btn btn-sm">Clear</button>
+        </div>
+        <div id="console-output" class="console-output"></div>
+    </div>
+
+    <div id="actions-panel-template" class="panel-content">
+        <div class="panel-toolbar">
+            <button id="run-action-btn" class="btn btn-primary btn-sm">Run Action</button>
+            <span id="action-status" class="action-status"></span>
+        </div>
+        <div id="action-editor" class="editor-container"></div>
+    </div>
+</div>
+
+    </div>
+
+    
+    
+</article>
+
+    </main>
+    
+
+    
+    
+
+    
+    
+    <head><script defer="defer" src="/galore/static/js/gen/906.c098f4cfaf2592ea34fc.js"></script><script defer="defer" src="/galore/static/js/gen/553.876ab0df0c7700be11f3.js"></script><script defer="defer" src="/galore/static/js/gen/944.907eb0dc93a6d31251ba.js"></script><script defer="defer" src="/galore/static/js/gen/100.ba5b1a6f8b27663f2459.js"></script><script defer="defer" src="/galore/static/js/gen/PlaygroundPage.d611ae44cd45eb24d156.js"></script></head>
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

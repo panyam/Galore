@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="How Galore handles lexical analysis with TLEX">
+    <title>Tokenization - Galore</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/galore/static/css/tsappkit-docs.css">
+    <link rel="stylesheet" href="/galore/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/galore/static/images/favicon.png">
+</head>
+<body class="">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/galore/">
+                <span class="logo-text">Galore</span>
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/galore/getting-started/" class="nav-link">
+                    
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/galore/playground/" class="nav-link">
+                    
+                    Playground
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/galore/reference/" class="nav-link">
+                    
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/galore/reference/grammar-syntax/" class="dropdown-item">Grammar Syntax</a>
+                    
+                    <a href="/galore/reference/semantic-actions/" class="dropdown-item">Semantic Actions</a>
+                    
+                    <a href="/galore/reference/api/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/galore/reference/tokenization/" class="dropdown-item">Tokenization</a>
+                    
+                    <a href="/galore/reference/parser-types/" class="dropdown-item">Parser Types</a>
+                    
+                    <a href="/galore/reference/parse-tables/" class="dropdown-item">Parse Tables</a>
+                    
+                    <a href="/galore/reference/error-handling/" class="dropdown-item">Error Handling</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/galore/examples/" class="nav-link">
+                    
+                    Examples
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/galore/examples/json-parser/" class="dropdown-item">JSON Parser</a>
+                    
+                    <a href="/galore/examples/arithmetic/" class="dropdown-item">Arithmetic</a>
+                    
+                    <a href="/galore/examples/calculator/" class="dropdown-item">Calculator</a>
+                    
+                </div>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/Galore" class="btn-github" target="_blank" rel="noopener">
+                GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        <nav class="section-nav">
+            
+            <div class="section-nav-content">
+                <h3>Reference</h3>
+                <ul>
+                    <li><a href="/galore/reference/">Overview</a></li>
+                    <li><a href="/galore/reference/grammar-syntax/">Grammar Syntax</a></li>
+                    <li><a href="/galore/reference/semantic-actions/">Semantic Actions</a></li>
+                    <li><a href="/galore/reference/api/">API Reference</a></li>
+                    <li><a href="/galore/reference/tokenization/">Tokenization</a></li>
+                    <li><a href="/galore/reference/parser-types/">Parser Types</a></li>
+                    <li><a href="/galore/reference/parse-tables/">Parse Tables</a></li>
+                    <li><a href="/galore/reference/error-handling/">Error Handling</a></li>
+                </ul>
+            </div>
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Tokenization</h1>
+        
+        <p class="lead">How Galore handles lexical analysis with TLEX</p>
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<h1>Tokenization</h1>
+
+<p>Galore uses <a href="https://github.com/panyam/tlex">TLEX</a> for lexical analysis. This page covers the basics of token definition in Galore. For advanced lexer features, see the TLEX documentation.</p>
+
+<h2>Defining Tokens</h2>
+
+<h3>%token Directive</h3>
+
+<p>Define named tokens with regex patterns:</p>
+
+<pre><code class="language-text">%token NUMBER /[0-9]+/
+%token IDENT /[a-zA-Z_][a-zA-Z0-9_]*/
+%token STRING /"([^"\\]|\\.)*"/</code></pre>
+
+<h3>Inline Tokens</h3>
+
+<p>String literals and regex patterns in rules are automatically tokenized:</p>
+
+<pre><code class="language-text">// These create tokens automatically:
+Stmt -> "if" "(" Expr ")" Stmt ;
+Number -> /[0-9]+/ ;</code></pre>
+
+<h2>Skipping Whitespace and Comments</h2>
+
+<p>Use <code>%skip</code> to define patterns that are consumed but don't produce tokens:</p>
+
+<pre><code class="language-text">// Skip whitespace
+%skip /[ \t\n\r]+/
+
+// Skip line comments
+%skip /\/\/.*/
+
+// Skip block comments
+%skip /\/\*[\s\S]*?\*\//</code></pre>
+
+<h2>Regex Pattern Syntax</h2>
+
+<p>By default, Galore uses JavaScript regex syntax:</p>
+
+<table>
+    <thead>
+        <tr><th>Pattern</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><code>[0-9]+</code></td><td>One or more digits</td></tr>
+        <tr><td><code>[a-zA-Z_]\w*</code></td><td>Identifier</td></tr>
+        <tr><td><code>"[^"]*"</code></td><td>Double-quoted string (simple)</td></tr>
+        <tr><td><code>\/\/.* </code></td><td>Line comment</td></tr>
+        <tr><td><code>\s+</code></td><td>Whitespace</td></tr>
+    </tbody>
+</table>
+
+<h3>Regex Flags</h3>
+
+<p>Append flags after the closing <code>/</code>:</p>
+
+<pre><code class="language-text">%skip /\/\*.*?\*\//s   // 's' flag: dot matches newlines
+%skip /\/\/.*$/m       // 'm' flag: multiline mode</code></pre>
+
+<h2>Reusable Patterns</h2>
+
+<p>Use <code>%define</code> to create named patterns for composition:</p>
+
+<pre><code class="language-text">%define DIGIT [0-9]
+%define ALPHA [a-zA-Z]
+
+%token NUMBER /{DIGIT}+/
+%token IDENT /{ALPHA}({ALPHA}|{DIGIT})*/</code></pre>
+
+<h2>Flex-Style Syntax</h2>
+
+<p>Switch to flex-style patterns with <code>%resyntax</code>:</p>
+
+<pre><code class="language-text">%resyntax flex
+
+%token NUMBER [0-9]+
+%skip [ \t\n]+</code></pre>
+
+<p>In flex mode, patterns extend to end of line without delimiters.</p>
+
+<h2>Token Priority</h2>
+
+<p>When multiple patterns match, TLEX uses priority rules:</p>
+
+<ol>
+    <li>Longer matches win over shorter matches</li>
+    <li>Earlier-defined patterns win over later ones</li>
+    <li>String literals have higher priority than regex patterns</li>
+</ol>
+
+<pre><code class="language-text">// "if" will match as keyword, not as IDENT
+%token IDENT /[a-zA-Z]+/
+Stmt -> "if" Expr "then" Stmt ;</code></pre>
+
+<h2>Token Handlers</h2>
+
+<p>Attach handlers to tokens for custom processing:</p>
+
+<pre><code class="language-text">%token NUMBER /[0-9]+/ { parseNumber }</code></pre>
+
+<p>Provide the handler when loading the grammar:</p>
+
+<pre><code class="language-typescript">import { DSL } from "galore";
+
+const [grammar, tokenFunc] = DSL.load(grammarString, {
+  tokenHandlers: {
+    parseNumber: (token, tape, owner) => {
+      token.value = parseInt(token.value);
+      return token;
+    }
+  }
+});
+</code></pre>
+
+<h2>Custom Tokenizers</h2>
+
+<p>Provide your own tokenizer instead of using the auto-generated one:</p>
+
+<pre><code class="language-typescript">import { newParser } from "galore";
+import * as TLEX from "tlex";
+
+// Create custom tokenizer
+const myTokenizer = new TLEX.Tokenizer();
+myTokenizer.add(/[0-9]+/, { tag: "NUMBER" });
+myTokenizer.add(/[a-z]+/, { tag: "IDENT" });
+myTokenizer.add(/\s+/, {}, () => null);  // Skip whitespace
+
+const [parser] = newParser(grammar, {
+  tokenizer: myTokenizer.next.bind(myTokenizer)
+});
+</code></pre>
+
+<h2>TLEX Documentation</h2>
+
+<p>For advanced features like:</p>
+
+<ul>
+    <li>Lexer modes and state management</li>
+    <li>Token priority and conflict resolution</li>
+    <li>Custom token transformations</li>
+    <li>Debugging and visualization</li>
+</ul>
+
+<p>See the <a href="https://github.com/panyam/tlex">TLEX documentation</a>.</p>
+
+    </div>
+
+    
+    
+</article>
+
+        </main>
+    </div>
+    
+
+    
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Galore</h4>
+            <p>A toolbox for language analyzers and parser generators</p>
+            <p class="version">Version 1.0.6</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/galore/getting-started/">Getting Started</a></li>
+                <li><a href="/galore/playground/">Playground</a></li>
+                <li><a href="/galore/reference/">Reference</a></li>
+                <li><a href="/galore/examples/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/Galore" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="https://github.com/panyam/Galore/issues" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="https://www.npmjs.com/package/galore" target="_blank" rel="noopener">npm Package</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/Galore/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+    
+
+    
+    
+    <head><script defer="defer" src="/galore/static/js/gen/906.c098f4cfaf2592ea34fc.js"></script><script defer="defer" src="/galore/static/js/gen/944.907eb0dc93a6d31251ba.js"></script><script defer="defer" src="/galore/static/js/gen/DocsPage.696b1cde330fca8483f6.js"></script></head>
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

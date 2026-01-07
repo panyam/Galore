@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Complete API reference for Galore">
+    <title>API Reference - Galore</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/galore/static/css/tsappkit-docs.css">
+    <link rel="stylesheet" href="/galore/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/galore/static/images/favicon.png">
+</head>
+<body class="">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/galore/">
+                <span class="logo-text">Galore</span>
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/galore/getting-started/" class="nav-link">
+                    
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/galore/playground/" class="nav-link">
+                    
+                    Playground
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/galore/reference/" class="nav-link">
+                    
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/galore/reference/grammar-syntax/" class="dropdown-item">Grammar Syntax</a>
+                    
+                    <a href="/galore/reference/semantic-actions/" class="dropdown-item">Semantic Actions</a>
+                    
+                    <a href="/galore/reference/api/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/galore/reference/tokenization/" class="dropdown-item">Tokenization</a>
+                    
+                    <a href="/galore/reference/parser-types/" class="dropdown-item">Parser Types</a>
+                    
+                    <a href="/galore/reference/parse-tables/" class="dropdown-item">Parse Tables</a>
+                    
+                    <a href="/galore/reference/error-handling/" class="dropdown-item">Error Handling</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/galore/examples/" class="nav-link">
+                    
+                    Examples
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/galore/examples/json-parser/" class="dropdown-item">JSON Parser</a>
+                    
+                    <a href="/galore/examples/arithmetic/" class="dropdown-item">Arithmetic</a>
+                    
+                    <a href="/galore/examples/calculator/" class="dropdown-item">Calculator</a>
+                    
+                </div>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/Galore" class="btn-github" target="_blank" rel="noopener">
+                GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        <nav class="section-nav">
+            
+            <div class="section-nav-content">
+                <h3>Reference</h3>
+                <ul>
+                    <li><a href="/galore/reference/">Overview</a></li>
+                    <li><a href="/galore/reference/grammar-syntax/">Grammar Syntax</a></li>
+                    <li><a href="/galore/reference/semantic-actions/">Semantic Actions</a></li>
+                    <li><a href="/galore/reference/api/">API Reference</a></li>
+                    <li><a href="/galore/reference/tokenization/">Tokenization</a></li>
+                    <li><a href="/galore/reference/parser-types/">Parser Types</a></li>
+                    <li><a href="/galore/reference/parse-tables/">Parse Tables</a></li>
+                    <li><a href="/galore/reference/error-handling/">Error Handling</a></li>
+                </ul>
+            </div>
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>API Reference</h1>
+        
+        <p class="lead">Complete API reference for Galore</p>
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<h1>API Reference</h1>
+
+<p>This page documents the main entry points and classes in Galore.</p>
+
+<h2>Creating Parsers</h2>
+
+<h3>newParser()</h3>
+
+<p>The main entry point for creating a parser from a grammar DSL string:</p>
+
+<pre><code class="language-typescript">import { newParser } from "galore";
+
+const [parser, tokenFunc, itemGraph] = newParser(grammarString, options);
+</code></pre>
+
+<h4>Parameters</h4>
+
+<table>
+    <thead>
+        <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>grammarString</code></td>
+            <td><code>string</code></td>
+            <td>Grammar definition in DSL format</td>
+        </tr>
+        <tr>
+            <td><code>options</code></td>
+            <td><code>object</code></td>
+            <td>Configuration options (see below)</td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>Options</h4>
+
+<table>
+    <thead>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>type</code></td>
+            <td><code>"slr" | "lalr" | "lr1"</code></td>
+            <td><code>"lalr"</code></td>
+            <td>Parser algorithm to use</td>
+        </tr>
+        <tr>
+            <td><code>tokenizer</code></td>
+            <td><code>NextTokenFunc</code></td>
+            <td>auto-generated</td>
+            <td>Custom tokenizer function</td>
+        </tr>
+        <tr>
+            <td><code>debug</code></td>
+            <td><code>"all" | "lexer" | "parser"</code></td>
+            <td>none</td>
+            <td>Enable debug output</td>
+        </tr>
+        <tr>
+            <td><code>leftRecursive</code></td>
+            <td><code>boolean</code></td>
+            <td><code>true</code></td>
+            <td>Use left recursion for EBNF expansions</td>
+        </tr>
+        <tr>
+            <td><code>auxNTPrefix</code></td>
+            <td><code>string</code></td>
+            <td><code>"$"</code></td>
+            <td>Prefix for auxiliary non-terminals</td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>Returns</h4>
+
+<p>A tuple of three values:</p>
+
+<ol>
+    <li><code>parser</code> - The <code>Parser</code> instance</li>
+    <li><code>tokenFunc</code> - The generated tokenizer function (or <code>null</code> if custom provided)</li>
+    <li><code>itemGraph</code> - The <code>LRItemGraph</code> (useful for debugging)</li>
+</ol>
+
+<h4>Example</h4>
+
+<pre><code class="language-typescript">import { newParser } from "galore";
+
+const [parser, tokenFunc, itemGraph] = newParser(`
+  %token NUMBER /[0-9]+/
+  %skip /[ \\t\\n]+/
+
+  Expr -> Expr "+" Term | Term ;
+  Term -> NUMBER ;
+`, { type: "lalr" });
+
+const result = parser.parse("1 + 2 + 3");
+console.log(result.value);
+</code></pre>
+
+<h2>Parser Class</h2>
+
+<h3>parse()</h3>
+
+<p>Parse an input string and return the parse tree root:</p>
+
+<pre><code class="language-typescript">const result = parser.parse(input, context?);</code></pre>
+
+<h4>Parameters</h4>
+
+<table>
+    <thead>
+        <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>input</code></td>
+            <td><code>string | Tape</code></td>
+            <td>Input to parse</td>
+        </tr>
+        <tr>
+            <td><code>context</code></td>
+            <td><code>ParserContext</code></td>
+            <td>Optional parsing context with handlers</td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>Returns</h4>
+
+<p><code>PTNode | null</code> - The root of the parse tree, or <code>null</code> if parsing failed.</p>
+
+<p>See <a href="/galore/reference/semantic-actions/">Semantic Actions</a> for details on <code>ParserContext</code>.</p>
+
+<h2>Grammar Class</h2>
+
+<p>The <code>Grammar</code> class can be used to build grammars programmatically instead of using the DSL.</p>
+
+<h3>Creating Symbols</h3>
+
+<pre><code class="language-typescript">import { Grammar } from "galore";
+
+const g = new Grammar();
+
+// Create terminals
+const PLUS = g.newTerm("+");
+const NUMBER = g.newTerm("NUMBER");
+
+// Create non-terminals
+const Expr = g.newNT("Expr");
+const Term = g.newNT("Term");
+
+// Alternative: get or create
+const sym1 = g.T("keyword");    // Get or create terminal
+const sym2 = g.NT("Statement"); // Get or create non-terminal
+</code></pre>
+
+<h3>Adding Rules</h3>
+
+<pre><code class="language-typescript">import { Grammar, Str } from "galore";
+
+const g = new Grammar();
+const Expr = g.newNT("Expr");
+const Term = g.newNT("Term");
+const NUMBER = g.newTerm("NUMBER");
+const PLUS = g.newTerm("+");
+
+// Add production: Expr -> Expr "+" Term
+g.add(Expr, new Str(Expr, PLUS, Term));
+
+// Add production: Expr -> Term
+g.add(Expr, new Str(Term));
+
+// Add production: Term -> NUMBER
+g.add(Term, new Str(NUMBER));
+</code></pre>
+
+<h3>Helper Methods</h3>
+
+<pre><code class="language-typescript">// Sequence: A B C
+const seq = g.seq(A, B, C);
+
+// Alternation: (A | B | C) - creates auxiliary NT
+const choice = g.anyof(A, B, C);
+
+// Optional: A? - creates auxiliary NT
+const optional = g.opt(A);
+
+// Zero or more: A* - creates auxiliary NT
+const star = g.atleast0(A);
+
+// One or more: A+ - creates auxiliary NT
+const plus = g.atleast1(A);
+</code></pre>
+
+<h3>Querying the Grammar</h3>
+
+<pre><code class="language-typescript">// Get symbol by label
+const sym = g.getSym("Expr");
+
+// Get symbol by ID
+const sym2 = g.getSymById(5);
+
+// Check symbol types
+g.isTerminal("NUMBER");  // true
+g.isNT("Expr");          // true
+
+// Get all symbols
+g.terminals;        // All terminal symbols
+g.nonTerminals;     // User-defined non-terminals
+g.auxNonTerminals;  // Auxiliary non-terminals (from EBNF)
+g.allSymbols;       // All symbols
+
+// Get rules for a non-terminal
+const rules = g.rulesForNT(Expr);
+
+// Iterate through rules
+g.forEachRule(null, (rule, index) => {
+  console.log(rule.debugString);
+});
+</code></pre>
+
+<h3>Grammar Analysis</h3>
+
+<pre><code class="language-typescript">// First, Follow, and Nullable sets
+const firsts = g.firstSets;
+const follows = g.followSets;
+const nullables = g.nullables;
+
+// Check if symbol is nullable
+nullables.has(Expr);
+
+// Get first set for a symbol
+firsts.getSet(Expr);
+
+// Get follow set for a symbol
+follows.getSet(Expr);
+</code></pre>
+
+<h2>PTNode Class</h2>
+
+<p>Parse tree nodes returned by the parser:</p>
+
+<pre><code class="language-typescript">class PTNode {
+  sym: Sym;              // The grammar symbol
+  value: any;            // Semantic value
+  children: PTNode[];    // Child nodes
+  parent: PTNode | null; // Parent node
+  id: number;            // Unique node ID
+
+  // Check if terminal (leaf node)
+  get isTerminal(): boolean;
+
+  // Get child by index (negative = from end)
+  childAt(index: number): PTNode;
+
+  // Debug output
+  debugValue(): any;
+}
+</code></pre>
+
+<h2>ParseTable Class</h2>
+
+<p>Represents the LR parse table:</p>
+
+<pre><code class="language-typescript">class ParseTable {
+  grammar: Grammar;
+
+  // Check if table has conflicts
+  get hasConflicts(): boolean;
+
+  // Get actions for a state and symbol
+  getActions(stateId: number, symbol: Sym): LRAction[];
+}
+</code></pre>
+
+<h2>LRAction Types</h2>
+
+<pre><code class="language-typescript">enum LRActionType {
+  ACCEPT,  // Accept input (parsing complete)
+  SHIFT,   // Shift token and go to state
+  REDUCE,  // Reduce by rule
+  GOTO     // Non-terminal transition
+}
+
+class LRAction {
+  tag: LRActionType;
+  gotoState: number | null;  // For SHIFT and GOTO
+  rule: Rule | null;         // For REDUCE
+
+  toString(): string;  // "S5", "R3", "Acc", etc.
+}
+</code></pre>
+
+<h2>Exports</h2>
+
+<p>Galore exports the following from its main entry point:</p>
+
+<pre><code class="language-typescript">// Main entry point
+export { newParser } from "galore";
+
+// Core classes
+export { Grammar, Sym, Str, Rule, RuleAction } from "galore";
+export { Parser, ParseTable, LRAction, LRActionType } from "galore";
+export { PTNode, PFNode } from "galore";
+export { ParseError } from "galore";
+
+// Analysis
+export { FirstSets, FollowSets, NullableSet } from "galore";
+export { LRItemGraph, LRItemSet, LRItem } from "galore";
+
+// Namespaced exports
+export { DSL } from "galore";       // Grammar DSL loader
+export { Analyzer } from "galore";  // Grammar transformations
+export { Printers } from "galore";  // Debug output utilities
+export { LL } from "galore";        // LL parser (experimental)
+</code></pre>
+
+<h2>TypeScript Types</h2>
+
+<pre><code class="language-typescript">// Tokenizer function type
+type NextTokenFunc = (tape: Tape, owner: any) => Token | null;
+
+// Rule action handler
+type RuleActionHandler = (
+  rule: Rule,
+  parent: PTNode,
+  ...children: PTNode[]
+) => any;
+
+// Parser context
+interface ParserContext {
+  ruleHandlers: { [name: string]: RuleActionHandler };
+  beforeAddingChildNode?: BeforeAddingChildCallback;
+  onReduction?: RuleReductionCallback;
+  onNextToken?: NextTokenCallback;
+  actionResolver?: ActionResolverCallback;
+  onTokenError?: TokenErrorCallback;
+  buildParseTree?: boolean;
+  copySingleChild?: boolean;
+}
+</code></pre>
+
+    </div>
+
+    
+    
+</article>
+
+        </main>
+    </div>
+    
+
+    
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Galore</h4>
+            <p>A toolbox for language analyzers and parser generators</p>
+            <p class="version">Version 1.0.6</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/galore/getting-started/">Getting Started</a></li>
+                <li><a href="/galore/playground/">Playground</a></li>
+                <li><a href="/galore/reference/">Reference</a></li>
+                <li><a href="/galore/examples/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/Galore" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="https://github.com/panyam/Galore/issues" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="https://www.npmjs.com/package/galore" target="_blank" rel="noopener">npm Package</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/Galore/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+    
+
+    
+    
+    <head><script defer="defer" src="/galore/static/js/gen/906.c098f4cfaf2592ea34fc.js"></script><script defer="defer" src="/galore/static/js/gen/944.907eb0dc93a6d31251ba.js"></script><script defer="defer" src="/galore/static/js/gen/DocsPage.696b1cde330fca8483f6.js"></script></head>
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

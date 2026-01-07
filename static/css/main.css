@@ -1,0 +1,14 @@
+/* ============================================
+   Galore Documentation - Main Stylesheet
+
+   Base styles are loaded from tsappkit-docs.css
+   (copied during build from @panyam/tsappkit)
+
+   This file contains only Galore-specific styles.
+   ============================================ */
+
+/* Project-specific component styles */
+@import url('./components/hero.css');
+@import url('./components/sandbox.css');
+@import url('./components/playground.css');
+@import url('./components/example-runner.css');

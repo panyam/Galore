@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Handling parse errors and debugging grammars">
+    <title>Error Handling - Galore</title>
+
+    
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    
+    <link rel="stylesheet" href="/galore/static/css/tsappkit-docs.css">
+    <link rel="stylesheet" href="/galore/static/css/main.css">
+    
+
+    
+    <link rel="icon" type="image/png" href="/galore/static/images/favicon.png">
+</head>
+<body class="">
+    
+    
+<header class="site-header">
+    <div class="header-container">
+        
+        <div class="logo">
+            <a href="/galore/">
+                <span class="logo-text">Galore</span>
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            
+            
+            <div class="nav-item">
+                <a href="/galore/getting-started/" class="nav-link">
+                    
+                    Getting Started
+                </a>
+                
+            </div>
+            
+            <div class="nav-item">
+                <a href="/galore/playground/" class="nav-link">
+                    
+                    Playground
+                </a>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/galore/reference/" class="nav-link">
+                    
+                    Reference
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/galore/reference/grammar-syntax/" class="dropdown-item">Grammar Syntax</a>
+                    
+                    <a href="/galore/reference/semantic-actions/" class="dropdown-item">Semantic Actions</a>
+                    
+                    <a href="/galore/reference/api/" class="dropdown-item">API Reference</a>
+                    
+                    <a href="/galore/reference/tokenization/" class="dropdown-item">Tokenization</a>
+                    
+                    <a href="/galore/reference/parser-types/" class="dropdown-item">Parser Types</a>
+                    
+                    <a href="/galore/reference/parse-tables/" class="dropdown-item">Parse Tables</a>
+                    
+                    <a href="/galore/reference/error-handling/" class="dropdown-item">Error Handling</a>
+                    
+                </div>
+                
+            </div>
+            
+            <div class="nav-item has-children">
+                <a href="/galore/examples/" class="nav-link">
+                    
+                    Examples
+                </a>
+                
+                <div class="nav-dropdown">
+                    
+                    <a href="/galore/examples/json-parser/" class="dropdown-item">JSON Parser</a>
+                    
+                    <a href="/galore/examples/arithmetic/" class="dropdown-item">Arithmetic</a>
+                    
+                    <a href="/galore/examples/calculator/" class="dropdown-item">Calculator</a>
+                    
+                </div>
+                
+            </div>
+            
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+            <a href="https://github.com/panyam/Galore" class="btn-github" target="_blank" rel="noopener">
+                GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+
+    
+    <div class="page-container">
+        
+        
+<aside class="sidebar">
+    <div class="sidebar-content">
+        
+
+        
+        <nav class="section-nav">
+            
+            <div class="section-nav-content">
+                <h3>Reference</h3>
+                <ul>
+                    <li><a href="/galore/reference/">Overview</a></li>
+                    <li><a href="/galore/reference/grammar-syntax/">Grammar Syntax</a></li>
+                    <li><a href="/galore/reference/semantic-actions/">Semantic Actions</a></li>
+                    <li><a href="/galore/reference/api/">API Reference</a></li>
+                    <li><a href="/galore/reference/tokenization/">Tokenization</a></li>
+                    <li><a href="/galore/reference/parser-types/">Parser Types</a></li>
+                    <li><a href="/galore/reference/parse-tables/">Parse Tables</a></li>
+                    <li><a href="/galore/reference/error-handling/">Error Handling</a></li>
+                </ul>
+            </div>
+            
+        </nav>
+    </div>
+</aside>
+
+
+        
+        <main class="main-content">
+            
+<article class="content">
+    
+    
+    <header class="content-header">
+        <h1>Error Handling</h1>
+        
+        <p class="lead">Handling parse errors and debugging grammars</p>
+        
+    </header>
+    
+
+    
+    <div class="content-body">
+        
+<h1>Error Handling</h1>
+
+<p>This page covers error handling, debugging, and troubleshooting in Galore.</p>
+
+<h2>ParseError</h2>
+
+<p>When parsing fails, Galore throws a <code>ParseError</code>:</p>
+
+<pre><code class="language-typescript">import { newParser, ParseError } from "galore";
+
+const [parser] = newParser(grammar);
+
+try {
+  const result = parser.parse("invalid input");
+} catch (err) {
+  if (err instanceof ParseError) {
+    console.log(err.message);  // Error description
+    console.log(err.type);     // Error type (e.g., "UnexpectedToken")
+    console.log(err.value);    // Additional context
+  }
+}
+</code></pre>
+
+<h3>Error Types</h3>
+
+<table>
+    <thead>
+        <tr><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>UnexpectedToken</code></td>
+            <td>Parser encountered a token it didn't expect</td>
+        </tr>
+        <tr>
+            <td><code>TokenizerError</code></td>
+            <td>Lexer couldn't match input (from TLEX)</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>Error Value</h3>
+
+<p>The <code>value</code> property contains context about the error:</p>
+
+<pre><code class="language-typescript">catch (err) {
+  if (err instanceof ParseError && err.type === "UnexpectedToken") {
+    const { state, token } = err.value;
+    console.log(`State: ${state}`);
+    console.log(`Token: ${token.tag} = "${token.value}"`);
+    console.log(`Position: ${token.start}-${token.end}`);
+  }
+}
+</code></pre>
+
+<h2>Error Callbacks</h2>
+
+<h3>onTokenError</h3>
+
+<p>Handle lexer errors (invalid characters) without throwing:</p>
+
+<pre><code class="language-typescript">const result = parser.parse(input, {
+  ruleHandlers: {},
+  onTokenError: (err, tape) => {
+    console.warn(`Skipping invalid character at position ${tape.offset}`);
+
+    // Skip the invalid character and continue
+    tape.advance();
+
+    // Return true to retry tokenization
+    return true;
+  }
+});
+</code></pre>
+
+<p>Return <code>true</code> to retry after handling, or <code>false</code> (or throw) to abort.</p>
+
+<h3>actionResolver</h3>
+
+<p>Handle parse table conflicts at runtime:</p>
+
+<pre><code class="language-typescript">const result = parser.parse(input, {
+  ruleHandlers: {},
+  actionResolver: (actions, stack, tokenbuffer) => {
+    // Multiple actions available (conflict)
+    console.log("Conflict:", actions.map(a => a.toString()));
+
+    // Choose based on context
+    // Prefer shift over reduce (default behavior for many parsers)
+    const shift = actions.find(a => a.tag === LRActionType.SHIFT);
+    if (shift) return shift;
+
+    // Otherwise take first action
+    return actions[0];
+  }
+});
+</code></pre>
+
+<h2>Debug Output</h2>
+
+<p>Enable debug output to see lexer and parser internals:</p>
+
+<pre><code class="language-typescript">const [parser] = newParser(grammar, {
+  type: "lalr",
+  debug: "all"  // "all" | "lexer" | "parser"
+});
+</code></pre>
+
+<h3>Debug Options</h3>
+
+<table>
+    <thead>
+        <tr><th>Value</th><th>Output</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>"lexer"</code></td>
+            <td>Tokenizer program and token stream</td>
+        </tr>
+        <tr>
+            <td><code>"parser"</code></td>
+            <td>Parse table and state transitions</td>
+        </tr>
+        <tr>
+            <td><code>"all"</code></td>
+            <td>Both lexer and parser output</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>Common Errors</h2>
+
+<h3>Unexpected Token</h3>
+
+<p>The parser received a token that doesn't match any expected symbol in the current state.</p>
+
+<p><strong>Causes:</strong></p>
+<ul>
+    <li>Input doesn't match the grammar</li>
+    <li>Missing token definition</li>
+    <li>Incorrect grammar rule</li>
+</ul>
+
+<p><strong>Debugging:</strong></p>
+<ol>
+    <li>Check the token that caused the error</li>
+    <li>Verify the grammar accepts that token in context</li>
+    <li>Use the <a href="/galore/playground/">Playground</a> to test the grammar</li>
+</ol>
+
+<h3>Action Handler Not Found</h3>
+
+<pre><code class="language-text">Error: Action handler not found: handlerName</code></pre>
+
+<p>A grammar rule has a <code>{ handlerName }</code> action but no matching function in <code>ruleHandlers</code>.</p>
+
+<p><strong>Fix:</strong> Provide all required handlers:</p>
+
+<pre><code class="language-typescript">parser.parse(input, {
+  ruleHandlers: {
+    handlerName: (rule, parent, ...children) => {
+      // Handle the reduction
+    }
+  }
+});
+</code></pre>
+
+<h3>Multiple Actions Found</h3>
+
+<pre><code class="language-text">Error: Multiple actions found.</code></pre>
+
+<p>The parse table has a conflict (shift-reduce or reduce-reduce) and no <code>actionResolver</code> was provided.</p>
+
+<p><strong>Fix:</strong> Either resolve the grammar conflict or provide an <code>actionResolver</code>:</p>
+
+<pre><code class="language-typescript">parser.parse(input, {
+  ruleHandlers: {},
+  actionResolver: (actions) => actions[0]  // Take first action
+});
+</code></pre>
+
+<p>See <a href="/galore/reference/parse-tables/">Parse Tables</a> for conflict resolution strategies.</p>
+
+<h3>Invalid Token Tag</h3>
+
+<pre><code class="language-text">Error: Invalid token tag: UNKNOWN</code></pre>
+
+<p>The lexer produced a token with a tag that doesn't match any terminal in the grammar.</p>
+
+<p><strong>Fix:</strong> Ensure token names match between lexer and grammar.</p>
+
+<h2>Using the Playground</h2>
+
+<p>The <a href="/galore/playground/">Interactive Playground</a> is the best tool for debugging grammars:</p>
+
+<ul>
+    <li><strong>Parse table visualization</strong> - See all states and actions</li>
+    <li><strong>Conflict highlighting</strong> - Cells with conflicts are highlighted in amber</li>
+    <li><strong>LR item hints</strong> - Hover over states to see item sets</li>
+    <li><strong>Live parsing</strong> - Test inputs and see parse trees immediately</li>
+</ul>
+
+<h2>Checking for Conflicts</h2>
+
+<p>Programmatically check if a grammar has conflicts:</p>
+
+<pre><code class="language-typescript">import { newParser } from "galore";
+
+const [parser, tokenFunc, itemGraph] = newParser(grammar, { type: "lalr" });
+
+if (parser.parseTable.hasConflicts) {
+  console.log("Grammar has conflicts!");
+  console.log(parser.parseTable.conflictActions);
+}
+</code></pre>
+
+    </div>
+
+    
+    
+</article>
+
+        </main>
+    </div>
+    
+
+    
+    
+    
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Galore</h4>
+            <p>A toolbox for language analyzers and parser generators</p>
+            <p class="version">Version 1.0.6</p>
+        </div>
+
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/galore/getting-started/">Getting Started</a></li>
+                <li><a href="/galore/playground/">Playground</a></li>
+                <li><a href="/galore/reference/">Reference</a></li>
+                <li><a href="/galore/examples/">Examples</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+                <li><a href="https://github.com/panyam/Galore" target="_blank" rel="noopener">GitHub Repository</a></li>
+                <li><a href="https://github.com/panyam/Galore/issues" target="_blank" rel="noopener">Report Issues</a></li>
+                <li><a href="https://www.npmjs.com/package/galore" target="_blank" rel="noopener">npm Package</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h4>License</h4>
+            <p>Licensed under <a href="https://github.com/panyam/Galore/blob/master/LICENSE">ISC</a></p>
+            <p>&copy;  Sriram Panyam</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>Built with <a href="https://github.com/panyam/s3gen" target="_blank">s3gen</a></p>
+    </div>
+</footer>
+
+    
+
+    
+    
+    <head><script defer="defer" src="/galore/static/js/gen/906.c098f4cfaf2592ea34fc.js"></script><script defer="defer" src="/galore/static/js/gen/944.907eb0dc93a6d31251ba.js"></script><script defer="defer" src="/galore/static/js/gen/DocsPage.696b1cde330fca8483f6.js"></script></head>
+    
+
+    
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

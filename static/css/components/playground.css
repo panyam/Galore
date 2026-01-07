@@ -1,0 +1,387 @@
+/* ============================================
+   Playground Page
+   ============================================ */
+
+html:has(.playground-page),
+.playground-page {
+  height: 100%;
+  overflow: hidden;
+}
+
+.playground-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.playground-page .site-header {
+  flex-shrink: 0;
+}
+
+.playground-page .main-content-full {
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.playground-page .content,
+.playground-page .content-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.playground-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dockview-container {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+/* DockView Theme Overrides */
+.dockview-theme-light {
+  --dv-background-color: #ffffff;
+  --dv-paneview-header-background: #f1f5f9;
+  --dv-tabs-container-background: #f1f5f9;
+  --dv-activegroup-visiblepanel-tab-background: #ffffff;
+  --dv-activegroup-hiddenpanel-tab-background: #e2e8f0;
+  --dv-inactivegroup-visiblepanel-tab-background: #e2e8f0;
+  --dv-inactivegroup-hiddenpanel-tab-background: #cbd5e1;
+  --dv-tab-color: #64748b;
+  --dv-activegroup-visiblepanel-tab-color: #0f172a;
+  --dv-inactivegroup-visiblepanel-tab-color: #475569;
+  --dv-inactivegroup-hiddenpanel-tab-color: #64748b;
+  --dv-separator-border: #e2e8f0;
+  --dv-paneview-header-border-color: #e2e8f0;
+  --dv-drag-over-background-color: rgba(59, 130, 246, 0.1);
+  --dv-drag-over-border-color: #3b82f6;
+  --dv-group-view-background-color: #ffffff;
+  --dv-tabs-and-actions-container-background-color: #f1f5f9;
+  --dv-icon-hover-background-color: #e2e8f0;
+  --dv-floating-box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --dv-activegroup-hiddenpanel-tab-color: #64748b;
+}
+
+/* Force light mode on DockView elements */
+.dockview-theme-light .dv-tabs-container,
+.dockview-theme-light .dv-tabs-and-actions-container,
+.dockview-theme-light .tabs-and-actions-container,
+.dockview-theme-light [class*="tabs-container"],
+.dockview-theme-light [class*="header"] {
+  background-color: #f1f5f9 !important;
+}
+
+.dockview-theme-light .dv-tab,
+.dockview-theme-light [class*="tab"]:not([class*="table"]) {
+  background-color: #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+.dockview-theme-light .dv-tab.dv-active-tab,
+.dockview-theme-light .dv-tab.active-tab,
+.dockview-theme-light [class*="active-tab"] {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.dockview-theme-light .dv-groupview,
+.dockview-theme-light [class*="groupview"] {
+  background-color: #ffffff !important;
+}
+
+/* DockView default header styling for light mode */
+.dockview-theme-light .groupview > .tabs-and-actions-container {
+  background: #f1f5f9 !important;
+}
+
+.dockview-theme-dark {
+  --dv-background-color: #0f172a;
+  --dv-paneview-header-background: #1e293b;
+  --dv-tabs-container-background: #1e293b;
+  --dv-activegroup-visiblepanel-tab-background: #0f172a;
+  --dv-activegroup-hiddenpanel-tab-background: #1e293b;
+  --dv-inactivegroup-visiblepanel-tab-background: #1e293b;
+  --dv-inactivegroup-hiddenpanel-tab-background: #334155;
+  --dv-tab-color: #94a3b8;
+  --dv-activegroup-visiblepanel-tab-color: #f1f5f9;
+  --dv-separator-border: #334155;
+  --dv-paneview-header-border-color: #334155;
+  --dv-drag-over-background-color: rgba(59, 130, 246, 0.2);
+  --dv-drag-over-border-color: #3b82f6;
+  --dv-group-view-background-color: #0f172a;
+  --dv-tabs-and-actions-container-background-color: #1e293b;
+  --dv-icon-hover-background-color: #334155;
+  --dv-floating-box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+/* Playground Panels */
+.panel-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-toolbar {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background: var(--color-bg-alt);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.editor-container {
+  flex: 1;
+  min-height: 0;
+}
+
+.grammar-select,
+.parser-type-select {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 0.875rem;
+}
+
+.parse-tree-container,
+.parse-table-container {
+  padding: var(--spacing-md);
+  overflow: auto;
+  height: 100%;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.dark .parse-tree-container,
+.dark .parse-table-container {
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+/* Parse Tree SVG Styles */
+.parse-tree-svg {
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.parse-tree-node {
+  fill: #ffc0cb;
+  stroke: white;
+  stroke-width: 1.5;
+}
+
+.parse-tree-node.non-terminal {
+  fill: #ffb6c1;
+}
+
+.parse-tree-node.terminal {
+  fill: #ffe4e9;
+}
+
+.parse-tree-text {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  fill: #c41e3a;
+  dominant-baseline: middle;
+}
+
+.parse-tree-line {
+  stroke: #c41e3a;
+  stroke-width: 2;
+  fill: none;
+}
+
+.empty-message {
+  color: var(--color-text-muted);
+  padding: var(--spacing-md);
+  text-align: center;
+  font-style: italic;
+}
+
+/* Dark mode parse tree adjustments */
+.dark .parse-tree-node {
+  fill: #8b3a62;
+  stroke: #e8e8e8;
+}
+
+.dark .parse-tree-node.non-terminal {
+  fill: #7a2d56;
+}
+
+.dark .parse-tree-node.terminal {
+  fill: #9e4d74;
+}
+
+.dark .parse-tree-text {
+  fill: #ffb6c1;
+}
+
+.dark .parse-tree-line {
+  stroke: #ffb6c1;
+}
+
+.console-output {
+  flex: 1;
+  overflow: auto;
+  padding: var(--spacing-sm);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  background: #f8fafc;
+  color: #334155;
+}
+
+.dark .console-output {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+.console-entry {
+  padding: 2px 0;
+  white-space: pre-wrap;
+}
+
+.console-time {
+  color: var(--color-text-light);
+  margin-right: var(--spacing-sm);
+}
+
+.console-error {
+  color: var(--color-error);
+}
+
+.console-success {
+  color: var(--color-success);
+}
+
+/* Parse Table Styles */
+.parse-table-container table {
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  width: 100%;
+}
+
+.parse-table-container th,
+.parse-table-container td {
+  border: 1px solid var(--color-border);
+  padding: 4px 8px;
+  text-align: center;
+}
+
+.parse-table-container th {
+  background: var(--color-bg-alt);
+  font-weight: 600;
+}
+
+/* Conflict cells - highlight with warning color */
+.parse-table-container td.multipleActions {
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: 600;
+  border-color: #f59e0b;
+}
+
+.dark .parse-table-container td.multipleActions {
+  background: #78350f;
+  color: #fef3c7;
+  border-color: #f59e0b;
+}
+
+/* State header cells with item hints */
+.parse-table-container .stateHeaderCell {
+  text-align: left;
+  padding: 4px 8px;
+  background: var(--color-bg-alt);
+  font-weight: 500;
+  min-width: 120px;
+  cursor: help;
+}
+
+.parse-table-container .stateNum {
+  font-weight: 700;
+  color: var(--color-primary, #3b82f6);
+  font-size: 0.9em;
+}
+
+.parse-table-container .stateHint {
+  font-size: 0.75em;
+  color: var(--color-text-muted, #64748b);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.dark .parse-table-container .stateNum {
+  color: #60a5fa;
+}
+
+.dark .parse-table-container .stateHint {
+  color: #94a3b8;
+}
+
+/* Highlight state header cells that have conflicts */
+.parse-table-container .stateHeaderCell.hasConflicts {
+  background: #fef3c7;
+  border-left: 3px solid #f59e0b;
+}
+
+.parse-table-container .stateHeaderCell.hasConflicts .stateNum {
+  color: #92400e;
+}
+
+.parse-table-container .stateHeaderCell.hasConflicts .stateHint {
+  color: #b45309;
+}
+
+.dark .parse-table-container .stateHeaderCell.hasConflicts {
+  background: #78350f;
+  border-left: 3px solid #f59e0b;
+}
+
+.dark .parse-table-container .stateHeaderCell.hasConflicts .stateNum {
+  color: #fef3c7;
+}
+
+.dark .parse-table-container .stateHeaderCell.hasConflicts .stateHint {
+  color: #fcd34d;
+}
+
+/* Action Status Indicator */
+.action-status {
+  margin-left: auto;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.action-status.success {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.action-status.error {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.dark .action-status.success {
+  color: #86efac;
+  background: #14532d;
+}
+
+.dark .action-status.error {
+  color: #fca5a5;
+  background: #7f1d1d;
+}

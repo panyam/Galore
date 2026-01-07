@@ -1,5 +1,6 @@
+import * as TSU from "@panyam/tsutils";
 import * as TLEX from "tlex";
-import { load as loadGrammar } from "./dsl";
+import { load as loadGrammar, TokenHandler } from "./dsl";
 import { makeParseTable } from "./ptables";
 import { Parser, ParseTable } from "./lr";
 import { LRItemGraph } from "./lritems";
@@ -43,6 +44,11 @@ export interface ParserOptions {
    * @default "$"
    */
   auxNTPrefix?: string;
+
+  /**
+   * Custom token handlers for post-processing tokens.
+   */
+  tokenHandlers?: TSU.StringMap<TokenHandler>;
 }
 
 /**

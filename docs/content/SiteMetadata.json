@@ -1,7 +1,7 @@
 {
   "siteName": "Galore",
   "siteDescription": "A toolbox for language analyzers and parser generators",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": "Sriram Panyam",
   "license": "ISC",
   "repository": "https://github.com/panyam/Galore",

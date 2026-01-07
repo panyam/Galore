@@ -36,7 +36,7 @@ export enum TokenType {
 }
 
 export type NewSymbolCallback = TSU.Nullable<(label: string, assumedTerminal: boolean) => Sym | void>;
-export type TokenHandler = (token: TLEX.Token, tape: TLEX.TapeInterface, owner: any) => TLEX.Token;
+export type TokenHandler = (token: TLEX.Token, tape: TLEX.TapeInterface, owner: any) => TLEX.Token | null;
 
 export interface LoaderConfig {
   grammar?: Grammar;
